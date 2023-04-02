@@ -7,7 +7,6 @@ import {useGlobalFilters} from "./common/filters/global.filter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
   setupSwagger(app);
   useGlobalPipes(app);
   useGlobalFilters(app);
