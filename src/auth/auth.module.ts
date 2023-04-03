@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './api/auth.controller';
-import { RegisterUserUseCase } from './use-cases/register-user-use-case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MailModule } from '../mail/mail.module';
 import { UserModule } from '../user/user.module';
