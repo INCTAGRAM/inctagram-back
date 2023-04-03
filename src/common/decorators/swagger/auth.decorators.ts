@@ -1,6 +1,7 @@
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiCookieAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
@@ -69,6 +70,7 @@ export function AuthLogoutSwaggerDecorator() {
       description:
         'JWT refreshToken inside cookie is missing, expired or incorrect',
     }),
+    ApiCookieAuth(),
   );
 }
 
@@ -127,6 +129,7 @@ export function AuthRefreshTokenSwaggerDecorator() {
       description:
         'JWT refreshToken inside cookie is missing, expired or incorrect',
     }),
+    ApiCookieAuth(),
   );
 }
 
