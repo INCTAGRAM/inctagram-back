@@ -5,10 +5,11 @@ import { MailModule } from '../mail/mail.module';
 import { UserModule } from '../user/user.module';
 import { JwtModule } from '@nestjs/jwt';
 
+const useCases = [RegisterUserUseCase];
 @Module({
   imports: [CqrsModule, MailModule, UserModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [],
+  providers: [...useCases],
   exports: [],
 })
 export class AuthModule {}

@@ -14,8 +14,8 @@ import {
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
 } from '../../common/decorators/swagger/auth.decorators';
-import { CommandBus } from '@nestjs/cqrs';
 import { RegisterUserCommand } from '../use-cases/register-user-use-case';
+import { CommandBus } from '@nestjs/cqrs';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
