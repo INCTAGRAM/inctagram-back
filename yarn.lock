@@ -1048,6 +1048,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/cqrs@npm:^9.0.3":
+  version: 9.0.3
+  resolution: "@nestjs/cqrs@npm:9.0.3"
+  dependencies:
+    uuid: 9.0.0
+  peerDependencies:
+    "@nestjs/common": ^9.0.0
+    "@nestjs/core": ^9.0.0
+    reflect-metadata: 0.1.13
+    rxjs: ^7.2.0
+  checksum: fe63496d09110fe5c93aad5582834beed0194774faba9224a99996f337ffc1cbd8d6e0082347008cbff3654f67bf92fa90d9d90c0744b1708e4db4498c4ea287
+  languageName: node
+  linkType: hard
+
 "@nestjs/mapped-types@npm:1.2.2":
   version: 1.2.2
   resolution: "@nestjs/mapped-types@npm:1.2.2"
@@ -2316,6 +2330,7 @@ __metadata:
     "@nestjs/common": ^9.0.0
     "@nestjs/config": ^2.3.1
     "@nestjs/core": ^9.0.0
+    "@nestjs/cqrs": ^9.0.3
     "@nestjs/platform-express": ^9.0.0
     "@nestjs/schematics": ^9.0.0
     "@nestjs/swagger": ^6.3.0
