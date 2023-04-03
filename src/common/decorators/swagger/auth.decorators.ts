@@ -2,6 +2,7 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiNotFoundResponse,
+  ApiOperation,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -14,6 +15,10 @@ import { NewPasswordDto } from '../../../auth/dto/new-password.dto';
 
 export function AuthRegistrationSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary:
+        'Registration in the system. Email with the registration code will be send to passed email address',
+    }),
     ApiBody({ type: AuthDto }),
     ApiResponse({
       status: 204,
@@ -30,6 +35,9 @@ export function AuthRegistrationSwaggerDecorator() {
 
 export function AuthLoginSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Try login user to the system',
+    }),
     ApiBody({ type: AuthDto }),
     ApiResponse({
       status: 200,
@@ -49,6 +57,10 @@ export function AuthLoginSwaggerDecorator() {
 
 export function AuthLogoutSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary:
+        'In cookie client must send correct refreshToken that will be revoked',
+    }),
     ApiResponse({
       status: 204,
       description: 'No Content',
@@ -62,6 +74,9 @@ export function AuthLogoutSwaggerDecorator() {
 
 export function AuthRegistrationConfirmationSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Confirm registration',
+    }),
     ApiBody({ type: ConfirmationCodeDto }),
     ApiResponse({
       status: 204,
@@ -77,6 +92,9 @@ export function AuthRegistrationConfirmationSwaggerDecorator() {
 
 export function AuthRegistrationEmailResendingSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Resend confirmation registration email if user exists',
+    }),
     ApiBody({ type: EmailDto }),
     ApiResponse({
       status: 204,
@@ -96,6 +114,9 @@ export function AuthRegistrationEmailResendingSwaggerDecorator() {
 
 export function AuthRefreshTokenSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Generate new pair of access and refresh token',
+    }),
     ApiResponse({
       status: 200,
       description:
@@ -111,6 +132,10 @@ export function AuthRefreshTokenSwaggerDecorator() {
 
 export function AuthPasswordRecoverySwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary:
+        'Password recovery via Email confirmation. Email should be sent with the RecoveryCode inside',
+    }),
     ApiBody({ type: EmailDto }),
     ApiResponse({
       status: 204,
@@ -125,6 +150,9 @@ export function AuthPasswordRecoverySwaggerDecorator() {
 
 export function AuthNewPasswordSwaggerDecorator() {
   return applyDecorators(
+    ApiOperation({
+      summary: 'Confirm password recovery',
+    }),
     ApiBody({ type: NewPasswordDto }),
     ApiResponse({
       status: 204,
