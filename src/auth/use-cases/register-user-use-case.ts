@@ -33,12 +33,11 @@ export class RegisterUserUseCase
     // // send email
     try {
       return this.mailService.sendUserConfirmation(
-          newUser,
-          newUser.emailConfirmation.confirmationCode,
+        newUser,
+        newUser.emailConfirmation.confirmationCode,
       );
     } catch (error) {
       console.log(error);
     }
-  }
   }
 }

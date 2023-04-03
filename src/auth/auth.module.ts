@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './api/auth.controller';
+import { RegisterUserUseCase } from './use-cases/register-user-use-case';
+import { CqrsModule } from '@nestjs/cqrs';
+import { MailModule } from '../mail/mail.module';
+import { UserModule } from '../user/user.module';
+import { JwtModule } from '@nestjs/jwt';
 
+const useCases = [RegisterUserUseCase];
 @Module({
-  imports: [],
+  imports: [CqrsModule, MailModule, UserModule, JwtModule.register({})],
   controllers: [AuthController],
-  providers: [],
+  providers: [...useCases],
   exports: [],
 })
 export class AuthModule {}
