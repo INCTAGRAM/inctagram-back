@@ -14,11 +14,12 @@ import {
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
 } from '../../common/decorators/swagger/auth.decorators';
+import { CommandBus } from '@nestjs/cqrs';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
-  constructor() {}
+  constructor(private commandBus: CommandBus) {}
 
   @Post('registration')
   @AuthRegistrationSwaggerDecorator()
@@ -29,7 +30,7 @@ export class AuthController {
   @AuthRegistrationConfirmationSwaggerDecorator()
   @HttpCode(204)
   async registrationConfirmation(
-      @Body() confirmationCodeDto: ConfirmationCodeDto,
+    @Body() confirmationCodeDto: ConfirmationCodeDto,
   ) {}
 
   @Post('registration-email-resending')
@@ -62,4 +63,3 @@ export class AuthController {
   @HttpCode(204)
   async newPassword(@Body() newPasswordDto: NewPasswordDto) {}
 }
-
