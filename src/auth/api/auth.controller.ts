@@ -17,12 +17,12 @@ import {
 import { CommandBus } from '@nestjs/cqrs';
 import { RegisterUserCommand } from '../use-cases/register-user-use-case';
 import { ConfirmRegistrationCommand } from '../use-cases/confirm-registration-use-case';
+import { RegistrationEmailResendingCommand } from '../use-cases/registration-email-resending-use-case';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
   constructor(private commandBus: CommandBus) {}
-
   @Post('registration')
   @AuthRegistrationSwaggerDecorator()
   @HttpCode(204)
@@ -44,7 +44,11 @@ export class AuthController {
   @Post('registration-email-resending')
   @AuthRegistrationEmailResendingSwaggerDecorator()
   @HttpCode(204)
-  async registrationEmailResending(@Body() emailDto: EmailDto) {}
+  async registrationEmailResending(@Body() emailDto: EmailDto) {
+    return this.commandBus.execute(
+      new RegistrationEmailResendingCommand(emailDto),
+    );
+  }
 
   @Post('login')
   @AuthLoginSwaggerDecorator()
