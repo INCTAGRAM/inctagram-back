@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
+import { UserRepository } from '../../user/repositories/user.repository';
 @Injectable()
 export class JwtAdaptor {
-  constructor(private jwtService: JwtService, private config: ConfigService) {}
+  constructor(
+    private jwtService: JwtService,
+    private config: ConfigService,
+    private userRepository: UserRepository,
+  ) {}
 
   async getTokens(userId: string) {
     const [accessToken, refreshToken] = await Promise.all([
@@ -45,5 +50,16 @@ export class JwtAdaptor {
       accessTokenHash,
       refreshTokenHash,
     };
+  }
+  async validateTokens(refreshToken: string, userId: string) {
+    const isToken = await this.userRepository.findTokenByUserId(userId);
+    if (!isToken || !isToken.refreshTokenHash || !isToken.accessTokenHash)
+      throw new UnauthorizedException('Access denied');
+    const rtMatches = await argon.verify(
+      isToken.refreshTokenHash,
+      refreshToken,
+    );
+    if (!rtMatches) throw new UnauthorizedException('Access denied');
+    return true;
   }
 }
