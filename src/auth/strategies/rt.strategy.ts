@@ -9,15 +9,13 @@ import { Request as RequestType } from 'express';
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        RtStrategy.extractJWT,
-        // ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ]),
+      jwtFromRequest: ExtractJwt.fromExtractors([RtStrategy.extractJWT]),
       ignoreExpiration: false,
       secretOrKey: config.get<string>('RT_SECRET'),
     });
   }
-  async validate(payload: RtPayload) {
+
+  async validate(req: Request, payload: RtPayload) {
     return payload;
   }
 

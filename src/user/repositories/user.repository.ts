@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { EmailConfirmation, Token, User } from '@prisma/client';
+import { EmailConfirmation, Token } from '@prisma/client';
 
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
@@ -70,7 +70,9 @@ export class UserRepository {
       },
     });
   }
-
+  async findTokenByUserId(userId: string): Promise<Token | null> {
+    return this.prisma.token.findUnique({ where: { userId } });
+  }
   async updateEmailConfirmationCode(
     userEmail: string,
   ): Promise<EmailConfirmation> {
@@ -113,7 +115,6 @@ export class UserRepository {
       },
     });
   }
-
   async logout(userId: string): Promise<boolean> {
     await this.prisma.token.updateMany({
       where: {
