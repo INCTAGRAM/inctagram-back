@@ -11,11 +11,13 @@ import { AtStrategy, RtStrategy } from './strategies';
 import { LoginUserUseCase } from './use-cases/login-user-use-case';
 import { AdaptorModule } from '../adaptors/adaptor.module';
 import { LogoutUserUseCase } from './use-cases/logout-user-use-case';
+import { PasswordRecoveryUserUseCase } from './use-cases/password-recovery.use-case';
 
 const useCases = [
   RegisterUserUseCase,
   ConfirmRegistrationUseCase,
   RegistrationEmailResendingUseCase,
+  PasswordRecoveryUserUseCase,
   LoginUserUseCase,
   LogoutUserUseCase,
 ];
