@@ -7,6 +7,8 @@ export class MailService {
 
   async sendUserConfirmation(user: any, token: string) {
     const url = `example.com/auth/confirm?code=${token}`;
+    console.log('Inside nodemailer');
+    console.log(user.email);
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from

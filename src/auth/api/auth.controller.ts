@@ -14,8 +14,9 @@ import {
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
 } from '../../common/decorators/swagger/auth.decorators';
-import { RegisterUserCommand } from '../use-cases/register-user-use-case';
 import { CommandBus } from '@nestjs/cqrs';
+import { RegisterUserCommand } from '../use-cases/register-user-use-case';
+import { ConfirmRegistrationCommand } from '../use-cases/confirm-registration-use-case';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -34,7 +35,12 @@ export class AuthController {
   @HttpCode(204)
   async registrationConfirmation(
     @Body() confirmationCodeDto: ConfirmationCodeDto,
-  ) {}
+  ) {
+    return this.commandBus.execute(
+      new ConfirmRegistrationCommand(confirmationCodeDto),
+    );
+  }
+
 
   @Post('registration-email-resending')
   @AuthRegistrationEmailResendingSwaggerDecorator()
