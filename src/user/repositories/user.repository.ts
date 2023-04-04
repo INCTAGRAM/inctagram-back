@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
 import { EmailConfirmation, Token } from '@prisma/client';
-
+import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
+
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from '../dto/create.user.dto';
 import { UserWithEmailConfirmation } from '../types';
 
@@ -70,9 +70,6 @@ export class UserRepository {
       },
     });
   }
-  async findTokenByUserId(userId: string): Promise<Token | null> {
-    return this.prisma.token.findUnique({ where: { userId } });
-  }
   async updateEmailConfirmationCode(
     userEmail: string,
   ): Promise<EmailConfirmation> {
@@ -136,5 +133,17 @@ export class UserRepository {
 
   async findTokenByUserId(userId: string): Promise<Token | null> {
     return this.prisma.token.findUnique({ where: { userId } });
+  }
+
+  async updatePasswordRecoveryCode(userId: string, recoveryCode: string) {
+    return this.prisma.passwordRecovery.update({
+      where: { userId },
+      data: {
+        recoveryCode,
+        expirationDate: add(new Date(), {
+          minutes: 10,
+        }).toISOString(),
+      },
+    });
   }
 }

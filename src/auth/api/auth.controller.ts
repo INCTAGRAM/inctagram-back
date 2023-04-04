@@ -16,7 +16,6 @@ import {
   AuthLogoutSwaggerDecorator,
   AuthNewPasswordSwaggerDecorator,
   AuthPasswordRecoverySwaggerDecorator,
-  AuthRefreshTokenSwaggerDecorator,
   AuthRegistrationConfirmationSwaggerDecorator,
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
@@ -35,7 +34,7 @@ import { RtPayload } from '../strategies/types';
 import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.decorator';
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
-
+import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -61,7 +60,6 @@ export class AuthController {
       new ConfirmRegistrationCommand(confirmationCodeDto),
     );
   }
-
 
   @Post('registration-email-resending')
   @AuthRegistrationEmailResendingSwaggerDecorator()
@@ -89,6 +87,7 @@ export class AuthController {
     });
     return { accessToken };
   }
+
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('logout')
   @AuthLogoutSwaggerDecorator()
@@ -121,10 +120,15 @@ export class AuthController {
     });
     return { accessToken };
   }
+
   @Post('password-recovery')
   @AuthPasswordRecoverySwaggerDecorator()
   @HttpCode(204)
-  async passwordRecovery(@Body() emailDto: EmailDto) {}
+  async passwordRecovery(@Body() emailDto: EmailDto) {
+    const { email } = emailDto;
+
+    return this.commandBus.execute(new PasswordRecoveryCommand(email));
+  }
 
   @Post('new-password')
   @AuthNewPasswordSwaggerDecorator()
