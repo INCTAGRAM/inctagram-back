@@ -18,6 +18,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { RegisterUserCommand } from '../use-cases/register-user-use-case';
 import { ConfirmRegistrationCommand } from '../use-cases/confirm-registration-use-case';
 import { RegistrationEmailResendingCommand } from '../use-cases/registration-email-resending-use-case';
+import { LoginUserCommand } from '../use-cases/login-user-use-case';
+import { LoginDto } from '../dto/login.dto';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -53,7 +55,9 @@ export class AuthController {
   @Post('login')
   @AuthLoginSwaggerDecorator()
   @HttpCode(200)
-  async login(@Body() authDto: AuthDto) {}
+  async login(@Body() loginDto: LoginDto) {
+    return this.commandBus.execute(new LoginUserCommand(loginDto));
+  }
 
   @Post('logout')
   @AuthLogoutSwaggerDecorator()
