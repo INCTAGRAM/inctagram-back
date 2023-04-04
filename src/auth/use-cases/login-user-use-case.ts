@@ -30,9 +30,8 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     if (!checkPassword) throw new UnauthorizedException();
     // tokens
     const tokens = await this.jwtAdaptor.getTokens(user.id);
-    // const issuedAt = await this.authService.getIssuedAtFromRefreshToken(
-    //   tokens.refreshToken,
-    // );
+    const hashedTokens = await this.jwtAdaptor.updateTokensHash(tokens);
+    await this.userRepository.updateUserTokens(user.id, hashedTokens);
 
     return tokens;
   }
