@@ -5,7 +5,7 @@ import { add } from 'date-fns';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from '../dto/create.user.dto';
-import { UserWithEmailConfirmation } from '../types';
+import { UserWithEmailConfirmation, UserWithPasswordRecovery } from '../types';
 
 @Injectable()
 export class UserRepository {
@@ -70,6 +70,61 @@ export class UserRepository {
       },
     });
   }
+
+  async findUserByConfirmationOrRecoveryCode(code: string) {
+    return this.prisma.user.findFirst({
+      where: {
+        OR: [
+          {
+            emailConfirmation: {
+              confirmationCode: code,
+            },
+          },
+          {
+            passwordRecovery: {
+              recoveryCode: code,
+            },
+          },
+        ],
+      },
+      include: {
+        emailConfirmation: {
+          select: {
+            confirmationCode: true,
+            expirationDate: true,
+            isConfirmed: true,
+          },
+        },
+        passwordRecovery: {
+          select: {
+            recoveryCode: true,
+            expirationDate: true,
+          },
+        },
+      },
+    });
+  }
+
+  // async findUserByPassowrdRecoveryCode(
+  //   code: string,
+  // ): Promise<UserWithPasswordRecovery | null> {
+  //   return this.prisma.user.findFirst({
+  //     where: {
+  //       passwordRecovery: {
+  //         recoveryCode: code,
+  //       },
+  //     },
+  //     include: {
+  //       passwordRecovery: {
+  //         select: {
+  //           recoveryCode: true,
+  //           expirationDate: true,
+  //         },
+  //       },
+  //     },
+  //   });
+  // }
+
   async updateEmailConfirmationCode(
     userEmail: string,
   ): Promise<EmailConfirmation> {
@@ -143,6 +198,21 @@ export class UserRepository {
         expirationDate: add(new Date(), {
           minutes: 10,
         }).toISOString(),
+      },
+    });
+  }
+
+  async updatePassword(id: string, hash: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        hash,
+        passwordRecovery: {
+          update: {
+            recoveryCode: null,
+            expirationDate: null,
+          },
+        },
       },
     });
   }
