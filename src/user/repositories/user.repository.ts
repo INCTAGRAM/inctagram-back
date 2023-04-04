@@ -111,4 +111,23 @@ export class UserRepository {
       },
     });
   }
+
+  async logout(userId: string): Promise<boolean> {
+    await this.prisma.token.updateMany({
+      where: {
+        userId,
+        refreshTokenHash: {
+          not: null,
+        },
+        accessTokenHash: {
+          not: null,
+        },
+      },
+      data: {
+        refreshTokenHash: null,
+        accessTokenHash: null,
+      },
+    });
+    return true;
+  }
 }

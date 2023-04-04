@@ -10,12 +10,14 @@ import { RegistrationEmailResendingUseCase } from './use-cases/registration-emai
 import { AtStrategy, RtStrategy } from './strategies';
 import { LoginUserUseCase } from './use-cases/login-user-use-case';
 import { AdaptorModule } from '../adaptors/adaptor.module';
+import { LogoutUserUseCase } from './use-cases/logout-user-use-case';
 
 const useCases = [
   RegisterUserUseCase,
   ConfirmRegistrationUseCase,
   RegistrationEmailResendingUseCase,
   LoginUserUseCase,
+  LogoutUserUseCase,
 ];
 @Module({
   imports: [
