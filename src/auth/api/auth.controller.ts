@@ -57,6 +57,7 @@ export class AuthController {
     );
   }
 
+
   @Post('registration-email-resending')
   @AuthRegistrationEmailResendingSwaggerDecorator()
   @HttpCode(204)
