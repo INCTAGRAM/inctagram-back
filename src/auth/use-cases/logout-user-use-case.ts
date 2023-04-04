@@ -7,5 +7,7 @@ export class LogoutUserCommand {
 @CommandHandler(LogoutUserCommand)
 export class LogoutUserUseCase implements ICommandHandler<LogoutUserCommand> {
   constructor(private readonly userRepository: UserRepository) {}
-  async execute(command: LogoutUserCommand) {}
+  async execute(command: LogoutUserCommand) {
+    return this.userRepository.logout(command.userId);
+  }
 }
