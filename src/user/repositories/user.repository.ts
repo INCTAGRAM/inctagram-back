@@ -12,8 +12,8 @@ export class UserRepository {
   constructor(private prisma: PrismaService) {}
 
   async createUser(createUserDto: CreateUserDto, hash: string) {
-    return this.prisma.user.create({
-      data: {
+    return this.prisma.user.upsert({
+      create: {
         email: createUserDto.email,
         hash: hash,
         emailConfirmation: {
@@ -27,6 +27,11 @@ export class UserRepository {
         },
         passwordRecovery: { create: {} },
       },
+      update: {
+        email: createUserDto.email,
+        hash: hash,
+      },
+      where: { email: createUserDto.email },
       select: {
         id: true,
         email: true,
@@ -39,6 +44,7 @@ export class UserRepository {
       },
     });
   }
+
   async findUserByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email: email },
