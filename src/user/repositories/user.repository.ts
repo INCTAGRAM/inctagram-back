@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { EmailConfirmation, Token, User } from '@prisma/client';
+import { EmailConfirmation, Token } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 import { CreateUserDto } from '../dto/create.user.dto';
@@ -113,7 +113,6 @@ export class UserRepository {
       },
     });
   }
-
   async logout(userId: string): Promise<boolean> {
     await this.prisma.token.updateMany({
       where: {

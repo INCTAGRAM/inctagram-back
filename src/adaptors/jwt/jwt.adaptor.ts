@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { UserRepository } from '../../user/repositories/user.repository';
+import { RtPayload } from '../../auth/strategies/types';
 @Injectable()
 export class JwtAdaptor {
   constructor(
@@ -50,6 +51,15 @@ export class JwtAdaptor {
       accessTokenHash,
       refreshTokenHash,
     };
+  }
+  async refreshToken(rtPayload: RtPayload, rt: { refreshToken: string }) {
+    // // check if the token is valid
+    await this.validateTokens(rt.refreshToken, rtPayload.userId);
+    //  create new pair of tokens
+    const tokens = await this.getTokens(rtPayload.userId);
+    const hashedTokens = await this.updateTokensHash(tokens);
+    await this.userRepository.updateUserTokens(rtPayload.userId, hashedTokens);
+    return tokens;
   }
   async validateTokens(refreshToken: string, userId: string) {
     const isToken = await this.userRepository.findTokenByUserId(userId);

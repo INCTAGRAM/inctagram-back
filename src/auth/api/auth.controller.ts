@@ -34,11 +34,15 @@ import { AuthGuard } from '@nestjs/passport';
 import { RtPayload } from '../strategies/types';
 import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.decorator';
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
+import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
-  constructor(private commandBus: CommandBus) {}
+  constructor(
+    private commandBus: CommandBus,
+    private readonly jwtAdaptor: JwtAdaptor,
+  ) {}
   @Post('registration')
   @AuthRegistrationSwaggerDecorator()
   @HttpCode(204)
@@ -97,11 +101,24 @@ export class AuthController {
     );
   }
 
+  @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh-token')
-  @AuthRefreshTokenSwaggerDecorator()
   @HttpCode(200)
-  async refreshToken() {}
-
+  async refreshToken(
+    @GetRtPayloadDecorator() rtPayload: RtPayload,
+    @GetRtFromCookieDecorator() rt: { refreshToken: string },
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ accessToken: string }> {
+    const { accessToken, refreshToken } = await this.jwtAdaptor.refreshToken(
+      rtPayload,
+      rt,
+    );
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    return { accessToken };
+  }
   @Post('password-recovery')
   @AuthPasswordRecoverySwaggerDecorator()
   @HttpCode(204)
