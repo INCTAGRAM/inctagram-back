@@ -1533,7 +1533,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jsonwebtoken@npm:9.0.1":
+"@types/jsonwebtoken@npm:*, @types/jsonwebtoken@npm:9.0.1":
   version: 9.0.1
   resolution: "@types/jsonwebtoken@npm:9.0.1"
   dependencies:
@@ -1567,6 +1567,17 @@ __metadata:
   version: 4.0.0
   resolution: "@types/parse-json@npm:4.0.0"
   checksum: fd6bce2b674b6efc3db4c7c3d336bd70c90838e8439de639b909ce22f3720d21344f52427f1d9e57b265fcb7f6c018699b99e5e0c208a1a4823014269a6bf35b
+  languageName: node
+  linkType: hard
+
+"@types/passport-jwt@npm:^3.0.8":
+  version: 3.0.8
+  resolution: "@types/passport-jwt@npm:3.0.8"
+  dependencies:
+    "@types/express": "*"
+    "@types/jsonwebtoken": "*"
+    "@types/passport-strategy": "*"
+  checksum: 321eca319eff51c87a5ddebf590937b24ed7fa6c8cc2465cecb4edf49f839b7770e57a4ed009f323c66ade6c0f1d9b6a51033d82dd392270b17976380893af2f
   languageName: node
   linkType: hard
 
@@ -2410,6 +2421,7 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/jest": 29.5.0
     "@types/node": 18.15.11
+    "@types/passport-jwt": ^3.0.8
     "@types/passport-local": ^1.0.35
     "@types/supertest": ^2.0.11
     "@typescript-eslint/eslint-plugin": ^5.0.0
