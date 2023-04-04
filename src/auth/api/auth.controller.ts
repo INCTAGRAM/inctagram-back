@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfirmationCodeDto } from '../dto/confirmation-code.dto';
@@ -21,6 +28,12 @@ import { RegistrationEmailResendingCommand } from '../use-cases/registration-ema
 import { LoginUserCommand } from '../use-cases/login-user-use-case';
 import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
+import { LogginSuccessViewModel } from '../../types';
+import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
+import { AuthGuard } from '@nestjs/passport';
+import { RtPayload } from '../strategies/types';
+import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.decorator';
+import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -60,21 +73,31 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
-  ) {
-    const { accessToken, refreshToken } = await this.commandBus.execute(
-      new LoginUserCommand(loginDto),
-    );
+  ): Promise<LogginSuccessViewModel> {
+    const { accessToken, refreshToken } = await this.commandBus.execute<
+      LoginUserCommand,
+      { accessToken: string; refreshToken: string }
+    >(new LoginUserCommand(loginDto));
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
     });
     return { accessToken };
   }
-
+  @UseGuards(AuthGuard('jwt-refresh'))
   @Post('logout')
   @AuthLogoutSwaggerDecorator()
   @HttpCode(204)
-  async logout() {}
+  async logout(
+    @GetRtPayloadDecorator() rtPayload: RtPayload,
+    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    console.log(rtPayload, refreshToken);
+    return this.commandBus.execute(
+      new LogoutUserCommand(rtPayload.userId, refreshToken),
+    );
+  }
 
   @Post('refresh-token')
   @AuthRefreshTokenSwaggerDecorator()
