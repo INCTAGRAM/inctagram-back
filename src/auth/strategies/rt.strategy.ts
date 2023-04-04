@@ -12,15 +12,16 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
       jwtFromRequest: ExtractJwt.fromExtractors([RtStrategy.extractJWT]),
       ignoreExpiration: false,
       secretOrKey: config.get<string>('RT_SECRET'),
-      passReqToCallback: true,
     });
   }
+
   async validate(req: Request, payload: RtPayload) {
     return payload;
   }
+
   private static extractJWT(req: RequestType): string | null {
     let token = null;
-    if (req.cookies) {
+    if (req.cookies && req.cookies.refreshToken) {
       token = req.cookies['refreshToken'];
     }
     return token;

@@ -1,5 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserRepository } from '../../user/repositories/user.repository';
+
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 
 export class LogoutUserCommand {
@@ -19,6 +20,7 @@ export class LogoutUserUseCase implements ICommandHandler<LogoutUserCommand> {
       command.refreshToken.refreshToken,
       command.userId,
     );
+
     return this.userRepository.logout(command.userId);
   }
 }

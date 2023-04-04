@@ -36,6 +36,7 @@ import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 
+
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
@@ -60,6 +61,7 @@ export class AuthController {
       new ConfirmRegistrationCommand(confirmationCodeDto),
     );
   }
+
 
   @Post('registration-email-resending')
   @AuthRegistrationEmailResendingSwaggerDecorator()
