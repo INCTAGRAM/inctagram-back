@@ -39,8 +39,15 @@ export class UserRepository {
       },
     });
   }
-  async findUserByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { email: email } });
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email: email },
+      include: {
+        emailConfirmation: {
+          select: { isConfirmed: true },
+        },
+      },
+    });
   }
 
   async findUserByEmailConfirmationCode(
@@ -70,6 +77,20 @@ export class UserRepository {
     return this.prisma.emailConfirmation.update({
       where: { userEmail },
       data: { isConfirmed: true },
+    });
+  }
+
+  async updateEmailConfirmationInfo(
+    userEmail: string,
+  ): Promise<EmailConfirmation> {
+    return this.prisma.emailConfirmation.update({
+      where: { userEmail },
+      data: {
+        confirmationCode: randomUUID(),
+        expirationDate: add(new Date(), {
+          minutes: 1,
+        }).toISOString(),
+      },
     });
   }
 }
