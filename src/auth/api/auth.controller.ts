@@ -35,6 +35,7 @@ import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
+import { NewPasswordCommand } from '../use-cases/new-password.use-case';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -133,5 +134,11 @@ export class AuthController {
   @Post('new-password')
   @AuthNewPasswordSwaggerDecorator()
   @HttpCode(204)
-  async newPassword(@Body() newPasswordDto: NewPasswordDto) {}
+  async newPassword(@Body() newPasswordDto: NewPasswordDto) {
+    const { newPassword, recoveryCode } = newPasswordDto;
+
+    return this.commandBus.execute(
+      new NewPasswordCommand(newPassword, recoveryCode),
+    );
+  }
 }
