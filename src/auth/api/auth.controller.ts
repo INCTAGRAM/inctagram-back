@@ -33,6 +33,7 @@ import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
 import { AuthGuard } from '@nestjs/passport';
 import { RtPayload } from '../strategies/types';
 import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.decorator';
+import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -88,9 +89,13 @@ export class AuthController {
   @HttpCode(204)
   async logout(
     @GetRtPayloadDecorator() rtPayload: RtPayload,
+    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.commandBus.execute(new LogoutUserCommand(rtPayload.userId));
+    console.log(rtPayload, refreshToken);
+    return this.commandBus.execute(
+      new LogoutUserCommand(rtPayload.userId, refreshToken),
+    );
   }
 
   @Post('refresh-token')
