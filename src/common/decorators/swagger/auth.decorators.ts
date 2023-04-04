@@ -1,12 +1,13 @@
 import {
   ApiBadRequestResponse,
   ApiBody,
+  ApiCookieAuth,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AuthDto } from '../../../auth/dto/auth.dto';
+import { AuthDto } from 'src/auth/dto/auth.dto';
 import { FieldError, LogginSuccessViewModel } from '../../../types';
 import { applyDecorators } from '@nestjs/common';
 import { ConfirmationCodeDto } from '../../../auth/dto/confirmation-code.dto';
@@ -50,7 +51,7 @@ export function AuthLoginSwaggerDecorator() {
       type: FieldError,
     }),
     ApiUnauthorizedResponse({
-      description: 'The password or login is wrong',
+      description: 'The password or email is wrong',
     }),
   );
 }
@@ -69,6 +70,7 @@ export function AuthLogoutSwaggerDecorator() {
       description:
         'JWT refreshToken inside cookie is missing, expired or incorrect',
     }),
+    ApiCookieAuth(),
   );
 }
 
@@ -127,6 +129,7 @@ export function AuthRefreshTokenSwaggerDecorator() {
       description:
         'JWT refreshToken inside cookie is missing, expired or incorrect',
     }),
+    ApiCookieAuth(),
   );
 }
 
