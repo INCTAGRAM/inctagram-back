@@ -25,7 +25,7 @@ export class NewPasswordUseCase implements ICommandHandler<NewPasswordCommand> {
           recoveryCode,
         );
 
-      if (!user) return;
+      if (!user) throw new BadRequestException('Bad recovery code');
 
       const exp = user?.passwordRecovery?.expirationDate;
 
