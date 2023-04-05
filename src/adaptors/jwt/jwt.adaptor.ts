@@ -62,6 +62,7 @@ export class JwtAdaptor {
     return tokens;
   }
   async validateTokens(refreshToken: string, userId: string) {
+    console.log(userId);
     const isToken = await this.userRepository.findTokenByUserId(userId);
     if (!isToken || !isToken.refreshTokenHash || !isToken.accessTokenHash)
       throw new UnauthorizedException('Access denied');

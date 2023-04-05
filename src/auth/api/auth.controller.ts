@@ -111,6 +111,7 @@ export class AuthController {
     @GetRtFromCookieDecorator() rt: { refreshToken: string },
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
+    console.log(rtPayload);
     const { accessToken, refreshToken } = await this.jwtAdaptor.refreshToken(
       rtPayload,
       rt,

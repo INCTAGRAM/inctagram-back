@@ -148,7 +148,7 @@ export class UserRepository {
       data: {
         confirmationCode: randomUUID(),
         expirationDate: add(new Date(), {
-          minutes: 1,
+          minutes: 10,
         }).toISOString(),
       },
     });
