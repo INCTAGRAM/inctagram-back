@@ -16,6 +16,7 @@ import {
   AuthLogoutSwaggerDecorator,
   AuthNewPasswordSwaggerDecorator,
   AuthPasswordRecoverySwaggerDecorator,
+  AuthRefreshTokenSwaggerDecorator,
   AuthRegistrationConfirmationSwaggerDecorator,
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
@@ -105,6 +106,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt-refresh'))
   @Post('refresh-token')
+  @AuthRefreshTokenSwaggerDecorator()
   @HttpCode(200)
   async refreshToken(
     @GetRtPayloadDecorator() rtPayload: RtPayload,
