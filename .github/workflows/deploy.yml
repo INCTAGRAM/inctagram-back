@@ -1,0 +1,14 @@
+name: Deploy
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send GET request to Render
+        env:
+          RENDER_REDEPLOY_URL: ${{ secrets.RENDER_DEPLOY_URL }}
+        run: |
+          curl -X GET $RENDER_REDEPLOY_URL
