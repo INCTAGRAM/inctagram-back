@@ -31,7 +31,7 @@ export class UserRepository {
         email: createUserDto.email,
         hash: hash,
         emailConfirmation: {
-          create: {
+          update: {
             confirmationCode: randomUUID(),
             expirationDate: add(new Date(), {
               minutes: 1,
