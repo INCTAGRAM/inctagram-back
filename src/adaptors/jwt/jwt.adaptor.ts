@@ -50,7 +50,7 @@ export class JwtAdaptor {
     };
   }
   async refreshToken(rtPayload: RtPayload, rt: { refreshToken: string }) {
-    // // check if the token is valid
+    // check if the token is valid
     await this.validateTokens(rt.refreshToken, rtPayload.deviceId);
     //  create new pair of tokens
     const tokens = await this.getTokens(
