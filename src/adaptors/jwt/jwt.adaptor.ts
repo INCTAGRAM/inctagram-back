@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { UserRepository } from '../../user/repositories/user.repository';
 import { RtPayload } from '../../auth/strategies/types';
+import { DeviceSessionsRepository } from '../../deviceSessions/repositories/device-sessions.repository';
 @Injectable()
 export class JwtAdaptor {
   constructor(
@@ -13,17 +14,17 @@ export class JwtAdaptor {
     private deviceSessionsRepository: DeviceSessionsRepository,
   ) {}
 
-  async getTokens(userId: string) {
+  async getTokens(userId: string, userName: string, deviceId: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { userId },
+        { userId, userName, deviceId },
         {
           secret: this.config.get<string>('AT_SECRET'),
           expiresIn: '1h',
         },
       ),
       this.jwtService.signAsync(
-        { userId },
+        { userId, userName, deviceId },
         {
           secret: this.config.get<string>('RT_SECRET'),
           expiresIn: '2h',
@@ -49,7 +50,7 @@ export class JwtAdaptor {
     };
   }
   async refreshToken(rtPayload: RtPayload, rt: { refreshToken: string }) {
-    // // check if the token is valid
+    // check if the token is valid
     await this.validateTokens(rt.refreshToken, rtPayload.deviceId);
     //  create new pair of tokens
     const tokens = await this.getTokens(
@@ -67,6 +68,7 @@ export class JwtAdaptor {
   async validateTokens(refreshToken: string, deviceId: string) {
     const isJwt =
       await this.deviceSessionsRepository.findTokensByDeviceSessionId(deviceId);
+
     if (!isJwt)
       throw new UnauthorizedException(
         'token has expired or is no longer valid',
