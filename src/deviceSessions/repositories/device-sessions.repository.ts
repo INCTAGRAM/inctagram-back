@@ -31,11 +31,15 @@ export class DeviceSessionsRepository {
       console.log(error);
     }
   }
-  async findTokensByDeviceSessionId(
-    deviceSessionId: string,
-  ): Promise<Token | null> {
-    console.log(deviceSessionId);
-    return this.prisma.token.findUnique({ where: { deviceSessionId } });
+  async findTokensByDeviceSessionId(deviceSessionId: string) {
+    try {
+      const tokens = await this.prisma.token.findUnique({
+        where: { deviceSessionId },
+      });
+      return tokens;
+    } catch (error) {
+      console.log(error);
+    }
   }
   async updateTokensByDeviceSessionId(
     deviceSessionId: string,

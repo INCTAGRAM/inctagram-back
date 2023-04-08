@@ -68,6 +68,7 @@ export class JwtAdaptor {
   async validateTokens(refreshToken: string, deviceId: string) {
     const isJwt =
       await this.deviceSessionsRepository.findTokensByDeviceSessionId(deviceId);
+
     if (!isJwt)
       throw new UnauthorizedException(
         'token has expired or is no longer valid',
