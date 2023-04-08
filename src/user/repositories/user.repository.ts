@@ -12,8 +12,9 @@ export class UserRepository {
   constructor(private prisma: PrismaService) {}
 
   async createUser(createUserDto: CreateUserDto, hash: string) {
-    return this.prisma.user.upsert({
-      create: {
+    return this.prisma.user.create({
+      data: {
+        userName: createUserDto.userName,
         email: createUserDto.email,
         hash: hash,
         emailConfirmation: {
@@ -27,20 +28,6 @@ export class UserRepository {
         },
         passwordRecovery: { create: {} },
       },
-      update: {
-        email: createUserDto.email,
-        hash: hash,
-        emailConfirmation: {
-          update: {
-            confirmationCode: randomUUID(),
-            expirationDate: add(new Date(), {
-              minutes: 1,
-            }).toISOString(),
-            isConfirmed: false,
-          },
-        },
-      },
-      where: { email: createUserDto.email },
       select: {
         id: true,
         email: true,
