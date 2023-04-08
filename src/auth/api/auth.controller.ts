@@ -2,9 +2,12 @@ import {
   Body,
   Controller,
   HttpCode,
+  Ip,
   Post,
   Res,
   UseGuards,
+  Headers,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -77,12 +80,16 @@ export class AuthController {
   @HttpCode(200)
   async login(
     @Body() loginDto: LoginDto,
+    @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
+    @Headers('user-agent') userAgent: string,
   ): Promise<LogginSuccessViewModel> {
+    if (!userAgent) throw new UnauthorizedException();
+
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       { accessToken: string; refreshToken: string }
-    >(new LoginUserCommand(loginDto));
+    >(new LoginUserCommand(loginDto, ip, userAgent));
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
