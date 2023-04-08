@@ -64,7 +64,16 @@ export class UserRepository {
       },
     });
   }
-
+  async findUserByUserName(userName: string) {
+    return this.prisma.user.findUnique({
+      where: { userName },
+      include: {
+        emailConfirmation: {
+          select: { isConfirmed: true },
+        },
+      },
+    });
+  }
   async findUserByEmailConfirmationCode(
     code: string,
   ): Promise<UserWithEmailConfirmation | null> {
