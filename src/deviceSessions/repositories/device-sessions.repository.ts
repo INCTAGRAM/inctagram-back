@@ -34,6 +34,7 @@ export class DeviceSessionsRepository {
   async findTokensByDeviceSessionId(
     deviceSessionId: string,
   ): Promise<Token | null> {
+    console.log(deviceSessionId);
     return this.prisma.token.findUnique({ where: { deviceSessionId } });
   }
   async updateTokensByDeviceSessionId(

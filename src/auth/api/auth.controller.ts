@@ -106,6 +106,7 @@ export class AuthController {
     @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
     @Res({ passthrough: true }) res: Response,
   ) {
+    console.log(rtPayload);
     return this.commandBus.execute(
       new LogoutUserCommand(rtPayload.deviceId, refreshToken),
     );
