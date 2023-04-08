@@ -14,7 +14,7 @@ export class JwtAdaptor {
     private deviceSessionsRepository: DeviceSessionsRepository,
   ) {}
 
-  async getTokens(userId: string) {
+  async getTokens(userId: string, userName: string, deviceId: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { userId },
