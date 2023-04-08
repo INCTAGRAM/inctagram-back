@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { UserRepository } from '../../user/repositories/user.repository';
 import { RtPayload } from '../../auth/strategies/types';
+import { DeviceSessionsRepository } from '../../deviceSessions/repositories/device-sessions.repository';
 @Injectable()
 export class JwtAdaptor {
   constructor(
