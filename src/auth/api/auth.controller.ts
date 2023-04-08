@@ -107,7 +107,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.commandBus.execute(
-      new LogoutUserCommand(rtPayload.userId, refreshToken),
+      new LogoutUserCommand(rtPayload.deviceId, refreshToken),
     );
   }
 
