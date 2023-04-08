@@ -14,7 +14,7 @@ export class JwtAdaptor {
     private deviceSessionsRepository: DeviceSessionsRepository,
   ) {}
 
-  async getTokens(userId: string) {
+  async getTokens(userId: string, userName: string, deviceId: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { userId },
@@ -50,7 +50,7 @@ export class JwtAdaptor {
     };
   }
   async refreshToken(rtPayload: RtPayload, rt: { refreshToken: string }) {
-    // // check if the token is valid
+    // check if the token is valid
     await this.validateTokens(rt.refreshToken, rtPayload.deviceId);
     //  create new pair of tokens
     const tokens = await this.getTokens(
