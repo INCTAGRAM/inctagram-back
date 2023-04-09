@@ -7,6 +7,7 @@ import {
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { DeviceViewModel } from '../../../deviceSessions/types';
 
 export function GetAllDevicesSwaggerDecorator() {
   return applyDecorators(
@@ -16,6 +17,7 @@ export function GetAllDevicesSwaggerDecorator() {
     ApiResponse({
       status: 200,
       description: 'Success',
+      type: [DeviceViewModel],
     }),
     ApiUnauthorizedResponse({
       description:
