@@ -32,14 +32,7 @@ export class DeviceSessionsRepository {
     }
   }
   async findTokensByDeviceSessionId(deviceSessionId: string) {
-    try {
-      const tokens = await this.prisma.token.findUnique({
-        where: { deviceSessionId },
-      });
-      return tokens;
-    } catch (error) {
-      console.log(error);
-    }
+    return this.prisma.token.findUnique({ where: { deviceSessionId } });
   }
   async updateTokensByDeviceSessionId(
     deviceSessionId: string,
