@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import type { Avatar, User } from '@prisma/client';
 
 export interface UserWithEmailConfirmation extends User {
   emailConfirmation: {
@@ -14,3 +14,13 @@ export interface UserWithPasswordRecovery extends User {
     expirationDate: string | null;
   } | null;
 }
+
+export interface ActiveUserData {
+  userId: string;
+  username: string;
+}
+
+export type AvatarPayload = Pick<
+  Avatar,
+  'height' | 'width' | 'url' | 'previewUrl' | 'size'
+>;

@@ -13,7 +13,7 @@ export class MinimizeImagePipe implements PipeTransform {
         .resize({
           width: width > MAX_AVATAR_WIDTH ? MAX_AVATAR_WIDTH : width,
           height: height > MAX_AVATAR_HEIGHT ? MAX_AVATAR_HEIGHT : height,
-          fit: 'fill',
+          fit: 'inside',
         })
         .toBuffer();
 

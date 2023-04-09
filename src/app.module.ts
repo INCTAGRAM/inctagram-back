@@ -4,7 +4,6 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { JwtModule } from '@nestjs/jwt';
 import { AdaptorModule } from './adaptors/adaptor.module';
 import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
 

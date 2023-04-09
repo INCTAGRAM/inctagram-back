@@ -64,11 +64,11 @@ model EmailConfirmation {
 
 model Avatar {
   id         String   @id @default(uuid())
-  url        String
-  previewUrl String
-  size       BigInt
-  height     Int
-  width      Int
+  url        String?
+  previewUrl String?
+  size       BigInt?
+  height     Int?
+  width      Int?
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String   @unique
   createdAt  DateTime @default(now())
