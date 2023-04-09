@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { AdaptorModule } from './adaptors/adaptor.module';
+import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AdaptorModule } from './adaptors/adaptor.module';
     UserModule,
     PrismaModule,
     AdaptorModule,
+    DeviceSessionsModule,
   ],
   controllers: [AppController],
 })
