@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Token } from '@prisma/client';
+import { DeviceViewModel } from '../types';
 
 @Injectable()
 export class DeviceSessionsRepository {
@@ -56,5 +57,18 @@ export class DeviceSessionsRepository {
     } catch (error) {
       console.log(error);
     }
+  }
+  async findAllActiveSessions(
+    userId: string,
+  ): Promise<DeviceViewModel[] | null> {
+    return this.prisma.deviceSession.findMany({
+      where: { userId },
+      select: {
+        ip: true,
+        deviceName: true,
+        lastActiveDate: true,
+        deviceId: true,
+      },
+    });
   }
 }
