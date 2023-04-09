@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Token } from '@prisma/client';
+import { DeviceSession, Token } from '@prisma/client';
+import { DeviceViewModel } from '../types';
 
 @Injectable()
 export class DeviceSessionsRepository {
@@ -32,14 +33,7 @@ export class DeviceSessionsRepository {
     }
   }
   async findTokensByDeviceSessionId(deviceSessionId: string) {
-    try {
-      const tokens = await this.prisma.token.findUnique({
-        where: { deviceSessionId },
-      });
-      return tokens;
-    } catch (error) {
-      console.log(error);
-    }
+    return this.prisma.token.findUnique({ where: { deviceSessionId } });
   }
   async updateTokensByDeviceSessionId(
     deviceSessionId: string,
@@ -63,5 +57,30 @@ export class DeviceSessionsRepository {
     } catch (error) {
       console.log(error);
     }
+  }
+  async findAllActiveSessions(
+    userId: string,
+  ): Promise<DeviceViewModel[] | null> {
+    return this.prisma.deviceSession.findMany({
+      where: { userId },
+      select: {
+        ip: true,
+        deviceName: true,
+        lastActiveDate: true,
+        deviceId: true,
+      },
+    });
+  }
+  async deleteAllSessionsExceptCurrent(userId: string, deviceId: string) {
+    try {
+      await this.prisma.deviceSession.deleteMany({
+        where: { userId, NOT: [{ deviceId }] },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async findSessionByDeviceId(deviceId: string): Promise<DeviceSession | null> {
+    return this.prisma.deviceSession.findUnique({ where: { deviceId } });
   }
 }

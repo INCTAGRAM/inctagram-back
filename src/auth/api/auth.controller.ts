@@ -23,7 +23,7 @@ import {
   AuthRegistrationConfirmationSwaggerDecorator,
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
-} from '../../common/decorators/swagger/auth.decorators';
+} from '../../common/decorators/swagger/auth.decorator';
 import { CommandBus } from '@nestjs/cqrs';
 import { RegisterUserCommand } from '../use-cases/register-user-use-case';
 import { ConfirmRegistrationCommand } from '../use-cases/confirm-registration-use-case';
