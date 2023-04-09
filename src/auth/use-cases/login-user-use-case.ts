@@ -30,6 +30,10 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
       throw new UnauthorizedException(
         'User with the given email does not exist',
       );
+    if (!user?.emailConfirmation?.isConfirmed)
+      throw new UnauthorizedException(
+        'Please, confirm an email in order to enter in the system',
+      );
     const checkPassword = await bcrypt.compare(
       command.loginDto.password,
       user.hash,
