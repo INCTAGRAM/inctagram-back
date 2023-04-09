@@ -17,6 +17,8 @@ import {
   GetAllDevicesSwaggerDecorator,
 } from '../../common/decorators/swagger/device-sessions.decorator';
 import { ApiTags } from '@nestjs/swagger';
+import { AllUserDevicesWithActiveSessionsCommand } from '../use-cases/all-user-devices-with-active-sessions.use-case';
+import { DeviceViewModel } from '../types';
 
 @ApiTags('DeviceSessions')
 @Controller('/api/sessions/devices')
@@ -28,7 +30,17 @@ export class DeviceSessionsController {
   async getAllDevicesForUserId(
     @GetRtPayloadDecorator() rtPayload: RtPayload,
     @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
-  ) {}
+  ) {
+    return this.commandBus.execute<
+      AllUserDevicesWithActiveSessionsCommand,
+      Promise<DeviceViewModel[] | null>
+    >(
+      new AllUserDevicesWithActiveSessionsCommand(
+        rtPayload,
+        refreshToken.refreshToken,
+      ),
+    );
+  }
 
   @UseGuards(AuthGuard('jwt-refresh'))
   @Delete()
