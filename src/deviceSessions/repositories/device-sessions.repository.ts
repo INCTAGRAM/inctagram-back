@@ -71,4 +71,13 @@ export class DeviceSessionsRepository {
       },
     });
   }
+  async deleteAllSessionsExceptCurrent(userId: string, deviceId: string) {
+    try {
+      await this.prisma.deviceSession.deleteMany({
+        where: { userId, NOT: [{ deviceId }] },
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }
