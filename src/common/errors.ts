@@ -1,7 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 
 // Image Entity
-export const BAD_DIMENSIONS = 'Bad dimensions';
+export const BAD_DIMENSIONS = 'Image is too small';
 
 export const FILE_DELITION_ERROR = 'Delition has failed';
 

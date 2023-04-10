@@ -1,5 +1,6 @@
 export const API = {
   USERS: 'api/users',
+  AUTH: 'api/auth',
 };
 
 // Field of incomfing HTTP message with file data

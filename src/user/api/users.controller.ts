@@ -55,7 +55,8 @@ export class UsersController {
 
     const user = await this.usersRepository.findUserById(id);
 
-    if (!user) throw new NotFoundException();
+    if (!user || !user.emailConfirmation?.isConfirmed)
+      throw new NotFoundException();
 
     const { url, previewUrl } = await this.commandBus.execute(
       new UploadAvatarCommand(userId, file),

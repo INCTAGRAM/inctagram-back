@@ -1,5 +1,6 @@
 import { FileValidator, Injectable } from '@nestjs/common';
 import sharp from 'sharp';
+import { BAD_DIMENSIONS } from '../errors';
 
 type ValidationOptions = {
   minWidth: number;
@@ -24,6 +25,6 @@ export class ImageDimensionsValidatonPipe extends FileValidator<ValidationOption
   }
 
   buildErrorMessage(): string {
-    return 'Bad dimensions';
+    return BAD_DIMENSIONS;
   }
 }

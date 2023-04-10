@@ -21,6 +21,13 @@ export class AvatarsRepository extends ImagesRepositoryAdapter<Avatar> {
         where: {
           userId,
         },
+        update: {
+          height,
+          width,
+          size,
+          url,
+          previewUrl,
+        },
         create: {
           height,
           width,
@@ -28,13 +35,6 @@ export class AvatarsRepository extends ImagesRepositoryAdapter<Avatar> {
           url,
           previewUrl,
           userId,
-        },
-        update: {
-          height,
-          width,
-          size,
-          url,
-          previewUrl,
         },
       });
     } catch (error) {

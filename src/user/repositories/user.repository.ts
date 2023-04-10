@@ -171,14 +171,16 @@ export class UserRepository {
     });
   }
 
-  public async findUserById(id: string): Promise<{ id: string } | null> {
+  public async findUserById(
+    id: string,
+  ): Promise<UserWithEmailConfirmation | null> {
     try {
       return this.prisma.user.findFirst({
         where: {
           id,
         },
-        select: {
-          id: true,
+        include: {
+          emailConfirmation: true,
         },
       });
     } catch (error) {

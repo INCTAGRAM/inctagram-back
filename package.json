@@ -17,7 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:e2e": "dotenv -e .env.test  -- jest --config ./test/jest-e2e.json",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -40,6 +40,7 @@
     "class-validator": "^0.14.0",
     "cookie-parser": "^1.4.6",
     "date-fns": "^2.29.3",
+    "dotenv-cli": "^7.2.1",
     "joi": "^17.9.1",
     "multer": "^1.4.5-lts.1",
     "nestjs-config": "^1.4.10",
