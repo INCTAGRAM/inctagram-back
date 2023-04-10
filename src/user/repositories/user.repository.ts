@@ -187,4 +187,8 @@ export class UserRepository {
       return null;
     }
   }
+
+  public async clearUsers() {
+    return this.prisma.user.deleteMany({});
+  }
 }

@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AdaptorModule } from './adaptors/adaptor.module';
 import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
 import { configValidationSchema } from './config/validation-schema';
+import { TestingModule } from './testing-remove-all-data/testing.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { configValidationSchema } from './config/validation-schema';
     PrismaModule,
     AdaptorModule,
     DeviceSessionsModule,
+    TestingModule,
   ],
   controllers: [AppController],
 })
