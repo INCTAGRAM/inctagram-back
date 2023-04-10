@@ -26,7 +26,7 @@ let userTestUtils: UserTestUtils;
 
 const sampleUser: AuthDto = {
   email: 'fake.email@gmail.com',
-  userName: 'fakeUser',
+  username: 'fakeUser',
   password: 'qwerty',
 };
 

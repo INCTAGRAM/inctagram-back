@@ -9,7 +9,7 @@ export class UserTestUtils {
   ): Promise<{ id: string }> {
     return this.prismaClient.user.create({
       data: {
-        userName: command.authDto.userName,
+        username: command.authDto.username,
         email: command.authDto.email,
         hash: command.authDto.password,
         emailConfirmation: {

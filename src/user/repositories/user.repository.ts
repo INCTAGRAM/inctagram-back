@@ -14,7 +14,7 @@ export class UserRepository {
   public async createUser(createUserDto: CreateUserDto, hash: string) {
     return this.prisma.user.create({
       data: {
-        userName: createUserDto.userName,
+        username: createUserDto.username,
         email: createUserDto.email,
         hash: hash,
         emailConfirmation: {
@@ -51,10 +51,9 @@ export class UserRepository {
       },
     });
   }
-
-  public async findUserByUserName(userName: string) {
+  public async findUserByUserName(username: string) {
     return this.prisma.user.findUnique({
-      where: { userName },
+      where: { username },
       include: {
         emailConfirmation: {
           select: { isConfirmed: true },
