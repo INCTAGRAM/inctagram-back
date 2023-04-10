@@ -66,7 +66,7 @@ model Avatar {
   id         String   @id @default(uuid())
   url        String?
   previewUrl String?
-  size       BigInt?
+  size       Int?
   height     Int?
   width      Int?
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -7,9 +7,11 @@ import { UserRepository } from './repositories/user.repository';
 import { ImageService } from 'src/common/services/image.service';
 import { SharpService } from 'src/common/services/sharp.service';
 import { CloudStrategy } from 'src/common/strategies/cloud.strategy';
+import { AvatarsRepository } from './repositories/avatars.repository';
 import { UploadAvatarUseCase } from './use-cases/upload-avatar.use-case';
 import { AvatarsQueryRepository } from './repositories/avatars.query-repository';
 import { YandexCloudStrategy } from 'src/common/strategies/yandex-cloud.strategy';
+import { ImagesRepositoryAdapter } from './repositories/adapters/images-repository.adapter';
 import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-query-repository.adapter';
 
 const useCases = [UploadAvatarUseCase];
@@ -28,6 +30,10 @@ const useCases = [UploadAvatarUseCase];
     {
       provide: ImagesQueryRepositoryAdapter,
       useClass: AvatarsQueryRepository,
+    },
+    {
+      provide: ImagesRepositoryAdapter,
+      useClass: AvatarsRepository,
     },
     {
       provide: ImageService,
