@@ -8,8 +8,6 @@ import {
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthGuard } from '@nestjs/passport';
-import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.decorator';
-import { RtPayload } from '../../auth/strategies/types';
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 import {
   DeleteAllDevicesSessionsButActiveSwaggerDecorator,
@@ -21,6 +19,8 @@ import { AllUserDevicesWithActiveSessionsCommand } from '../use-cases/all-user-d
 import { DeviceViewModel } from '../types';
 import { DeleteAllDeviceSessionsButActiveCommand } from '../use-cases/delete-all-device-sessions-but-active.use-case';
 import { DeleteDeviceSessionCommand } from '../use-cases/delete-device-session.use-case';
+import { ActiveUser } from '../../common/decorators/active-user.decorator';
+import { ActiveUserData } from '../../user/types';
 
 @ApiTags('DeviceSessions')
 @Controller('/api/sessions/devices')
@@ -30,7 +30,7 @@ export class DeviceSessionsController {
   @Get()
   @GetAllDevicesSwaggerDecorator()
   async getAllDevicesForUserId(
-    @GetRtPayloadDecorator() rtPayload: RtPayload,
+    @ActiveUser() user: ActiveUserData,
     @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
   ) {
     return this.commandBus.execute<
@@ -38,7 +38,7 @@ export class DeviceSessionsController {
       Promise<DeviceViewModel[] | null>
     >(
       new AllUserDevicesWithActiveSessionsCommand(
-        rtPayload,
+        user,
         refreshToken.refreshToken,
       ),
     );
@@ -49,12 +49,12 @@ export class DeviceSessionsController {
   @DeleteAllDevicesSessionsButActiveSwaggerDecorator()
   @HttpCode(204)
   async deleteAllDevicesSessionsButActive(
-    @GetRtPayloadDecorator() rtPayload: RtPayload,
+    @ActiveUser() user: ActiveUserData,
     @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
   ) {
     return this.commandBus.execute(
       new DeleteAllDeviceSessionsButActiveCommand(
-        rtPayload,
+        user,
         refreshToken.refreshToken,
       ),
     );
@@ -66,15 +66,11 @@ export class DeviceSessionsController {
   @HttpCode(204)
   async deleteDeviceSessionById(
     @Param('deviceId') deviceId: string,
-    @GetRtPayloadDecorator() rtPayload: RtPayload,
+    @ActiveUser() user: ActiveUserData,
     @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
   ) {
     return this.commandBus.execute(
-      new DeleteDeviceSessionCommand(
-        rtPayload,
-        refreshToken.refreshToken,
-        deviceId,
-      ),
+      new DeleteDeviceSessionCommand(user, refreshToken.refreshToken, deviceId),
     );
   }
 }

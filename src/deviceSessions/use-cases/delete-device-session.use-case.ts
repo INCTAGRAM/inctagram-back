@@ -1,12 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { RtPayload } from '../../auth/strategies/types';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { DeviceSessionsRepository } from '../repositories/device-sessions.repository';
+import { ActiveUserData } from '../../user/types';
 
 export class DeleteDeviceSessionCommand {
   constructor(
-    public rtPayload: RtPayload,
+    public user: ActiveUserData,
     public refreshToken: string,
     public deviceId: string,
   ) {}
@@ -31,7 +31,7 @@ export class DeleteDeviceSessionUseCase
     );
     if (!isSession) throw new NotFoundException('Device is not found');
 
-    if (isSession.userId !== command.rtPayload.userId)
+    if (isSession.userId !== command.user.userId)
       throw new ForbiddenException();
 
     await this.deviceSessionsRepository.deleteSessionByDeviceId(
