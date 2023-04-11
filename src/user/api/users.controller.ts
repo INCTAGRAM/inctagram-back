@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Get,
   NotFoundException,
@@ -30,6 +31,8 @@ import {
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
+import { ProfileQueryRepository } from '../repositories/profile.query-repository';
+import { ActiveUserData } from '../types';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -38,6 +41,7 @@ export class UsersController {
   public constructor(
     private readonly usersRepository: UserRepository,
     private readonly commandBus: CommandBus,
+    private readonly profileQueryRepository: ProfileQueryRepository,
   ) {}
 
   @Post(':id/images/avatar')
@@ -71,8 +75,16 @@ export class UsersController {
   }
   @Get(':id/create-account')
   @CheckUserProfileDecorator()
-  async checkUserProfile(
-    @ActiveUser('userId') userId: string,
-    @Param('id') id: string,
-  ) {}
+  async checkUserProfile(@Param('id') id: string) {
+    const user = await this.usersRepository.findUserById(id);
+
+    if (!user || !user.emailConfirmation?.isConfirmed)
+      throw new NotFoundException('User was not found');
+
+    const profile = await this.profileQueryRepository.findUserProfileById(id);
+    if (profile) throw new BadRequestException('Profile already created');
+
+    const username = user.username;
+    return { username };
+  }
 }

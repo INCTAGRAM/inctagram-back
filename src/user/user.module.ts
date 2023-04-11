@@ -13,6 +13,7 @@ import { AvatarsQueryRepository } from './repositories/avatars.query-repository'
 import { YandexCloudStrategy } from 'src/common/strategies/yandex-cloud.strategy';
 import { ImagesRepositoryAdapter } from './repositories/adapters/images-repository.adapter';
 import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-query-repository.adapter';
+import { ProfileQueryRepository } from './repositories/profile.query-repository';
 
 const useCases = [UploadAvatarUseCase];
 
@@ -21,6 +22,7 @@ const useCases = [UploadAvatarUseCase];
   controllers: [UsersController],
   providers: [
     UserRepository,
+    ProfileQueryRepository,
     PrismaClient,
     ...useCases,
     {

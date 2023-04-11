@@ -84,6 +84,10 @@ export function CheckUserProfileDecorator() {
       description: 'If user profile already exists',
       type: FieldError,
     }),
+    ApiNotFoundResponse({
+      description: 'User with such id was not found',
+      type: FieldError,
+    }),
     ApiUnauthorizedResponse({
       description: 'JWT accessToken is missing, expired or incorrect',
     }),
