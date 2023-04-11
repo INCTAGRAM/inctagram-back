@@ -3,7 +3,7 @@ export const API = {
   AUTH: 'api/auth',
 };
 
-// Field of incomfing HTTP message with file data
+// Field of incoming HTTP message with file data
 export const FILE_FIELD = 'file';
 
 export const MAX_AVATAR_SIZE = 1024 * 1024 * 2;
