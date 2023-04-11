@@ -189,7 +189,7 @@ export class UserRepository {
     }
   }
 
-  public async clearUsers() {
+  public async deleteAll() {
     return this.prisma.user.deleteMany({});
   }
 }

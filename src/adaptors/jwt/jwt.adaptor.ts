@@ -3,8 +3,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as argon from 'argon2';
 import { UserRepository } from '../../user/repositories/user.repository';
-import { RtPayload } from '../../auth/strategies/types';
 import { DeviceSessionsRepository } from '../../deviceSessions/repositories/device-sessions.repository';
+import { ActiveUserData } from '../../user/types';
 @Injectable()
 export class JwtAdaptor {
   constructor(
@@ -49,23 +49,21 @@ export class JwtAdaptor {
       refreshTokenHash,
     };
   }
-  async refreshToken(rtPayload: RtPayload, rt: { refreshToken: string }) {
-    // check if the token is valid
-    await this.validateTokens(rt.refreshToken, rtPayload.deviceId);
+  async refreshToken(user: ActiveUserData) {
     //  create new pair of tokens
     const tokens = await this.getTokens(
-      rtPayload.userId,
-      rtPayload.userName,
-      rtPayload.deviceId,
+      user.userId,
+      user.username,
+      user.deviceId,
     );
     const hashedTokens = await this.updateTokensHash(tokens);
     await this.deviceSessionsRepository.updateTokensByDeviceSessionId(
-      rtPayload.deviceId,
+      user.deviceId,
       hashedTokens,
     );
     return tokens;
   }
-  async validateTokens(refreshToken: string, deviceId: string) {
+  async validateRtToken(refreshToken: string, deviceId: string) {
     const isJwt =
       await this.deviceSessionsRepository.findTokensByDeviceSessionId(deviceId);
 
@@ -75,6 +73,19 @@ export class JwtAdaptor {
       );
 
     const rtMatches = await argon.verify(isJwt.refreshTokenHash, refreshToken);
+    if (!rtMatches) throw new UnauthorizedException('Access denied');
+    return true;
+  }
+  async validateAtToken(accessToken: string, deviceId: string) {
+    const isJwt =
+      await this.deviceSessionsRepository.findTokensByDeviceSessionId(deviceId);
+
+    if (!isJwt)
+      throw new UnauthorizedException(
+        'token has expired or is no longer valid',
+      );
+
+    const rtMatches = await argon.verify(isJwt.accessTokenHash, accessToken);
     if (!rtMatches) throw new UnauthorizedException('Access denied');
     return true;
   }
