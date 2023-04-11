@@ -18,16 +18,17 @@ import {
   MIN_AVATAR_HEIGHT,
   MIN_AVATAR_WIDTH,
 } from 'src/common/constants';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+
 import { UserRepository } from '../repositories/user.repository';
 import { MinimizeImagePipe } from 'src/common/pipes/minimize-image.pipe';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import { UploadUserAvatarApiDecorator } from 'src/common/decorators/swagger/users.decorator';
+import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAtGuard)
 @Controller(API.USERS)
 export class UsersController {
   public constructor(

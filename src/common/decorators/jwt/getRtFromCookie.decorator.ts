@@ -1,5 +1,4 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { RtPayload } from '../../../auth/strategies/types';
 
 export const GetRtFromCookieDecorator = createParamDecorator(
   (data: string, ctx: ExecutionContext) => {

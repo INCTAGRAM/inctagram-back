@@ -33,13 +33,13 @@ import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
 import { LogginSuccessViewModel } from '../../types';
 import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
-import { AuthGuard } from '@nestjs/passport';
-import { RtPayload } from '../strategies/types';
-import { GetRtPayloadDecorator } from '../../common/decorators/jwt/getRtPayload.decorator';
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../use-cases/new-password.use-case';
+import { ActiveUser } from '../../common/decorators/active-user.decorator';
+import { ActiveUserData } from '../../user/types';
+import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -97,34 +97,27 @@ export class AuthController {
     return { accessToken };
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Post('logout')
   @AuthLogoutSwaggerDecorator()
   @HttpCode(204)
   async logout(
-    @GetRtPayloadDecorator() rtPayload: RtPayload,
-    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
+    @ActiveUser('deviceId') deviceId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log(rtPayload);
-    return this.commandBus.execute(
-      new LogoutUserCommand(rtPayload.deviceId, refreshToken),
-    );
+    return this.commandBus.execute(new LogoutUserCommand(deviceId));
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Post('refresh-token')
   @AuthRefreshTokenSwaggerDecorator()
   @HttpCode(200)
   async refreshToken(
-    @GetRtPayloadDecorator() rtPayload: RtPayload,
-    @GetRtFromCookieDecorator() rt: { refreshToken: string },
+    @ActiveUser() user: ActiveUserData,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
-    console.log(rtPayload);
     const { accessToken, refreshToken } = await this.jwtAdaptor.refreshToken(
-      rtPayload,
-      rt,
+      user,
     );
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

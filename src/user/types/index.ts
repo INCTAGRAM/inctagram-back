@@ -18,6 +18,7 @@ export interface UserWithPasswordRecovery extends User {
 export interface ActiveUserData {
   userId: string;
   username: string;
+  deviceId: string;
 }
 
 export type AvatarPayload = Pick<
