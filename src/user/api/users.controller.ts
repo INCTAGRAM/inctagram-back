@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   NotFoundException,
   Param,
   Post,
@@ -24,7 +25,10 @@ import { MinimizeImagePipe } from 'src/common/pipes/minimize-image.pipe';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
-import { UploadUserAvatarApiDecorator } from 'src/common/decorators/swagger/users.decorator';
+import {
+  CheckUserProfileDecorator,
+  UploadUserAvatarApiDecorator,
+} from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Users')
@@ -65,4 +69,10 @@ export class UsersController {
 
     return { url, previewUrl };
   }
+  @Get(':id/create-account')
+  @CheckUserProfileDecorator()
+  async checkUserProfile(
+    @ActiveUser('userId') userId: string,
+    @Param('id') id: string,
+  ) {}
 }

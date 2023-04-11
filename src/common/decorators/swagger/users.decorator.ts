@@ -4,10 +4,13 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiResponse,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { MIN_AVATAR_HEIGHT, MIN_AVATAR_WIDTH } from 'src/common/constants';
 import { FieldError } from 'src/types';
@@ -59,5 +62,31 @@ export function UploadUserAvatarApiDecorator() {
       description: 'Could not upload a file',
       type: FieldError,
     }),
+  );
+}
+
+export function CheckUserProfileDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Check if user Profile exists',
+    }),
+    ApiResponse({
+      status: 200,
+      description: 'Success',
+      schema: {
+        type: 'object',
+        example: {
+          username: 'James_Bond',
+        },
+      },
+    }),
+    ApiBadRequestResponse({
+      description: 'If user profile already exists',
+      type: FieldError,
+    }),
+    ApiUnauthorizedResponse({
+      description: 'JWT accessToken is missing, expired or incorrect',
+    }),
+    ApiBearerAuth(),
   );
 }
