@@ -5,7 +5,7 @@ import { DeviceViewModel } from '../types';
 import { ActiveUserData } from '../../user/types';
 
 export class AllUserDevicesWithActiveSessionsCommand {
-  constructor(public user: ActiveUserData, public refreshToken: string) {}
+  constructor(public user: ActiveUserData) {}
 }
 
 @CommandHandler(AllUserDevicesWithActiveSessionsCommand)
@@ -20,11 +20,6 @@ export class AllUserDevicesWithActiveSessionsUseCase
   public async execute(
     command: AllUserDevicesWithActiveSessionsCommand,
   ): Promise<DeviceViewModel[] | null> {
-    // validate
-    await this.jwtAdaptor.validateTokens(
-      command.refreshToken,
-      command.user.deviceId,
-    );
     return this.deviceSessionsRepository.findAllActiveSessions(
       command.user.userId,
       command.user.deviceId,

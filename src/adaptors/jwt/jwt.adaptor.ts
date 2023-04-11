@@ -63,7 +63,7 @@ export class JwtAdaptor {
     );
     return tokens;
   }
-  async validateTokens(refreshToken: string, deviceId: string) {
+  async validateRtToken(refreshToken: string, deviceId: string) {
     const isJwt =
       await this.deviceSessionsRepository.findTokensByDeviceSessionId(deviceId);
 
@@ -73,6 +73,19 @@ export class JwtAdaptor {
       );
 
     const rtMatches = await argon.verify(isJwt.refreshTokenHash, refreshToken);
+    if (!rtMatches) throw new UnauthorizedException('Access denied');
+    return true;
+  }
+  async validateAtToken(accessToken: string, deviceId: string) {
+    const isJwt =
+      await this.deviceSessionsRepository.findTokensByDeviceSessionId(deviceId);
+
+    if (!isJwt)
+      throw new UnauthorizedException(
+        'token has expired or is no longer valid',
+      );
+
+    const rtMatches = await argon.verify(isJwt.accessTokenHash, accessToken);
     if (!rtMatches) throw new UnauthorizedException('Access denied');
     return true;
   }

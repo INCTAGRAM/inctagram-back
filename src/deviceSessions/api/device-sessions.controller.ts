@@ -21,56 +21,42 @@ import { DeleteAllDeviceSessionsButActiveCommand } from '../use-cases/delete-all
 import { DeleteDeviceSessionCommand } from '../use-cases/delete-device-session.use-case';
 import { ActiveUser } from '../../common/decorators/active-user.decorator';
 import { ActiveUserData } from '../../user/types';
+import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('DeviceSessions')
 @Controller('/api/sessions/devices')
 export class DeviceSessionsController {
   constructor(private commandBus: CommandBus) {}
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Get()
   @GetAllDevicesSwaggerDecorator()
-  async getAllDevicesForUserId(
-    @ActiveUser() user: ActiveUserData,
-    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
-  ) {
+  async getAllDevicesForUserId(@ActiveUser() user: ActiveUserData) {
     return this.commandBus.execute<
       AllUserDevicesWithActiveSessionsCommand,
       Promise<DeviceViewModel[] | null>
-    >(
-      new AllUserDevicesWithActiveSessionsCommand(
-        user,
-        refreshToken.refreshToken,
-      ),
-    );
+    >(new AllUserDevicesWithActiveSessionsCommand(user));
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Delete()
   @DeleteAllDevicesSessionsButActiveSwaggerDecorator()
   @HttpCode(204)
-  async deleteAllDevicesSessionsButActive(
-    @ActiveUser() user: ActiveUserData,
-    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
-  ) {
+  async deleteAllDevicesSessionsButActive(@ActiveUser() user: ActiveUserData) {
     return this.commandBus.execute(
-      new DeleteAllDeviceSessionsButActiveCommand(
-        user,
-        refreshToken.refreshToken,
-      ),
+      new DeleteAllDeviceSessionsButActiveCommand(user),
     );
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Delete(':deviceId')
   @DeleteDeviceSessionSwaggerDecorator()
   @HttpCode(204)
   async deleteDeviceSessionById(
     @Param('deviceId') deviceId: string,
     @ActiveUser() user: ActiveUserData,
-    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
   ) {
     return this.commandBus.execute(
-      new DeleteDeviceSessionCommand(user, refreshToken.refreshToken, deviceId),
+      new DeleteDeviceSessionCommand(user, deviceId),
     );
   }
 }

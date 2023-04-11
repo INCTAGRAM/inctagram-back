@@ -39,7 +39,7 @@ export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
     if (!refreshToken) {
       throw new BadRequestException('invalid refresh token');
     }
-    await this.jwtAdaptor.validateTokens(refreshToken, payload.deviceId);
+    await this.jwtAdaptor.validateRtToken(refreshToken, payload.deviceId);
     return payload;
   }
 }

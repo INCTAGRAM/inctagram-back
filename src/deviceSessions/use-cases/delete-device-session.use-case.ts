@@ -5,11 +5,7 @@ import { DeviceSessionsRepository } from '../repositories/device-sessions.reposi
 import { ActiveUserData } from '../../user/types';
 
 export class DeleteDeviceSessionCommand {
-  constructor(
-    public user: ActiveUserData,
-    public refreshToken: string,
-    public deviceId: string,
-  ) {}
+  constructor(public user: ActiveUserData, public deviceId: string) {}
 }
 @CommandHandler(DeleteDeviceSessionCommand)
 export class DeleteDeviceSessionUseCase
@@ -20,12 +16,6 @@ export class DeleteDeviceSessionUseCase
     private readonly deviceSessionsRepository: DeviceSessionsRepository,
   ) {}
   async execute(command: DeleteDeviceSessionCommand) {
-    // validate token
-    await this.jwtAdaptor.validateTokens(
-      command.refreshToken,
-      command.deviceId,
-    );
-
     const isSession = await this.deviceSessionsRepository.findSessionByDeviceId(
       command.deviceId,
     );

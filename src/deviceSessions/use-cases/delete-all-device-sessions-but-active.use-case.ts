@@ -4,7 +4,7 @@ import { DeviceSessionsRepository } from '../repositories/device-sessions.reposi
 import { ActiveUserData } from '../../user/types';
 
 export class DeleteAllDeviceSessionsButActiveCommand {
-  constructor(public user: ActiveUserData, public refreshToken: string) {}
+  constructor(public user: ActiveUserData) {}
 }
 @CommandHandler(DeleteAllDeviceSessionsButActiveCommand)
 export class DeleteAllDeviceSessionsButActiveUseCase
@@ -15,11 +15,6 @@ export class DeleteAllDeviceSessionsButActiveUseCase
     private readonly deviceSessionsRepository: DeviceSessionsRepository,
   ) {}
   async execute(command: DeleteAllDeviceSessionsButActiveCommand) {
-    // validate
-    await this.jwtAdaptor.validateTokens(
-      command.refreshToken,
-      command.user.deviceId,
-    );
     return this.deviceSessionsRepository.deleteAllSessionsExceptCurrent(
       command.user.userId,
       command.user.deviceId,
