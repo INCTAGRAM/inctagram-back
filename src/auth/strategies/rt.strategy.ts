@@ -1,32 +1,45 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { Request } from 'express';
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { RtPayload } from './types';
+
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Request as RequestType } from 'express';
+import { ActiveUserData } from '../../user/types';
+import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
+import { ModuleRef } from '@nestjs/core';
 @Injectable()
 export class RtStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
-  constructor(config: ConfigService) {
+  constructor(
+    private moduleRef: ModuleRef,
+    config: ConfigService,
+    private readonly jwtAdaptor: JwtAdaptor,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
-        RtStrategy.extractJWT,
-        // ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (request: RequestType) => {
+          const data = request?.cookies.refreshToken;
+          if (!data) {
+            return null;
+          }
+          return data;
+        },
       ]),
+      passReqToCallback: true,
       ignoreExpiration: false,
       secretOrKey: config.get<string>('RT_SECRET'),
     });
   }
 
-  async validate(payload: RtPayload) {
-    return payload;
-  }
-
-  private static extractJWT(req: RequestType): string | null {
-    let token = null;
-    if (req.cookies && req.cookies.refreshToken) {
-      token = req.cookies['refreshToken'];
+  async validate(request: RequestType, payload: ActiveUserData) {
+    if (!payload) {
+      throw new BadRequestException('invalid jwt token');
     }
-    return token;
+    const refreshToken = request?.cookies.refreshToken;
+
+    if (!refreshToken) {
+      throw new BadRequestException('invalid refresh token');
+    }
+    await this.jwtAdaptor.validateTokens(refreshToken, payload.deviceId);
+    return payload;
   }
 }

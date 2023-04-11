@@ -33,13 +33,13 @@ import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
 import { LogginSuccessViewModel } from '../../types';
 import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
-import { AuthGuard } from '@nestjs/passport';
 import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../use-cases/new-password.use-case';
 import { ActiveUser } from '../../common/decorators/active-user.decorator';
 import { ActiveUserData } from '../../user/types';
+import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -97,32 +97,27 @@ export class AuthController {
     return { accessToken };
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Post('logout')
   @AuthLogoutSwaggerDecorator()
   @HttpCode(204)
   async logout(
     @ActiveUser('deviceId') deviceId: string,
-    @GetRtFromCookieDecorator() refreshToken: { refreshToken: string },
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.commandBus.execute(
-      new LogoutUserCommand(deviceId, refreshToken),
-    );
+    return this.commandBus.execute(new LogoutUserCommand(deviceId));
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @UseGuards(JwtRtGuard)
   @Post('refresh-token')
   @AuthRefreshTokenSwaggerDecorator()
   @HttpCode(200)
   async refreshToken(
     @ActiveUser() user: ActiveUserData,
-    @GetRtFromCookieDecorator() rt: { refreshToken: string },
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.jwtAdaptor.refreshToken(
       user,
-      rt,
     );
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,

@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { DeviceSessionsRepository } from '../repositories/device-sessions.repository';
-import { RtPayload } from '../../auth/strategies/types';
 import { ActiveUserData } from '../../user/types';
 
 export class DeleteAllDeviceSessionsButActiveCommand {
