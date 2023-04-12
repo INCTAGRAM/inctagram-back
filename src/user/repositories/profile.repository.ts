@@ -1,32 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 
 import { PrismaClient, Profile } from '@prisma/client';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
+import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileRepositoryAdapter } from './adapters/profile-repository.adapter';
 
 @Injectable()
 export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
-  constructor(private readonly prisma: PrismaClient) {
+  public constructor(private readonly prisma: PrismaClient) {
     super();
   }
-  async createUserProfile(
-    createUserProfileDto: CreateUserProfileDto,
+
+  public async create(
     userId: string,
+    createUserProfileDto: CreateUserProfileDto,
   ): Promise<Profile> {
     try {
       return this.prisma.profile.create({
         data: {
-          name: createUserProfileDto.name,
-          surname: createUserProfileDto.surname,
-          birthday: createUserProfileDto.birthday,
-          city: createUserProfileDto.city,
-          aboutMe: createUserProfileDto.aboutMe,
           userId,
+          ...createUserProfileDto,
         },
       });
     } catch (error) {
       console.log(error);
-      throw error;
+
+      throw new InternalServerErrorException();
+    }
+  }
+
+  public async update(
+    userId: string,
+    updateUserProfileDto: UpdateUserProfileDto,
+  ): Promise<void> {
+    try {
+      await this.prisma.profile.update({
+        where: {
+          userId,
+        },
+        data: updateUserProfileDto,
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw new InternalServerErrorException();
     }
   }
 }

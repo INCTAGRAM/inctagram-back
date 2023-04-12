@@ -16,8 +16,13 @@ import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-que
 import { ProfileQueryRepository } from './repositories/profile.query-repository';
 import { CreateProfileUseCase } from './use-cases/create-profile.use-case';
 import { ProfileRepository } from './repositories/profile.repository';
+import { UpdateProfileUseCase } from './use-cases/update-avatar.use-case';
 
-const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
+const useCases = [
+  UploadAvatarUseCase,
+  CreateProfileUseCase,
+  UpdateProfileUseCase,
+];
 
 @Module({
   imports: [CqrsModule],

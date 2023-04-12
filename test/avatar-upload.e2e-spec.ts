@@ -31,13 +31,22 @@ const sampleUser: AuthDto = {
 };
 
 jest.mock('src/common/guards/jwt-auth.guard.ts', () => {
-  class MockedAuthGuard implements CanActivate {
+  class MockedGuard implements CanActivate {
     canActivate(): boolean {
       return true;
     }
   }
 
-  return { JwtAuthGuard: MockedAuthGuard };
+  return { JwtAtGuard: MockedGuard, JwtRtGuard: MockedGuard };
+});
+
+jest.mock('src/common/guards/confirmation.guard.ts', () => {
+  class MockedGuard implements CanActivate {
+    canActivate(): boolean {
+      return true;
+    }
+  }
+  return { ConfirmationGuard: MockedGuard };
 });
 
 jest.mock('src/common/decorators/active-user.decorator', () => {
@@ -54,7 +63,6 @@ describe('AppController (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    console.log(process.cwd());
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
@@ -94,11 +102,11 @@ describe('AppController (e2e)', () => {
 
   const imageSmall = fs.readFileSync('./test/assets/image-small.png');
 
-  it(`/${API.USERS}/:id/images/avatar (POST) should return 400 if the image is too small`, async () => {
+  it(`/${API.USERS}/self/images/avatar (POST) should return 400 if the image is too small`, async () => {
     expect.assertions(1);
 
     return request(app.getHttpServer())
-      .post(`/${API.USERS}/${mockId}/images/avatar`)
+      .post(`/${API.USERS}/self/images/avatar`)
       .set('Content-Type', `multipart/form-data;`)
       .attach(FILE_FIELD, imageSmall, {
         filename: 'image-small.png',
@@ -112,13 +120,13 @@ describe('AppController (e2e)', () => {
       });
   });
 
-  it(`/${API.USERS}/:id/images/avatar (POST) should return 400 if the image is too large`, async () => {
+  it(`/${API.USERS}/self/images/avatar (POST) should return 400 if the image is too large`, async () => {
     const buffer = Buffer.alloc(1024 * 1024 * 2);
 
     const imageLarge = Buffer.concat([imageSmall, buffer]);
 
     return request(app.getHttpServer())
-      .post(`/${API.USERS}/${mockId}/images/avatar`)
+      .post(`/${API.USERS}/self/images/avatar`)
       .set('Content-Type', `multipart/form-data;`)
       .attach(FILE_FIELD, imageLarge, {
         filename: 'image-small.png',
@@ -129,9 +137,9 @@ describe('AppController (e2e)', () => {
 
   const imageNormal = fs.readFileSync('./test/assets/image-normal.png');
 
-  it(`/${API.USERS}/:id/images/avatar (POST) should return 201`, async () => {
+  it(`/${API.USERS}/self/images/avatar (POST) should return 201`, async () => {
     const { url, previewUrl } = await request(app.getHttpServer())
-      .post(`/${API.USERS}/${mockId}/images/avatar`)
+      .post(`/${API.USERS}/self/images/avatar`)
       .set('Content-Type', `multipart/form-data;`)
       .attach(FILE_FIELD, imageNormal, {
         filename: 'image-normal.png',
