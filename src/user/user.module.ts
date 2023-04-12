@@ -16,16 +16,21 @@ import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-que
 import { ProfileQueryRepository } from './repositories/profile.query-repository';
 import { CreateProfileUseCase } from './use-cases/create-profile.use-case';
 import { ProfileRepository } from './repositories/profile.repository';
+import { UpdateProfileUseCase } from './use-cases/update-profile.use-case';
+import { ProfileRepositoryAdapter } from './repositories/adapters/profile-repository.adapter';
+import { ProfileQueryRepositoryAdapter } from './repositories/adapters/profile-query-repository.adapter';
 
-const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
+const useCases = [
+  UploadAvatarUseCase,
+  CreateProfileUseCase,
+  UpdateProfileUseCase,
+];
 
 @Module({
   imports: [CqrsModule],
   controllers: [UsersController],
   providers: [
     UserRepository,
-    ProfileQueryRepository,
-    ProfileRepository,
     PrismaClient,
     ...useCases,
     {
@@ -43,6 +48,14 @@ const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
     {
       provide: ImageService,
       useClass: SharpService,
+    },
+    {
+      provide: ProfileRepositoryAdapter,
+      useClass: ProfileRepository,
+    },
+    {
+      provide: ProfileQueryRepositoryAdapter,
+      useClass: ProfileQueryRepository,
     },
   ],
   exports: [UserRepository],
