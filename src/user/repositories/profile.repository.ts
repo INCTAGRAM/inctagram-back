@@ -8,6 +8,7 @@ export class ProfileRepository {
   constructor(private readonly prisma: PrismaClient) {}
   async createUserProfile(
     createUserProfileDto: CreateUserProfileDto,
+    userId: string,
   ): Promise<void> {
     try {
       await this.prisma.profile.create({
@@ -17,6 +18,7 @@ export class ProfileRepository {
           birthday: createUserProfileDto.birthday,
           city: createUserProfileDto.city,
           aboutMe: createUserProfileDto.aboutMe,
+          userId,
         },
       });
     } catch (error) {
