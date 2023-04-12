@@ -1,17 +1,20 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Profile } from '@prisma/client';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
+import { ProfileRepositoryAdapter } from './adapters/profile-repository.adapter';
 
 @Injectable()
-export class ProfileRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
+  constructor(private readonly prisma: PrismaClient) {
+    super();
+  }
   async createUserProfile(
     createUserProfileDto: CreateUserProfileDto,
     userId: string,
-  ): Promise<void> {
+  ): Promise<Profile> {
     try {
-      await this.prisma.profile.create({
+      return this.prisma.profile.create({
         data: {
           name: createUserProfileDto.name,
           surname: createUserProfileDto.surname,
@@ -23,6 +26,7 @@ export class ProfileRepository {
       });
     } catch (error) {
       console.log(error);
+      throw error;
     }
   }
 }
