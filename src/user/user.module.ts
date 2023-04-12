@@ -15,6 +15,7 @@ import { ImagesRepositoryAdapter } from './repositories/adapters/images-reposito
 import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-query-repository.adapter';
 import { ProfileQueryRepository } from './repositories/profile.query-repository';
 import { CreateProfileUseCase } from './use-cases/create-profile.use-case';
+import { ProfileRepository } from './repositories/profile.repository';
 
 const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
 
@@ -24,6 +25,7 @@ const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
   providers: [
     UserRepository,
     ProfileQueryRepository,
+    ProfileRepository,
     PrismaClient,
     ...useCases,
     {
