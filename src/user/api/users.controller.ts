@@ -1,5 +1,8 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
+  Get,
   NotFoundException,
   Param,
   Post,
@@ -24,8 +27,16 @@ import { MinimizeImagePipe } from 'src/common/pipes/minimize-image.pipe';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
-import { UploadUserAvatarApiDecorator } from 'src/common/decorators/swagger/users.decorator';
+import {
+  CheckUserProfileDecorator,
+  CreateUserProfileDecorator,
+  UploadUserAvatarApiDecorator,
+} from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
+import { ProfileQueryRepository } from '../repositories/profile.query-repository';
+import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
+import { ActiveUserData } from '../types';
+import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -34,6 +45,7 @@ export class UsersController {
   public constructor(
     private readonly usersRepository: UserRepository,
     private readonly commandBus: CommandBus,
+    private readonly profileQueryRepository: ProfileQueryRepository,
   ) {}
 
   @Post(':id/images/avatar')
@@ -64,5 +76,31 @@ export class UsersController {
     );
 
     return { url, previewUrl };
+  }
+  @Get(':id/create-account')
+  @CheckUserProfileDecorator()
+  async checkUserProfile(@Param('id') id: string) {
+    const user = await this.usersRepository.findUserById(id);
+
+    if (!user || !user.emailConfirmation?.isConfirmed)
+      throw new NotFoundException('User was not found');
+
+    const profile = await this.profileQueryRepository.findUserProfileById(id);
+    if (profile) throw new BadRequestException('Profile already created');
+
+    const username = user.username;
+    return { username };
+  }
+
+  @Post(':id/create-account')
+  @CreateUserProfileDecorator()
+  async createUserProfile(
+    @Param('id') id: string,
+    @Body() createUserProfileDto: CreateUserProfileDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.commandBus.execute(
+      new CreateProfileCommand(id, createUserProfileDto, user),
+    );
   }
 }

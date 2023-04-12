@@ -33,7 +33,7 @@ import { LoginDto } from '../dto/login.dto';
 import { Response } from 'express';
 import { LogginSuccessViewModel } from '../../types';
 import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
-import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
+
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../use-cases/new-password.use-case';
