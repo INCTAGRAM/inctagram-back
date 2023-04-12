@@ -167,6 +167,7 @@ export function UpdateUserProfileDecorator() {
     ApiBody({
       schema: {
         type: 'object',
+        required: ['username', 'name', 'surname', 'city'],
         properties: {
           username: {
             type: 'string',

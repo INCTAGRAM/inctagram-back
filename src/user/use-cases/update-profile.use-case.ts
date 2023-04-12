@@ -37,17 +37,14 @@ export class UpdateProfileUseCase
       throw new ForbiddenException('Access denied');
     //
     // check that username does not exist
-    if (command.updateUserProfileDto.username) {
-      const checkUserName = await this.userRepository.findUserByUserName(
-        command.updateUserProfileDto.username,
+    const checkUserName = await this.userRepository.findUserByUserName(
+      command.updateUserProfileDto.username,
+    );
+    if (checkUserName && checkUserName.username === user.username) return true;
+    if (checkUserName && checkUserName.username !== user.username)
+      throw new BadRequestException(
+        'This username already belongs to a different user.',
       );
-      if (checkUserName && checkUserName.username === user.username)
-        return true;
-      if (checkUserName && checkUserName.username !== user.username)
-        throw new BadRequestException(
-          'This username already belongs to a different user',
-        );
-    }
 
     await this.profileRepository.updateUserProfile(
       command.updateUserProfileDto,
