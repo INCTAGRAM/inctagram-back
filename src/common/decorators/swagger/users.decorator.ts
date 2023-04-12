@@ -7,6 +7,7 @@ import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
@@ -14,8 +15,6 @@ import {
 } from '@nestjs/swagger';
 import { MIN_AVATAR_HEIGHT, MIN_AVATAR_WIDTH } from 'src/common/constants';
 import { FieldError } from 'src/types';
-import { ConfirmationCodeDto } from '../../../auth/dto/confirmation-code.dto';
-import { CreateUserProfileDto } from '../../../user/dto/create.user.profile.dto';
 
 export function UploadUserAvatarApiDecorator() {
   return applyDecorators(
@@ -154,7 +153,74 @@ export function CreateUserProfileDecorator() {
     }),
     ApiForbiddenResponse({
       description:
-        'If user tries to create a account that does not belongs to him',
+        'If user tries to create an account that does not belongs to him',
+    }),
+    ApiBearerAuth(),
+  );
+}
+
+export function UpdateUserProfileDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Update user profile',
+    }),
+    ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          username: {
+            type: 'string',
+            minimum: 6,
+            maximum: 30,
+            example: 'Licence_to_kill',
+          },
+          name: {
+            type: 'string',
+            minimum: 1,
+            maximum: 40,
+            example: 'James',
+          },
+          surname: {
+            type: 'string',
+            minimum: 1,
+            maximum: 40,
+            example: 'Bond',
+          },
+          birthday: {
+            type: 'Date',
+            example: '007 - 007 - 007',
+          },
+          city: {
+            type: 'string',
+            minimum: 1,
+            maximum: 60,
+            example: 'London',
+          },
+          aboutMe: {
+            type: 'string',
+            minimum: 1,
+            maximum: 200,
+            example: 'Bond, James Bond...',
+          },
+        },
+      },
+    }),
+    ApiNoContentResponse({
+      description: 'User account has been updated',
+    }),
+    ApiBadRequestResponse({
+      description: 'If the InputModel has incorrect values',
+      type: FieldError,
+    }),
+    ApiNotFoundResponse({
+      description: 'User with such id was not found',
+    }),
+    ApiUnauthorizedResponse({
+      description: 'JWT accessToken is missing, expired or incorrect',
+    }),
+    ApiForbiddenResponse({
+      description:
+        'If user tries to update an account that does not belongs to him',
     }),
     ApiBearerAuth(),
   );

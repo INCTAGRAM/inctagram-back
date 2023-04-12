@@ -6,6 +6,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   UnauthorizedException,
   UploadedFile,
   UseGuards,
@@ -30,6 +31,7 @@ import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
   CheckUserProfileDecorator,
   CreateUserProfileDecorator,
+  UpdateUserProfileDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
@@ -37,6 +39,7 @@ import { ProfileQueryRepository } from '../repositories/profile.query-repository
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { ActiveUserData } from '../types';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
+import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -103,4 +106,12 @@ export class UsersController {
       new CreateProfileCommand(id, createUserProfileDto, user),
     );
   }
+
+  @Put(':id/update-account')
+  @UpdateUserProfileDecorator()
+  async updateUserProfile(
+    @Param('id') id: string,
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {}
 }
