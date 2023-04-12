@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   NotFoundException,
   Post,
   Put,
@@ -81,6 +83,7 @@ export class UsersController {
   }
 
   @Post('self/profile')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @CreateProfileApiDecorator()
   async createProfile(
     @Body() createUserProfileDto: CreateUserProfileDto,
