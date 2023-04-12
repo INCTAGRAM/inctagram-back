@@ -28,11 +28,11 @@ import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
   CheckUserProfileDecorator,
+  CreateUserProfileDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
 import { ProfileQueryRepository } from '../repositories/profile.query-repository';
-import { ActiveUserData } from '../types';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -87,4 +87,8 @@ export class UsersController {
     const username = user.username;
     return { username };
   }
+
+  @Post(':id/create-account')
+  @CreateUserProfileDecorator()
+  async createUserProfile(@Param('id') id: string) {}
 }

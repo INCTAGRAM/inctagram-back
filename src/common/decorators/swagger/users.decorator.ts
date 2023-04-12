@@ -4,8 +4,8 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
-  ApiCookieAuth,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -14,6 +14,8 @@ import {
 } from '@nestjs/swagger';
 import { MIN_AVATAR_HEIGHT, MIN_AVATAR_WIDTH } from 'src/common/constants';
 import { FieldError } from 'src/types';
+import { ConfirmationCodeDto } from '../../../auth/dto/confirmation-code.dto';
+import { CreateUserProfileDto } from '../../../user/dto/create.user.profile.dto';
 
 export function UploadUserAvatarApiDecorator() {
   return applyDecorators(
@@ -68,7 +70,7 @@ export function UploadUserAvatarApiDecorator() {
 export function CheckUserProfileDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Check if user Profile exists',
+      summary: 'Check if user profile exists',
     }),
     ApiResponse({
       status: 200,
@@ -90,6 +92,69 @@ export function CheckUserProfileDecorator() {
     }),
     ApiUnauthorizedResponse({
       description: 'JWT accessToken is missing, expired or incorrect',
+    }),
+    ApiBearerAuth(),
+  );
+}
+
+export function CreateUserProfileDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Create user profile',
+    }),
+    ApiBody({
+      schema: {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            minimum: 1,
+            maximum: 40,
+            example: 'James',
+          },
+          surname: {
+            type: 'string',
+            minimum: 1,
+            maximum: 40,
+            example: 'Bond',
+          },
+          birthday: {
+            type: 'Date',
+            example: '007 - 007 - 007',
+          },
+          city: {
+            type: 'string',
+            minimum: 1,
+            maximum: 60,
+            example: 'London',
+          },
+          aboutMe: {
+            type: 'string',
+            minimum: 1,
+            maximum: 200,
+            example: 'Bond, James Bond...',
+          },
+        },
+      },
+    }),
+    ApiCreatedResponse({
+      status: 201,
+      description: 'User account has been created',
+    }),
+    ApiBadRequestResponse({
+      description: 'If the InputModel has incorrect values',
+      type: FieldError,
+    }),
+    ApiNotFoundResponse({
+      description: 'User with such id was not found',
+      type: FieldError,
+    }),
+    ApiUnauthorizedResponse({
+      description: 'JWT accessToken is missing, expired or incorrect',
+    }),
+    ApiForbiddenResponse({
+      description:
+        'If user tries to create a account that does not belongs to him',
     }),
     ApiBearerAuth(),
   );
