@@ -29,10 +29,15 @@ export class UpdateProfileUseCase
     if (!user || !user.emailConfirmation?.isConfirmed)
       throw new NotFoundException();
 
-    const profile = await this.profileQueryRepository.findByUserId(userId);
+    const profile = await this.profileQueryRepository.findProfileByUserId(
+      userId,
+    );
 
     if (!profile) throw new NotFoundException();
 
-    await this.profileRepository.update(userId, command.updateUserProfileDto);
+    await this.profileRepository.updateProfile(
+      userId,
+      command.updateUserProfileDto,
+    );
   }
 }

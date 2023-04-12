@@ -75,7 +75,7 @@ export class UsersController {
   @Get('self/profile')
   @GetProfileApiDecorator()
   public async getProfile(@ActiveUser('userId') id: string) {
-    const profile = await this.profileQueryRepository.findByUserId(id);
+    const profile = await this.profileQueryRepository.findProfileByUserId(id);
 
     if (!profile) throw new NotFoundException();
 

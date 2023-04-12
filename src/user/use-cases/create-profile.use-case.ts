@@ -29,10 +29,15 @@ export class CreateProfileUseCase
     if (!user || !user.emailConfirmation?.isConfirmed)
       throw new NotFoundException();
 
-    const profile = await this.profileQueryRepository.findByUserId(userId);
+    const profile = await this.profileQueryRepository.findProfileByUserId(
+      userId,
+    );
 
     if (profile) throw new ForbiddenException();
 
-    await this.profileRepository.create(userId, command.createUserProfileDto);
+    await this.profileRepository.createProfile(
+      userId,
+      command.createUserProfileDto,
+    );
   }
 }

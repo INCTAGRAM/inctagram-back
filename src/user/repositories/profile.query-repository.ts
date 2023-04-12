@@ -9,7 +9,7 @@ export class ProfileQueryRepository extends ProfileQueryRepositoryAdapter {
     super();
   }
 
-  async findByUserId(userId: string): Promise<ProfileDbModel | null> {
+  async findProfileByUserId(userId: string): Promise<ProfileDbModel | null> {
     const result = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {

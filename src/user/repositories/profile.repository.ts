@@ -11,7 +11,7 @@ export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
     super();
   }
 
-  public async create(
+  public async createProfile(
     userId: string,
     createUserProfileDto: CreateUserProfileDto,
   ): Promise<Profile> {
@@ -29,7 +29,7 @@ export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
     }
   }
 
-  public async update(
+  public async updateProfile(
     userId: string,
     updateUserProfileDto: UpdateUserProfileDto,
   ): Promise<void> {
