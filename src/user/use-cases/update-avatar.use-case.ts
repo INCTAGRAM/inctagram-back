@@ -1,9 +1,10 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UserRepository } from '../repositories/user.repository';
 import { NotFoundException } from '@nestjs/common';
-import { ProfileRepository } from '../repositories/profile.repository';
-import { ProfileQueryRepository } from '../repositories/profile.query-repository';
 import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
+import { ProfileRepositoryAdapter } from '../repositories/adapters/profile-repository.adapter';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
+import { Profile } from '@prisma/client';
 
 export class UpdateProfileCommand {
   constructor(
@@ -17,8 +18,8 @@ export class UpdateProfileUseCase
 {
   public constructor(
     private readonly userRepository: UserRepository,
-    private readonly profileRepository: ProfileRepository,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileRepository: ProfileRepositoryAdapter<Profile>,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
   ) {}
   public async execute(command: UpdateProfileCommand) {
     const { userId } = command;

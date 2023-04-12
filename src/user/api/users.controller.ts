@@ -33,13 +33,13 @@ import {
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
-import { ProfileQueryRepository } from '../repositories/profile.query-repository';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { ProfileMapper } from '../utils/ProfileMappter';
 import { ConfirmationGuard } from 'src/common/guards/confirmation.guard';
 import { UpdateProfileCommand } from '../use-cases/update-avatar.use-case';
 import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, ConfirmationGuard)
@@ -47,7 +47,7 @@ import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 export class UsersController {
   public constructor(
     private readonly commandBus: CommandBus,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
   ) {}
 
   @Post('self/images/avatar')

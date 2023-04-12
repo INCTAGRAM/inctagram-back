@@ -2,8 +2,9 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
-import { ProfileRepository } from '../repositories/profile.repository';
-import { ProfileQueryRepository } from '../repositories/profile.query-repository';
+import { ProfileRepositoryAdapter } from '../repositories/adapters/profile-repository.adapter';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
+import { Profile } from '@prisma/client';
 
 export class CreateProfileCommand {
   constructor(
@@ -17,8 +18,8 @@ export class CreateProfileUseCase
 {
   public constructor(
     private readonly userRepository: UserRepository,
-    private readonly profileRepository: ProfileRepository,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileRepository: ProfileRepositoryAdapter<Profile>,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
   ) {}
   public async execute(command: CreateProfileCommand) {
     const { userId } = command;
