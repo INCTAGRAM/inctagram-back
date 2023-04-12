@@ -7,8 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
-import { AuthGuard } from '@nestjs/passport';
-import { GetRtFromCookieDecorator } from '../../common/decorators/jwt/getRtFromCookie.decorator';
+
 import {
   DeleteAllDevicesSessionsButActiveSwaggerDecorator,
   DeleteDeviceSessionSwaggerDecorator,
