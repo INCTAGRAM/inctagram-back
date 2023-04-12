@@ -42,6 +42,8 @@ import { ActiveUserData } from '../types';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
+import { Profile } from '@prisma/client';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -50,7 +52,7 @@ export class UsersController {
   public constructor(
     private readonly usersRepository: UserRepository,
     private readonly commandBus: CommandBus,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter<Profile>,
   ) {}
 
   @Post(':id/images/avatar')

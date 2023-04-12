@@ -9,6 +9,9 @@ import {
 } from '@nestjs/common';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { ProfileQueryRepository } from '../repositories/profile.query-repository';
+import { ProfileRepositoryAdapter } from '../repositories/adapters/profile-repository.adapter';
+import { Profile, User } from '@prisma/client';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
 
 export class CreateProfileCommand {
   constructor(
@@ -23,8 +26,8 @@ export class CreateProfileUseCase
 {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly profileRepository: ProfileRepository,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileRepository: ProfileRepositoryAdapter<Profile, User>,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter<Profile>,
   ) {}
   async execute(command: CreateProfileCommand) {
     // check if user exists

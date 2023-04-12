@@ -39,7 +39,6 @@ export class UpdateProfileUseCase
     const checkUserName = await this.userRepository.findUserByUserName(
       command.updateUserProfileDto.username,
     );
-    if (checkUserName && checkUserName.username === user.username) return true;
     if (checkUserName && checkUserName.username !== user.username)
       throw new BadRequestException(
         'This username already belongs to a different user.',

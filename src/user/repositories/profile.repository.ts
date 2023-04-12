@@ -6,7 +6,7 @@ import { ProfileRepositoryAdapter } from './adapters/profile-repository.adapter'
 import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 
 @Injectable()
-export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
+export class ProfileRepository extends ProfileRepositoryAdapter<Profile, User> {
   constructor(private readonly prisma: PrismaClient) {
     super();
   }
