@@ -40,6 +40,7 @@ import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { ActiveUserData } from '../types';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
+import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -113,5 +114,9 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserProfileDto: UpdateUserProfileDto,
     @ActiveUser() user: ActiveUserData,
-  ) {}
+  ) {
+    return this.commandBus.execute(
+      new UpdateProfileCommand(id, updateUserProfileDto, user),
+    );
+  }
 }
