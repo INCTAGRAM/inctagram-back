@@ -1,14 +1,14 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ActiveUserData } from '../types';
 import { UserRepository } from '../repositories/user.repository';
-import { ProfileRepository } from '../repositories/profile.repository';
-import { ProfileQueryRepository } from '../repositories/profile.query-repository';
 import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { ProfileRepositoryAdapter } from '../repositories/adapters/profile-repository.adapter';
+import { Profile, User } from '@prisma/client';
 
 export class UpdateProfileCommand {
   constructor(
@@ -23,8 +23,7 @@ export class UpdateProfileUseCase
 {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly profileRepository: ProfileRepository,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileRepository: ProfileRepositoryAdapter<Profile, User>,
   ) {}
   async execute(command: UpdateProfileCommand) {
     // check if user exists

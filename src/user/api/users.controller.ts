@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
@@ -81,8 +82,9 @@ export class UsersController {
 
     return { url, previewUrl };
   }
-  @Get(':id/create-account')
+  @Get(':id/profile')
   @CheckUserProfileDecorator()
+  @HttpCode(200)
   async checkUserProfile(@Param('id') id: string) {
     const user = await this.usersRepository.findUserById(id);
 
@@ -96,8 +98,9 @@ export class UsersController {
     return { username };
   }
 
-  @Post(':id/create-account')
+  @Post(':id/profile')
   @CreateUserProfileDecorator()
+  @HttpCode(204)
   async createUserProfile(
     @Param('id') id: string,
     @Body() createUserProfileDto: CreateUserProfileDto,
@@ -108,8 +111,9 @@ export class UsersController {
     );
   }
 
-  @Put(':id/update-account')
+  @Put(':id/profile')
   @UpdateUserProfileDecorator()
+  @HttpCode(204)
   async updateUserProfile(
     @Param('id') id: string,
     @Body() updateUserProfileDto: UpdateUserProfileDto,
