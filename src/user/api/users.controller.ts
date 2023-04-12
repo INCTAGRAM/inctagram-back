@@ -104,4 +104,17 @@ export class UsersController {
       new UpdateProfileCommand(id, updateUserProfileDto),
     );
   }
+
+  @Put(':id/profile')
+  @UpdateUserProfileDecorator()
+  @HttpCode(204)
+  async updateUserProfile(
+    @Param('id') id: string,
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.commandBus.execute(
+      new UpdateProfileCommand(id, updateUserProfileDto, user),
+    );
+  }
 }
