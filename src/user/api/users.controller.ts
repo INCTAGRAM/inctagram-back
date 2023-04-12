@@ -95,6 +95,7 @@ export class UsersController {
   }
 
   @Put('self/profile')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UpdateProfileApiDecorator()
   public async updateProfile(
     @Body() updateUserProfileDto: UpdateUserProfileDto,

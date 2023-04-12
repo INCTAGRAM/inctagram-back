@@ -151,7 +151,7 @@ export function CreateProfileApiDecorator() {
       },
     }),
     ApiCreatedResponse({
-      status: 201,
+      status: 204,
       description: 'User account has been created',
     }),
     ApiBadRequestResponse({
@@ -213,7 +213,7 @@ export function UpdateProfileApiDecorator() {
       },
     }),
     ApiCreatedResponse({
-      status: 201,
+      status: 204,
       description: 'User account has been updated',
     }),
     ApiBadRequestResponse({
