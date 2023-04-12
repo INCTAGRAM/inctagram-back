@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient, Profile } from '@prisma/client';
-import { ProfilesQueryRepositoryAdapter } from './adapters/profiles-query-repository.adapter';
+import { ProfileQueryRepositoryAdapter } from './adapters/profile-query-repository.adapter';
 
 @Injectable()
-export class ProfileQueryRepository extends ProfilesQueryRepositoryAdapter<Profile> {
+export class ProfileQueryRepository extends ProfileQueryRepositoryAdapter<Profile> {
   constructor(private readonly prisma: PrismaClient) {
     super();
   }

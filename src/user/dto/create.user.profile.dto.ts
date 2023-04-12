@@ -10,14 +10,12 @@ export class CreateUserProfileDto {
   @IsNotEmpty()
   surname: string;
   @IsDate()
-  @IsNotEmpty()
-  birthday: Date;
+  birthday: Date | null;
   @Length(1, 60)
   @IsString()
   @IsNotEmpty()
   city: string;
   @Length(1, 200)
   @IsString()
-  @IsNotEmpty()
-  aboutMe: string;
+  aboutMe: string | null;
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export abstract class ProfilesQueryRepositoryAdapter<T> {
+export abstract class ProfileQueryRepositoryAdapter<T> {
   abstract findUserProfileById(userId: string): Promise<T | null>;
 }

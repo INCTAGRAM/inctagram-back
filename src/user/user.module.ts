@@ -14,8 +14,9 @@ import { YandexCloudStrategy } from 'src/common/strategies/yandex-cloud.strategy
 import { ImagesRepositoryAdapter } from './repositories/adapters/images-repository.adapter';
 import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-query-repository.adapter';
 import { ProfileQueryRepository } from './repositories/profile.query-repository';
+import { CreateProfileUseCase } from './use-cases/create-profile.use-case';
 
-const useCases = [UploadAvatarUseCase];
+const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
 
 @Module({
   imports: [CqrsModule],

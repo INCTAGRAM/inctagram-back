@@ -105,6 +105,7 @@ export function CreateUserProfileDecorator() {
     ApiBody({
       schema: {
         type: 'object',
+        required: ['name', 'surname', 'city'],
         properties: {
           name: {
             type: 'string',

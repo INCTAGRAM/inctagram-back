@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   NotFoundException,
@@ -33,6 +34,9 @@ import {
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
 import { ProfileQueryRepository } from '../repositories/profile.query-repository';
+import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
+import { ActiveUserData } from '../types';
+import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -90,5 +94,13 @@ export class UsersController {
 
   @Post(':id/create-account')
   @CreateUserProfileDecorator()
-  async createUserProfile(@Param('id') id: string) {}
+  async createUserProfile(
+    @Param('id') id: string,
+    @Body() createUserProfileDto: CreateUserProfileDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.commandBus.execute(
+      new CreateProfileCommand(id, createUserProfileDto, user),
+    );
+  }
 }
