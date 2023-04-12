@@ -102,7 +102,7 @@ export class UsersController {
 
   @Post(':id/profile')
   @CreateUserProfileDecorator()
-  @HttpCode(204)
+  @HttpCode(201)
   async createUserProfile(
     @Param('id') id: string,
     @Body() createUserProfileDto: CreateUserProfileDto,
