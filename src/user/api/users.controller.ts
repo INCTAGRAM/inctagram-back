@@ -3,9 +3,11 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
+  Put,
   UnauthorizedException,
   UploadedFile,
   UseGuards,
@@ -30,6 +32,7 @@ import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
   CheckUserProfileDecorator,
   CreateUserProfileDecorator,
+  UpdateUserProfileDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
@@ -37,6 +40,10 @@ import { ProfileQueryRepository } from '../repositories/profile.query-repository
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { ActiveUserData } from '../types';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
+import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
+import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
+import { Profile } from '@prisma/client';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard)
@@ -45,7 +52,7 @@ export class UsersController {
   public constructor(
     private readonly usersRepository: UserRepository,
     private readonly commandBus: CommandBus,
-    private readonly profileQueryRepository: ProfileQueryRepository,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter<Profile>,
   ) {}
 
   @Post(':id/images/avatar')
@@ -77,8 +84,9 @@ export class UsersController {
 
     return { url, previewUrl };
   }
-  @Get(':id/create-account')
+  @Get(':id/profile')
   @CheckUserProfileDecorator()
+  @HttpCode(200)
   async checkUserProfile(@Param('id') id: string) {
     const user = await this.usersRepository.findUserById(id);
 
@@ -92,8 +100,9 @@ export class UsersController {
     return { username };
   }
 
-  @Post(':id/create-account')
+  @Post(':id/profile')
   @CreateUserProfileDecorator()
+  @HttpCode(204)
   async createUserProfile(
     @Param('id') id: string,
     @Body() createUserProfileDto: CreateUserProfileDto,
@@ -101,6 +110,19 @@ export class UsersController {
   ) {
     return this.commandBus.execute(
       new CreateProfileCommand(id, createUserProfileDto, user),
+    );
+  }
+
+  @Put(':id/profile')
+  @UpdateUserProfileDecorator()
+  @HttpCode(204)
+  async updateUserProfile(
+    @Param('id') id: string,
+    @Body() updateUserProfileDto: UpdateUserProfileDto,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.commandBus.execute(
+      new UpdateProfileCommand(id, updateUserProfileDto, user),
     );
   }
 }

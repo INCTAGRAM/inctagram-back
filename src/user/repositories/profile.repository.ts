@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { PrismaClient, Profile } from '@prisma/client';
+import { PrismaClient, Profile, User } from '@prisma/client';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { ProfileRepositoryAdapter } from './adapters/profile-repository.adapter';
+import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 
 @Injectable()
-export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
+export class ProfileRepository extends ProfileRepositoryAdapter<Profile, User> {
   constructor(private readonly prisma: PrismaClient) {
     super();
   }
@@ -29,4 +30,32 @@ export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
       throw error;
     }
   }
+
+  async updateUserProfile(
+    updateUserProfileDto: UpdateUserProfileDto,
+    userId: string,
+  ): Promise<User> {
+    try {
+      return this.prisma.user.update({
+        where: {
+          id: userId,
+        },
+        data: {
+          username: updateUserProfileDto.username,
+          profile: {
+            update: {
+              name: updateUserProfileDto.name,
+              surname: updateUserProfileDto.surname,
+              birthday: updateUserProfileDto.birthday,
+              city: updateUserProfileDto.city,
+              aboutMe: updateUserProfileDto.aboutMe,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }
+//

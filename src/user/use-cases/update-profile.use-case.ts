@@ -1,35 +1,31 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { ActiveUserData } from '../types';
 import { UserRepository } from '../repositories/user.repository';
+import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { ProfileRepository } from '../repositories/profile.repository';
-import { ProfileQueryRepository } from '../repositories/profile.query-repository';
 import { ProfileRepositoryAdapter } from '../repositories/adapters/profile-repository.adapter';
 import { Profile, User } from '@prisma/client';
-import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
 
-export class CreateProfileCommand {
+export class UpdateProfileCommand {
   constructor(
     public userId: string,
-    public createUserProfileDto: CreateUserProfileDto,
+    public updateUserProfileDto: UpdateUserProfileDto,
     public user: ActiveUserData,
   ) {}
 }
-@CommandHandler(CreateProfileCommand)
-export class CreateProfileUseCase
-  implements ICommandHandler<CreateProfileCommand>
+@CommandHandler(UpdateProfileCommand)
+export class UpdateProfileUseCase
+  implements ICommandHandler<UpdateProfileCommand>
 {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly profileRepository: ProfileRepositoryAdapter<Profile, User>,
-    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter<Profile>,
   ) {}
-  async execute(command: CreateProfileCommand) {
+  async execute(command: UpdateProfileCommand) {
     // check if user exists
     const user = await this.userRepository.findUserById(command.user.userId);
 
@@ -38,14 +34,18 @@ export class CreateProfileUseCase
 
     if (user.id !== command.userId)
       throw new ForbiddenException('Access denied');
-
-    const profile = await this.profileQueryRepository.findUserProfileById(
-      command.userId,
+    //
+    // check that username does not exist
+    const checkUserName = await this.userRepository.findUserByUserName(
+      command.updateUserProfileDto.username,
     );
-    if (profile) throw new BadRequestException('Profile already created');
+    if (checkUserName && checkUserName.username !== user.username)
+      throw new BadRequestException(
+        'This username already belongs to a different user.',
+      );
 
-    await this.profileRepository.createUserProfile(
-      command.createUserProfileDto,
+    await this.profileRepository.updateUserProfile(
+      command.updateUserProfileDto,
       command.userId,
     );
   }
