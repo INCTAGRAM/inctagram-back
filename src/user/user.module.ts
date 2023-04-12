@@ -16,7 +16,7 @@ import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-que
 import { ProfileQueryRepository } from './repositories/profile.query-repository';
 import { CreateProfileUseCase } from './use-cases/create-profile.use-case';
 import { ProfileRepository } from './repositories/profile.repository';
-import { UpdateProfileUseCase } from './use-cases/update-avatar.use-case';
+import { UpdateProfileUseCase } from './use-cases/update-profile.use-case';
 import { ProfileRepositoryAdapter } from './repositories/adapters/profile-repository.adapter';
 import { ProfileQueryRepositoryAdapter } from './repositories/adapters/profile-query-repository.adapter';
 
