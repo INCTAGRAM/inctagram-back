@@ -13,14 +13,19 @@ import { AvatarsQueryRepository } from './repositories/avatars.query-repository'
 import { YandexCloudStrategy } from 'src/common/strategies/yandex-cloud.strategy';
 import { ImagesRepositoryAdapter } from './repositories/adapters/images-repository.adapter';
 import { ImagesQueryRepositoryAdapter } from './repositories/adapters/images-query-repository.adapter';
+import { ProfileQueryRepository } from './repositories/profile.query-repository';
+import { CreateProfileUseCase } from './use-cases/create-profile.use-case';
+import { ProfileRepository } from './repositories/profile.repository';
 
-const useCases = [UploadAvatarUseCase];
+const useCases = [UploadAvatarUseCase, CreateProfileUseCase];
 
 @Module({
   imports: [CqrsModule],
   controllers: [UsersController],
   providers: [
     UserRepository,
+    ProfileQueryRepository,
+    ProfileRepository,
     PrismaClient,
     ...useCases,
     {
