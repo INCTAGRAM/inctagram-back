@@ -1,52 +1,51 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { ActiveUserData } from '../types';
 import { UserRepository } from '../repositories/user.repository';
-import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
 import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
+import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileRepositoryAdapter } from '../repositories/adapters/profile-repository.adapter';
-import { Profile, User } from '@prisma/client';
+import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
+import { Profile } from '@prisma/client';
+import { ActiveUserData } from '../types';
 
 export class UpdateProfileCommand {
   constructor(
     public userId: string,
     public updateUserProfileDto: UpdateUserProfileDto,
-    public user: ActiveUserData,
   ) {}
 }
 @CommandHandler(UpdateProfileCommand)
 export class UpdateProfileUseCase
   implements ICommandHandler<UpdateProfileCommand>
 {
-  constructor(
+  public constructor(
     private readonly userRepository: UserRepository,
-    private readonly profileRepository: ProfileRepositoryAdapter<Profile, User>,
+    private readonly profileRepository: ProfileRepositoryAdapter<Profile>,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
   ) {}
-  async execute(command: UpdateProfileCommand) {
-    // check if user exists
-    const user = await this.userRepository.findUserById(command.user.userId);
+  public async execute(command: UpdateProfileCommand) {
+    const { userId } = command;
 
-    if (!user || !user.emailConfirmation?.isConfirmed)
-      throw new NotFoundException('User was not found');
-
-    if (user.id !== command.userId)
-      throw new ForbiddenException('Access denied');
-    //
+    const user = await this.userRepository.findUserById(userId);
+    if (!user) throw new NotFoundException();
     // check that username does not exist
     const checkUserName = await this.userRepository.findUserByUserName(
       command.updateUserProfileDto.username,
     );
     if (checkUserName && checkUserName.username !== user.username)
-      throw new BadRequestException(
-        'This username already belongs to a different user.',
-      );
+      throw new BadRequestException('This username is already used');
 
-    await this.profileRepository.updateUserProfile(
+    const profile =
+      await this.profileQueryRepository.findProfileAndAvatarByUserId(userId);
+
+    if (!profile) throw new NotFoundException();
+
+    await this.profileRepository.updateProfile(
+      userId,
       command.updateUserProfileDto,
-      command.userId,
     );
   }
 }

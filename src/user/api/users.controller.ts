@@ -1,14 +1,12 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   NotFoundException,
-  Param,
   Post,
   Put,
-  UnauthorizedException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -24,43 +22,41 @@ import {
   MIN_AVATAR_WIDTH,
 } from 'src/common/constants';
 
-import { UserRepository } from '../repositories/user.repository';
 import { MinimizeImagePipe } from 'src/common/pipes/minimize-image.pipe';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
-  CheckUserProfileDecorator,
-  CreateUserProfileDecorator,
-  UpdateUserProfileDecorator,
+  CreateProfileApiDecorator,
+  GetProfileApiDecorator,
+  UpdateProfileApiDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
-import { ProfileQueryRepository } from '../repositories/profile.query-repository';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
-import { ActiveUserData } from '../types';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
-import { UpdateUserProfileDto } from '../dto/update.user.profile.dto';
+import { ProfileMapper } from '../utils/ProfileMappter';
+
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
+import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
-import { Profile } from '@prisma/client';
+import { UserEmailConfirmationGuard } from '../../common/guards/user-confirmation.guard';
+import { ActiveUserData } from '../types';
 
 @ApiTags('Users')
-@UseGuards(JwtAtGuard)
+@UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
 @Controller(API.USERS)
 export class UsersController {
   public constructor(
-    private readonly usersRepository: UserRepository,
     private readonly commandBus: CommandBus,
-    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter<Profile>,
+    private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
   ) {}
 
-  @Post(':id/images/avatar')
+  @Post('self/images/avatar')
   @UploadUserAvatarApiDecorator()
   @UseInterceptors(FileInterceptor(FILE_FIELD))
   public async uploadAvatar(
     @ActiveUser('userId') userId: string,
-    @Param('id') id: string,
     @UploadedFile(
       ImageValidationPipe({
         fileType: '.(png|jpeg|jpg)',
@@ -71,58 +67,45 @@ export class UsersController {
     )
     file: Express.Multer.File,
   ) {
-    if (!(userId === id)) throw new UnauthorizedException();
-
-    const user = await this.usersRepository.findUserById(id);
-
-    if (!user || !user.emailConfirmation?.isConfirmed)
-      throw new NotFoundException();
-
     const { url, previewUrl } = await this.commandBus.execute(
       new UploadAvatarCommand(userId, file),
     );
 
     return { url, previewUrl };
   }
-  @Get(':id/profile')
-  @CheckUserProfileDecorator()
-  @HttpCode(200)
-  async checkUserProfile(@Param('id') id: string) {
-    const user = await this.usersRepository.findUserById(id);
 
-    if (!user || !user.emailConfirmation?.isConfirmed)
-      throw new NotFoundException('User was not found');
+  @Get('self/profile')
+  @GetProfileApiDecorator()
+  public async getProfile(@ActiveUser('userId') id: string) {
+    const profile =
+      await this.profileQueryRepository.findProfileAndAvatarByUserId(id);
 
-    const profile = await this.profileQueryRepository.findUserProfileById(id);
-    if (profile) throw new BadRequestException('Profile already created');
+    if (!profile) throw new NotFoundException();
 
-    const username = user.username;
-    return { username };
+    return ProfileMapper.toViewModel(profile);
   }
 
-  @Post(':id/profile')
-  @CreateUserProfileDecorator()
-  @HttpCode(201)
-  async createUserProfile(
-    @Param('id') id: string,
+  @Post('self/profile')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @CreateProfileApiDecorator()
+  async createProfile(
     @Body() createUserProfileDto: CreateUserProfileDto,
-    @ActiveUser() user: ActiveUserData,
+    @ActiveUser('userId') id: string,
   ) {
     return this.commandBus.execute(
-      new CreateProfileCommand(id, createUserProfileDto, user),
+      new CreateProfileCommand(id, createUserProfileDto),
     );
   }
 
-  @Put(':id/profile')
-  @UpdateUserProfileDecorator()
-  @HttpCode(204)
-  async updateUserProfile(
-    @Param('id') id: string,
+  @Put('self/profile')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdateProfileApiDecorator()
+  public async updateProfile(
     @Body() updateUserProfileDto: UpdateUserProfileDto,
-    @ActiveUser() user: ActiveUserData,
+    @ActiveUser('userId') userId: string,
   ) {
     return this.commandBus.execute(
-      new UpdateProfileCommand(id, updateUserProfileDto, user),
+      new UpdateProfileCommand(userId, updateUserProfileDto),
     );
   }
 }

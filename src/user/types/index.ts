@@ -1,4 +1,4 @@
-import type { Avatar, User } from '@prisma/client';
+import type { Avatar, Profile, User } from '@prisma/client';
 
 export interface UserWithEmailConfirmation extends User {
   emailConfirmation: {
@@ -25,3 +25,17 @@ export type AvatarPayload = Pick<
   Avatar,
   'height' | 'width' | 'url' | 'previewUrl' | 'size'
 >;
+
+export type ProfileDbModel = {
+  profile: Pick<
+    Profile,
+    'aboutMe' | 'birthday' | 'city' | 'name' | 'surname'
+  > | null;
+  username: string;
+  avatar: Pick<Avatar, 'url' | 'previewUrl'> | null;
+};
+
+export type ProfileViewModel = Omit<
+  Profile,
+  'updatedAt' | 'id' | 'createdAt' | 'userId'
+> & { avatar: Pick<Avatar, 'url' | 'previewUrl'> } & Pick<User, 'username'>;

@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserProfileDto } from '../../dto/create.user.profile.dto';
 
 @Injectable()
-export abstract class ProfileRepositoryAdapter<T, E> {
-  abstract createUserProfile(
-    createUserProfileDto: CreateUserProfileDto,
+export abstract class ProfileRepositoryAdapter<T> {
+  abstract createProfile(
     userId: string,
+    createUserProfileDto: CreateUserProfileDto,
   ): Promise<T>;
 
-  abstract updateUserProfile(
-    createUserProfileDto: CreateUserProfileDto,
+  abstract updateProfile(
     userId: string,
-  ): Promise<E>;
+    updateUserProfileDto: Partial<CreateUserProfileDto>,
+  ): Promise<void>;
 }
