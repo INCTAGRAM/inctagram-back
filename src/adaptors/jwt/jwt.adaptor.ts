@@ -17,14 +17,14 @@ export class JwtAdaptor {
   async getTokens(userId: string, userName: string, deviceId: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { userId, userName, deviceId },
+        { userId, deviceId },
         {
           secret: this.config.get<string>('AT_SECRET'),
           expiresIn: '1h',
         },
       ),
       this.jwtService.signAsync(
-        { userId, userName, deviceId },
+        { userId, deviceId },
         {
           secret: this.config.get<string>('RT_SECRET'),
           expiresIn: '2h',

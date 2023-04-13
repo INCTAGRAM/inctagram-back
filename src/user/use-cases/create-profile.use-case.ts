@@ -29,9 +29,8 @@ export class CreateProfileUseCase
     if (!user || !user.emailConfirmation?.isConfirmed)
       throw new NotFoundException();
 
-    const profile = await this.profileQueryRepository.findProfileByUserId(
-      userId,
-    );
+    const profile =
+      await this.profileQueryRepository.findProfileAndAvatarByUserId(userId);
 
     if (profile) throw new ForbiddenException();
 

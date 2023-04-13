@@ -13,7 +13,7 @@ import { ActiveUserData } from '../types';
 
 export class UpdateProfileCommand {
   constructor(
-    public user: ActiveUserData,
+    public userId: string,
     public updateUserProfileDto: UpdateUserProfileDto,
   ) {}
 }
@@ -27,20 +27,19 @@ export class UpdateProfileUseCase
     private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
   ) {}
   public async execute(command: UpdateProfileCommand) {
-    const { userId, username } = command.user;
+    const { userId } = command;
 
+    const user = await this.userRepository.findUserById(userId);
+    if (!user) throw new NotFoundException();
     // check that username does not exist
     const checkUserName = await this.userRepository.findUserByUserName(
       command.updateUserProfileDto.username,
     );
-    if (checkUserName && checkUserName.username !== username)
-      throw new BadRequestException(
-        'This username belongs to a different user',
-      );
+    if (checkUserName && checkUserName.username !== user.username)
+      throw new BadRequestException('This username is already used');
 
-    const profile = await this.profileQueryRepository.findProfileByUserId(
-      userId,
-    );
+    const profile =
+      await this.profileQueryRepository.findProfileAndAvatarByUserId(userId);
 
     if (!profile) throw new NotFoundException();
 

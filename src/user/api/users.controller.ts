@@ -77,7 +77,8 @@ export class UsersController {
   @Get('self/profile')
   @GetProfileApiDecorator()
   public async getProfile(@ActiveUser('userId') id: string) {
-    const profile = await this.profileQueryRepository.findProfileByUserId(id);
+    const profile =
+      await this.profileQueryRepository.findProfileAndAvatarByUserId(id);
 
     if (!profile) throw new NotFoundException();
 
@@ -101,10 +102,10 @@ export class UsersController {
   @UpdateProfileApiDecorator()
   public async updateProfile(
     @Body() updateUserProfileDto: UpdateUserProfileDto,
-    @ActiveUser() user: ActiveUserData,
+    @ActiveUser('userId') userId: string,
   ) {
     return this.commandBus.execute(
-      new UpdateProfileCommand(user, updateUserProfileDto),
+      new UpdateProfileCommand(userId, updateUserProfileDto),
     );
   }
 }
