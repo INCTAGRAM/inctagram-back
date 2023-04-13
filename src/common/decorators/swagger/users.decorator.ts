@@ -7,6 +7,7 @@ import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
@@ -212,8 +213,7 @@ export function UpdateProfileApiDecorator() {
         },
       },
     }),
-    ApiCreatedResponse({
-      status: 204,
+    ApiNoContentResponse({
       description: 'User account has been updated',
     }),
     ApiBadRequestResponse({
