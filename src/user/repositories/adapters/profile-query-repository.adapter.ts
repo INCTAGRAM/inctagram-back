@@ -3,5 +3,7 @@ import { ProfileDbModel } from 'src/user/types';
 
 @Injectable()
 export abstract class ProfileQueryRepositoryAdapter {
-  abstract findProfileByUserId(userId: string): Promise<ProfileDbModel | null>;
+  abstract findProfileAndAvatarByUserId(
+    userId: string,
+  ): Promise<ProfileDbModel | null>;
 }

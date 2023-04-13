@@ -36,13 +36,15 @@ import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { ProfileMapper } from '../utils/ProfileMappter';
-import { ConfirmationGuard } from 'src/common/guards/confirmation.guard';
+
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
 import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
+import { UserEmailConfirmationGuard } from '../../common/guards/user-confirmation.guard';
+import { ActiveUserData } from '../types';
 
 @ApiTags('Users')
-@UseGuards(JwtAtGuard, ConfirmationGuard)
+@UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
 @Controller(API.USERS)
 export class UsersController {
   public constructor(
@@ -75,7 +77,8 @@ export class UsersController {
   @Get('self/profile')
   @GetProfileApiDecorator()
   public async getProfile(@ActiveUser('userId') id: string) {
-    const profile = await this.profileQueryRepository.findProfileByUserId(id);
+    const profile =
+      await this.profileQueryRepository.findProfileAndAvatarByUserId(id);
 
     if (!profile) throw new NotFoundException();
 
@@ -99,10 +102,10 @@ export class UsersController {
   @UpdateProfileApiDecorator()
   public async updateProfile(
     @Body() updateUserProfileDto: UpdateUserProfileDto,
-    @ActiveUser('userId') id: string,
+    @ActiveUser('userId') userId: string,
   ) {
     return this.commandBus.execute(
-      new UpdateProfileCommand(id, updateUserProfileDto),
+      new UpdateProfileCommand(userId, updateUserProfileDto),
     );
   }
 }

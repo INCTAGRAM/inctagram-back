@@ -7,6 +7,7 @@ import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
+  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
@@ -87,8 +88,15 @@ export function GetProfileApiDecorator() {
       schema: {
         type: 'object',
         example: {
-          get username() {
-            return 'James_Bond';
+          username: 'Licence_to_kill',
+          name: 'James',
+          surname: 'Bond',
+          birthday: '007 - 007 - 007',
+          city: 'London',
+          aboutMe: 'Bond, James Bond...',
+          avatar: {
+            url: 'http://cloud.image.png',
+            previewUrl: 'http://cloud.preview.image.png',
           },
         },
       },
@@ -96,10 +104,6 @@ export function GetProfileApiDecorator() {
     ApiForbiddenResponse({
       description:
         'If user profile already exists, or if the user has not confirmed their emai',
-      type: FieldError,
-    }),
-    ApiNotFoundResponse({
-      description: 'User with such id was not found',
       type: FieldError,
     }),
     ApiUnauthorizedResponse({
@@ -150,8 +154,7 @@ export function CreateProfileApiDecorator() {
         },
       },
     }),
-    ApiCreatedResponse({
-      status: 204,
+    ApiNoContentResponse({
       description: 'User account has been created',
     }),
     ApiBadRequestResponse({
@@ -212,8 +215,7 @@ export function UpdateProfileApiDecorator() {
         },
       },
     }),
-    ApiCreatedResponse({
-      status: 204,
+    ApiNoContentResponse({
       description: 'User account has been updated',
     }),
     ApiBadRequestResponse({

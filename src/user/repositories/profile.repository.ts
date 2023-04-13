@@ -34,11 +34,17 @@ export class ProfileRepository extends ProfileRepositoryAdapter<Profile> {
     updateUserProfileDto: UpdateUserProfileDto,
   ): Promise<void> {
     try {
-      await this.prisma.profile.update({
+      const { username, ...profileUpdateInfo } = updateUserProfileDto;
+      await this.prisma.user.update({
         where: {
-          userId,
+          id: userId,
         },
-        data: updateUserProfileDto,
+        data: {
+          username,
+          profile: {
+            update: profileUpdateInfo,
+          },
+        },
       });
     } catch (error) {
       console.log(error);

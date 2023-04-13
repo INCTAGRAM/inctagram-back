@@ -31,10 +31,11 @@ export type ProfileDbModel = {
     Profile,
     'aboutMe' | 'birthday' | 'city' | 'name' | 'surname'
   > | null;
+  username: string;
   avatar: Pick<Avatar, 'url' | 'previewUrl'> | null;
 };
 
 export type ProfileViewModel = Omit<
   Profile,
   'updatedAt' | 'id' | 'createdAt' | 'userId'
-> & { avatar: Pick<Avatar, 'url' | 'previewUrl'> };
+> & { avatar: Pick<Avatar, 'url' | 'previewUrl'> } & Pick<User, 'username'>;

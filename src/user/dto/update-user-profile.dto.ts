@@ -16,9 +16,17 @@ import {
   NAME_LENGTH_MIN,
   SURNAME_LENGTH_MAX,
   SURNAME_LENGTH_MIN,
+  USERNAME_LENGTH_MAX,
+  USERNAME_LENGTH_MIN,
 } from 'src/common/constants';
 
 export class UpdateUserProfileDto {
+  @Length(USERNAME_LENGTH_MIN, USERNAME_LENGTH_MAX)
+  @IsString()
+  @IsNotEmpty()
+  @NotEquals(null)
+  @ValidateIf((_, value) => value !== undefined)
+  username: string;
   @Length(NAME_LENGTH_MIN, NAME_LENGTH_MAX)
   @IsString()
   @IsNotEmpty()
