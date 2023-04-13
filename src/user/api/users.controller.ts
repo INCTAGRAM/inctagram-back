@@ -41,6 +41,7 @@ import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
 import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
 import { UserEmailConfirmationGuard } from '../../common/guards/user-confirmation.guard';
+import { ActiveUserData } from '../types';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -100,10 +101,10 @@ export class UsersController {
   @UpdateProfileApiDecorator()
   public async updateProfile(
     @Body() updateUserProfileDto: UpdateUserProfileDto,
-    @ActiveUser('userId') id: string,
+    @ActiveUser() user: ActiveUserData,
   ) {
     return this.commandBus.execute(
-      new UpdateProfileCommand(id, updateUserProfileDto),
+      new UpdateProfileCommand(user, updateUserProfileDto),
     );
   }
 }

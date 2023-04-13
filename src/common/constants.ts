@@ -22,6 +22,8 @@ export const YANDEX_CLOUD_STORAGE_HOSTNAME = 'storage.yandexcloud.net';
 export const NAME_LENGTH_MIN = 1;
 export const NAME_LENGTH_MAX = 40;
 
+export const USERNAME_LENGTH_MIN = 6;
+export const USERNAME_LENGTH_MAX = 30;
 export const SURNAME_LENGTH_MIN = 1;
 export const SURNAME_LENGTH_MAX = 40;
 
