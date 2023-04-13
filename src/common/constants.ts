@@ -18,3 +18,15 @@ export const AVATAR_PREVIEW_HEIGHT = 256;
 export const REGION = 'us-east-2';
 export const YANDEX_CLOUD_ENDPOINT = 'https://storage.yandexcloud.net';
 export const YANDEX_CLOUD_STORAGE_HOSTNAME = 'storage.yandexcloud.net';
+
+export const NAME_LENGTH_MIN = 1;
+export const NAME_LENGTH_MAX = 40;
+
+export const SURNAME_LENGTH_MIN = 1;
+export const SURNAME_LENGTH_MAX = 40;
+
+export const CITY_LENGTH_MIN = 1;
+export const CITY_LENGTH_MAX = 60;
+
+export const ABOUT_ME_LENGTH_MIN = 1;
+export const ABOUT_ME_LENGTH_MAX = 200;

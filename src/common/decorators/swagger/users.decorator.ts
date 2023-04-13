@@ -7,13 +7,23 @@ import {
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
-  ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { MIN_AVATAR_HEIGHT, MIN_AVATAR_WIDTH } from 'src/common/constants';
+import {
+  ABOUT_ME_LENGTH_MAX,
+  ABOUT_ME_LENGTH_MIN,
+  CITY_LENGTH_MAX,
+  CITY_LENGTH_MIN,
+  MIN_AVATAR_HEIGHT,
+  MIN_AVATAR_WIDTH,
+  NAME_LENGTH_MAX,
+  NAME_LENGTH_MIN,
+  SURNAME_LENGTH_MAX,
+  SURNAME_LENGTH_MIN,
+} from 'src/common/constants';
 import { FieldError } from 'src/types';
 
 export function UploadUserAvatarApiDecorator() {
@@ -66,10 +76,10 @@ export function UploadUserAvatarApiDecorator() {
   );
 }
 
-export function CheckUserProfileDecorator() {
+export function GetProfileApiDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Check if user profile exists',
+      summary: 'Return self user profile',
     }),
     ApiResponse({
       status: 200,
@@ -77,12 +87,15 @@ export function CheckUserProfileDecorator() {
       schema: {
         type: 'object',
         example: {
-          username: 'James_Bond',
+          get username() {
+            return 'James_Bond';
+          },
         },
       },
     }),
-    ApiBadRequestResponse({
-      description: 'If user profile already exists',
+    ApiForbiddenResponse({
+      description:
+        'If user profile already exists, or if the user has not confirmed their emai',
       type: FieldError,
     }),
     ApiNotFoundResponse({
@@ -96,7 +109,7 @@ export function CheckUserProfileDecorator() {
   );
 }
 
-export function CreateUserProfileDecorator() {
+export function CreateProfileApiDecorator() {
   return applyDecorators(
     ApiOperation({
       summary: 'Create user profile',
@@ -108,14 +121,14 @@ export function CreateUserProfileDecorator() {
         properties: {
           name: {
             type: 'string',
-            minimum: 1,
-            maximum: 40,
+            minimum: NAME_LENGTH_MIN,
+            maximum: NAME_LENGTH_MAX,
             example: 'James',
           },
           surname: {
             type: 'string',
-            minimum: 1,
-            maximum: 40,
+            minimum: SURNAME_LENGTH_MIN,
+            maximum: SURNAME_LENGTH_MAX,
             example: 'Bond',
           },
           birthday: {
@@ -124,25 +137,25 @@ export function CreateUserProfileDecorator() {
           },
           city: {
             type: 'string',
-            minimum: 1,
-            maximum: 60,
+            minimum: CITY_LENGTH_MIN,
+            maximum: CITY_LENGTH_MAX,
             example: 'London',
           },
           aboutMe: {
             type: 'string',
-            minimum: 1,
-            maximum: 200,
+            minimum: ABOUT_ME_LENGTH_MIN,
+            maximum: ABOUT_ME_LENGTH_MAX,
             example: 'Bond, James Bond...',
           },
         },
       },
     }),
     ApiCreatedResponse({
-      status: 201,
+      status: 204,
       description: 'User account has been created',
     }),
     ApiBadRequestResponse({
-      description: 'If the InputModel has incorrect values',
+      description: 'If the InputModel has incorrect values, ',
       type: FieldError,
     }),
     ApiNotFoundResponse({
@@ -153,13 +166,13 @@ export function CreateUserProfileDecorator() {
     }),
     ApiForbiddenResponse({
       description:
-        'If user tries to create an account that does not belongs to him',
+        'If account has been already created, or if the user has not confirmed their emai',
     }),
     ApiBearerAuth(),
   );
 }
 
-export function UpdateUserProfileDecorator() {
+export function UpdateProfileApiDecorator() {
   return applyDecorators(
     ApiOperation({
       summary: 'Update user profile',
@@ -167,24 +180,17 @@ export function UpdateUserProfileDecorator() {
     ApiBody({
       schema: {
         type: 'object',
-        required: ['username', 'name', 'surname', 'city'],
         properties: {
-          username: {
-            type: 'string',
-            minimum: 6,
-            maximum: 30,
-            example: 'Licence_to_kill',
-          },
           name: {
             type: 'string',
-            minimum: 1,
-            maximum: 40,
+            minimum: NAME_LENGTH_MIN,
+            maximum: NAME_LENGTH_MAX,
             example: 'James',
           },
           surname: {
             type: 'string',
-            minimum: 1,
-            maximum: 40,
+            minimum: SURNAME_LENGTH_MIN,
+            maximum: SURNAME_LENGTH_MAX,
             example: 'Bond',
           },
           birthday: {
@@ -193,20 +199,21 @@ export function UpdateUserProfileDecorator() {
           },
           city: {
             type: 'string',
-            minimum: 1,
-            maximum: 60,
+            minimum: CITY_LENGTH_MIN,
+            maximum: CITY_LENGTH_MAX,
             example: 'London',
           },
           aboutMe: {
             type: 'string',
-            minimum: 1,
-            maximum: 200,
+            minimum: ABOUT_ME_LENGTH_MIN,
+            maximum: ABOUT_ME_LENGTH_MAX,
             example: 'Bond, James Bond...',
           },
         },
       },
     }),
-    ApiNoContentResponse({
+    ApiCreatedResponse({
+      status: 204,
       description: 'User account has been updated',
     }),
     ApiBadRequestResponse({
@@ -214,14 +221,13 @@ export function UpdateUserProfileDecorator() {
       type: FieldError,
     }),
     ApiNotFoundResponse({
-      description: 'User with such id was not found',
+      description: 'User with such id or corresponding account was not found',
     }),
     ApiUnauthorizedResponse({
       description: 'JWT accessToken is missing, expired or incorrect',
     }),
     ApiForbiddenResponse({
-      description:
-        'If user tries to update an account that does not belongs to him',
+      description: 'The user has not confirmed their emai',
     }),
     ApiBearerAuth(),
   );
