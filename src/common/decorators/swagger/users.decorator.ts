@@ -91,7 +91,7 @@ export function GetProfileApiDecorator() {
           username: 'Licence_to_kill',
           name: 'James',
           surname: 'Bond',
-          birthday: '007 - 007 - 007',
+          birthday: '2007-07-07',
           city: 'London',
           aboutMe: 'Bond, James Bond...',
           avatar: {
@@ -136,8 +136,8 @@ export function CreateProfileApiDecorator() {
             example: 'Bond',
           },
           birthday: {
-            type: 'Date',
-            example: '007 - 007 - 007',
+            type: 'string',
+            example: '2007-07-07',
           },
           city: {
             type: 'string',
@@ -197,8 +197,8 @@ export function UpdateProfileApiDecorator() {
             example: 'Bond',
           },
           birthday: {
-            type: 'Date',
-            example: '007 - 007 - 007',
+            type: 'string',
+            example: '2007-07-07',
           },
           city: {
             type: 'string',
