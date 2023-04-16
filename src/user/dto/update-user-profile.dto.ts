@@ -19,7 +19,9 @@ import {
   USERNAME_LENGTH_MAX,
   USERNAME_LENGTH_MIN,
 } from 'src/common/constants';
-
+import { Transform } from 'class-transformer';
+import { format, parse, parseISO } from 'date-fns';
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 export class UpdateUserProfileDto {
   @Length(USERNAME_LENGTH_MIN, USERNAME_LENGTH_MAX)
   @IsString()
@@ -40,8 +42,16 @@ export class UpdateUserProfileDto {
   @NotEquals(null)
   @ValidateIf((_, value) => value !== undefined)
   surname?: string;
-
-  @IsDate()
+  @Transform(({ value }) => {
+    try {
+      return new Date(format(parseISO(value), 'yyyy-MM-dd'));
+    } catch (error) {
+      throw new BadRequestException(
+        'Invalid time value. Birthday must be ISOString of format yyyy-MM-dd',
+      );
+    }
+  })
+  @IsDate({ message: 'birthday must be ISOString of format yyyy-MM-dd' })
   @IsOptional()
   /* TODO compare with min age of registraton */
   birthday?: Date | null;
