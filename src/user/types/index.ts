@@ -37,5 +37,7 @@ export type ProfileDbModel = {
 
 export type ProfileViewModel = Omit<
   Profile,
-  'updatedAt' | 'id' | 'createdAt' | 'userId'
-> & { avatar: Pick<Avatar, 'url' | 'previewUrl'> } & Pick<User, 'username'>;
+  'updatedAt' | 'id' | 'createdAt' | 'userId' | 'birthday'
+> & { birthday: string | null } & {
+  avatar: Pick<Avatar, 'url' | 'previewUrl'>;
+} & Pick<User, 'username'>;

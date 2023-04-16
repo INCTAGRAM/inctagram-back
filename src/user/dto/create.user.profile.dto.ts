@@ -15,6 +15,8 @@ import {
   SURNAME_LENGTH_MAX,
   SURNAME_LENGTH_MIN,
 } from 'src/common/constants';
+import { Transform } from 'class-transformer';
+import { parse } from 'date-fns';
 
 export class CreateUserProfileDto {
   @Length(NAME_LENGTH_MIN, NAME_LENGTH_MAX)
@@ -26,8 +28,10 @@ export class CreateUserProfileDto {
   @IsString()
   @IsNotEmpty()
   surname: string;
-
-  @IsDate()
+  @Transform(({ value }) => {
+    return parse(value, 'yyyy-MM-dd', new Date());
+  })
+  @IsDate({ message: 'birthday must be ISOString of format yyyy-MM-dd' })
   @IsOptional()
   birthday: Date | null;
 

@@ -513,4 +513,31 @@ describe('AuthsController', () => {
       });
     });
   });
+
+  // Password-recovery
+  describe('As an unauthorized user, I want to recover my password', () => {
+    describe('drop database', () => {
+      it('should drop database', async () => {
+        await prisma.user.deleteMany({});
+      });
+    });
+    describe('Successful password-recovery', () => {
+      it('should prepare data', async () => {
+        // create user
+        const response = await request(httpServer)
+          .post('/api/auth/registration')
+          .send(authStub.registration.validUser);
+        expect(response.status).toBe(204);
+        expect(response.body).toEqual({});
+        // manually confirm user
+        const manuallyConfirmUser = await prisma.emailConfirmation.update({
+          where: { userEmail: 'Aegoraa@yandex.ru' },
+          data: {
+            isConfirmed: true,
+          },
+        });
+        expect(manuallyConfirmUser.isConfirmed).toBeTruthy();
+      });
+    });
+  });
 });

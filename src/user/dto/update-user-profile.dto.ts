@@ -19,7 +19,8 @@ import {
   USERNAME_LENGTH_MAX,
   USERNAME_LENGTH_MIN,
 } from 'src/common/constants';
-
+import { Transform } from 'class-transformer';
+import { parse } from 'date-fns';
 export class UpdateUserProfileDto {
   @Length(USERNAME_LENGTH_MIN, USERNAME_LENGTH_MAX)
   @IsString()
@@ -40,8 +41,10 @@ export class UpdateUserProfileDto {
   @NotEquals(null)
   @ValidateIf((_, value) => value !== undefined)
   surname?: string;
-
-  @IsDate()
+  @Transform(({ value }) => {
+    return parse(value, 'yyyy-MM-dd', new Date());
+  })
+  @IsDate({ message: 'birthday must be ISOString of format yyyy-MM-dd' })
   @IsOptional()
   /* TODO compare with min age of registraton */
   birthday?: Date | null;

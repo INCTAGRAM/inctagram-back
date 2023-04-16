@@ -8,7 +8,8 @@ export class ProfileMapper {
       surname: model?.profile?.surname ?? '',
       aboutMe: model?.profile?.aboutMe ?? '',
       city: model?.profile?.city ?? '',
-      birthday: model?.profile?.birthday ?? null,
+      birthday:
+        model?.profile?.birthday?.toISOString().substring(0, 10) ?? null,
       avatar: {
         url: model?.avatar?.url ?? null,
         previewUrl: model?.avatar?.previewUrl ?? null,
