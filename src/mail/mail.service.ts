@@ -6,8 +6,8 @@ import { User } from '@prisma/client';
 export class MailService {
   constructor(private mailerService: MailerService) {}
 
-  async sendUserConfirmation(user: any, token: string) {
-    const url = `example.com/auth/confirm?code=${token}`;
+  async sendUserConfirmation(user: Partial<User>, token: string) {
+    const url = `example.com/auth/confirm?code=${token}&email=${user.email}`;
 
     await this.mailerService.sendMail({
       to: user.email,
@@ -21,7 +21,7 @@ export class MailService {
   }
 
   async sendPasswordRecovery(user: User, token: string) {
-    const url = `example.com/auth/confirm?code=${token}`;
+    const url = `example.com/auth/confirm?code=${token}&email=${user.email}`;
 
     await this.mailerService.sendMail({
       to: user.email,
