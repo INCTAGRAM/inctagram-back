@@ -23,7 +23,7 @@ model User {
   deviceSession     DeviceSession[]
   avatar            Avatar?
   profile           Profile?
-  post              Post?
+  post              Post[]
 }
 
 model Profile {
@@ -93,7 +93,7 @@ model Avatar {
 
 model Post {
   id     String  @id @default(uuid())
-  userId String  @unique
+  userId String
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   images Image[]
 }
@@ -105,10 +105,9 @@ model Image {
   description String?        @db.VarChar(500)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
-  postId      String         @unique
+  postId      String
   post        Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
   metadata    ImageMetadata?
-  cropInfo    ImageCropInfo?
 }
 
 enum Ratio {
@@ -119,24 +118,28 @@ enum Ratio {
 }
 
 model ImageMetadata {
-  id        String   @id @default(uuid())
-  zoom      Int
-  ratio     Ratio    @default(ORIGINAL)
-  cropInfo  Json
-  imageId   String   @unique
-  image     Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String         @id @default(uuid())
+  zoom      Int?           @default(0)
+  ratio     Ratio?         @default(SQUARE)
+  cropInfo  ImageCropInfo?
+  filters   String[]
+  size      Int
+  height    Int
+  width     Int
+  imageId   String         @unique
+  image     Image          @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
 
 model ImageCropInfo {
-  id        String   @id @default(uuid())
-  x         Int
-  y         Int
-  height    Int
-  width     Int
-  imageId   String   @unique
-  image     Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String        @id @default(uuid())
+  x          Int?
+  y          Int?
+  height     Int?
+  width      Int?
+  metadataId String        @unique
+  metadata   ImageMetadata @relation(fields: [metadataId], references: [id], onDelete: Cascade)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 }

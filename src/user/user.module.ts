@@ -19,11 +19,13 @@ import { ProfileRepository } from './repositories/profile.repository';
 import { UpdateProfileUseCase } from './use-cases/update-profile.use-case';
 import { ProfileRepositoryAdapter } from './repositories/adapters/profile-repository.adapter';
 import { ProfileQueryRepositoryAdapter } from './repositories/adapters/profile-query-repository.adapter';
+import { CreatePostUseCase } from './use-cases/create-post.use-case';
 
 const useCases = [
   UploadAvatarUseCase,
   CreateProfileUseCase,
   UpdateProfileUseCase,
+  CreatePostUseCase,
 ];
 
 @Module({

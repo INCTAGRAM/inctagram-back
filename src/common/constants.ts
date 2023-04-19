@@ -5,6 +5,8 @@ export const API = {
 
 // Field of incoming HTTP message with file data
 export const FILE_FIELD = 'file';
+export const FILES_FIELD = 'files';
+export const MAX_IMAGES_COUNT = 10;
 
 export const MAX_AVATAR_SIZE = 1024 * 1024 * 2;
 export const MIN_AVATAR_HEIGHT = 400;
@@ -13,6 +15,7 @@ export const MAX_AVATAR_HEIGHT = 800;
 export const MAX_AVATAR_WIDTH = 800;
 export const AVATAR_PREVIEW_WIDTH = 257;
 export const AVATAR_PREVIEW_HEIGHT = 256;
+export const MAX_POST_PHOTO_SIZE = 1024 * 1024 * 5;
 
 // Cloud
 export const REGION = 'us-east-2';

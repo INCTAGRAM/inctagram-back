@@ -5,19 +5,26 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  ParseArrayPipe,
   Post,
   Put,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CommandBus } from '@nestjs/cqrs';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 import {
   API,
+  FILES_FIELD,
   FILE_FIELD,
+  MAX_IMAGES_COUNT,
+  MAX_POST_PHOTO_SIZE,
   MIN_AVATAR_HEIGHT,
   MIN_AVATAR_WIDTH,
 } from 'src/common/constants';
@@ -35,13 +42,15 @@ import {
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
 import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
-import { ProfileMapper } from '../utils/ProfileMappter';
+import { ProfileMapper } from '../utils/profile-mapper';
 
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
 import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
 import { UserEmailConfirmationGuard } from '../../common/guards/user-confirmation.guard';
-import { ActiveUserData } from '../types';
+import { ImageInfoDto } from '../dto/image-info.dto';
+import { imageInfoObjectToArrayOfObjects } from '../utils/image-info-object-to-array-of-objects';
+import { CreatePostCommand } from '../use-cases/create-post.use-case';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -107,5 +116,28 @@ export class UsersController {
     return this.commandBus.execute(
       new UpdateProfileCommand(userId, updateUserProfileDto),
     );
+  }
+
+  @Post('self/posts')
+  @UseInterceptors(FilesInterceptor(FILES_FIELD, MAX_IMAGES_COUNT))
+  public async createPost(
+    @ActiveUser('userId') userId: string,
+    @UploadedFiles(
+      ImageValidationPipe({
+        fileType: '.(png|jpeg|jpg)',
+        maxSize: MAX_POST_PHOTO_SIZE,
+      }),
+    )
+    images: Express.Multer.File[],
+    @Body()
+    imagesInfoDto: ImageInfoDto,
+  ) {
+    const imageInfo = imageInfoObjectToArrayOfObjects(imagesInfoDto);
+
+    const result = await this.commandBus.execute(
+      new CreatePostCommand(userId, images, imageInfo),
+    );
+
+    return result;
   }
 }
