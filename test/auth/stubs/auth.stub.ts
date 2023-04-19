@@ -1,4 +1,8 @@
 export const authStub = {
+  passwordRecovery: {
+    recoveryCode: '123',
+  },
+
   registration: {
     validUser: {
       username: 'George',
@@ -45,5 +49,12 @@ export const authStub = {
       email: 'Incorrect@yandex.ru',
       password: '123456',
     },
+  },
+
+  setPasswordRecoveryCode(code: string) {
+    this.passwordRecovery.recoveryCode = code;
+  },
+  getPasswordRecoveryCode() {
+    return this.passwordRecovery.recoveryCode;
   },
 };

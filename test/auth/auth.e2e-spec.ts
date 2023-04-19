@@ -607,6 +607,9 @@ describe('AuthsController', () => {
 
         expect.setState({ userPassword: user?.hash });
         expect.setState({ recoveryCode: passwordRecoveryCode?.recoveryCode });
+        authStub.setPasswordRecoveryCode(
+          passwordRecoveryCode!.recoveryCode as string,
+        );
       });
       it('/api/auth/new-password (POST) should receive 204 and have new password in DB', async () => {
         const recoveryCode = expect.getState().recoveryCode;
@@ -624,6 +627,112 @@ describe('AuthsController', () => {
         });
 
         expect(user?.hash !== userPassword);
+      });
+    });
+
+    describe('Alternative scenario', () => {
+      describe('user provides incorrect data types during password-recovery or new-password', () => {
+        it('/api/auth/password-recovery (POST) should receive 400 if email is of incorrect type', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/password-recovery')
+            .send({ email: authStub.login.invalidUserEmail.email });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/password-recovery',
+          });
+          expect(response.body.message).toHaveLength(1);
+        });
+        it('/api/auth/new-password (POST) should receive 400 if newPassword and recoveryCode are of incorrect type', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/new-password')
+            .send({ newPassword: true, recoveryCode: 12345 });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/new-password',
+          });
+          expect(response.body.message).toHaveLength(2);
+        });
+      });
+
+      describe('user provides incorrect credentials during password-recovery or new-password', () => {
+        it('/api/auth/password-recovery (POST) should receive 204 if email is incorrect to prevent user detection', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/password-recovery')
+            .send({ email: 'test-email@yandex.ru' });
+
+          expect(response.status).toBe(204);
+          expect(response.body).toEqual({});
+        });
+        it('/api/auth/new-password (POST) should receive 400 if newPassword is too short', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/new-password')
+            .send({
+              newPassword: helperFunctionsForTesting.generateString(5),
+              recoveryCode: authStub.getPasswordRecoveryCode(),
+            });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/new-password',
+          });
+          expect(response.body.message).toHaveLength(1);
+        });
+        it('/api/auth/new-password (POST) should receive 400 if newPassword is too long', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/new-password')
+            .send({
+              newPassword: helperFunctionsForTesting.generateString(21),
+              recoveryCode: authStub.getPasswordRecoveryCode(),
+            });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/new-password',
+          });
+          expect(response.body.message).toHaveLength(1);
+        });
+        it('/api/auth/new-password (POST) should receive 400 if passwordRecovery code is incorrect', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/new-password')
+            .send({
+              newPassword: helperFunctionsForTesting.generateString(7),
+              recoveryCode: '123',
+            });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/new-password',
+          });
+          expect(response.body.message).toHaveLength(1);
+        });
+        it('/api/auth/new-password (POST) should receive 400 if both newPassword and recovery code are incorrect', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/new-password')
+            .send({
+              newPassword: helperFunctionsForTesting.generateString(1),
+              recoveryCode: 123,
+            });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/new-password',
+          });
+          expect(response.body.message).toHaveLength(2);
+        });
       });
     });
   });
