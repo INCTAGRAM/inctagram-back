@@ -41,6 +41,9 @@ describe('AuthsController', () => {
   afterAll(async () => {
     await app.close();
   });
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
   beforeAll(async () => {
     await prisma.user.deleteMany({});
   });
@@ -78,7 +81,7 @@ describe('AuthsController', () => {
       it('should have user emailConfirmation isConfirmed to be true', async () => {
         const userEmailConfirmation = await prisma.emailConfirmation.findUnique(
           {
-            where: { userEmail: process.env.IMAP_YANDEX_EMAIL },
+            where: { userEmail: authStub.registration.validUser.email },
           },
         );
 
@@ -584,14 +587,14 @@ describe('AuthsController', () => {
         });
         expect(manuallyConfirmUser.isConfirmed).toBeTruthy();
       });
-      it(' /api/auth/password-recovery (POST) should receive 204, email and have recovery code in DB', async () => {
+      it('/api/auth/password-recovery (POST) should receive 204, email and have recovery code in DB', async () => {
         const response = await request(httpServer)
           .post('/api/auth/password-recovery')
-          .send(authStub.registration.validUser.email);
+          .send({ email: authStub.registration.validUser.email });
 
         expect(response.status).toBe(204);
         expect(response.body).toEqual({});
-        expect(MailServiceMock.sendUserConfirmation).toBeCalledTimes(1);
+        expect(MailServiceMock.sendPasswordRecovery).toBeCalledTimes(1);
 
         const user = await prisma.user.findUnique({
           where: { username: authStub.registration.validUser.username },
@@ -614,7 +617,7 @@ describe('AuthsController', () => {
           .send({ newPassword: 'newPassword', recoveryCode: recoveryCode });
 
         expect(response.status).toBe(204);
-        expect(response.body).toBe({});
+        expect(response.body).toEqual({});
 
         const user = await prisma.user.findUnique({
           where: { username: authStub.registration.validUser.username },
