@@ -808,5 +808,45 @@ describe('AuthsController', () => {
         expect(deviceSessionsAmount).toBe(1);
       });
     });
+
+    describe('Alternative scenarios', () => {
+      it('/api/auth/logout (POST) should fail if refresh-token is missing', async () => {
+        const response = await request(httpServer).post('/api/auth/logout');
+
+        expect(response.status).toBe(401);
+        expect(response.body).toEqual({
+          statusCode: 401,
+          message: expect.any(Array),
+          path: '/api/auth/logout',
+        });
+        expect(response.body.message).toHaveLength(1);
+      });
+      it('/api/auth/logout (POST) should fail if refresh-token is expired', async () => {
+        const response = await request(httpServer)
+          .post('/api/auth/logout')
+          .set('Cookie', authStub.getUserDeviceSession1Tokens().refreshToken);
+
+        expect(response.status).toBe(401);
+        expect(response.body).toEqual({
+          statusCode: 401,
+          message: expect.any(Array),
+          path: '/api/auth/logout',
+        });
+        expect(response.body.message).toHaveLength(1);
+      });
+      it('/api/auth/logout (POST) should fail if refresh-token is incorrect', async () => {
+        const response = await request(httpServer)
+          .post('/api/auth/logout')
+          .set('Cookie', '123456');
+
+        expect(response.status).toBe(401);
+        expect(response.body).toEqual({
+          statusCode: 401,
+          message: expect.any(Array),
+          path: '/api/auth/logout',
+        });
+        expect(response.body.message).toHaveLength(1);
+      });
+    });
   });
 });
