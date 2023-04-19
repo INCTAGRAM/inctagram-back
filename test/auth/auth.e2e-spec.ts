@@ -51,6 +51,7 @@ describe('AuthsController', () => {
         const response = await request(httpServer)
           .post('/api/auth/registration')
           .send(authStub.registration.validUser);
+
         expect(response.status).toBe(204);
         expect(response.body).toEqual({});
         expect(MailServiceMock.sendUserConfirmation).toBeCalledTimes(1);
@@ -59,6 +60,7 @@ describe('AuthsController', () => {
         const emailConformation = await prisma.emailConfirmation.findUnique({
           where: { userEmail: authStub.registration.validUser.email },
         });
+
         expect(emailConformation?.confirmationCode).toBeDefined();
         expect(isUUID(emailConformation?.confirmationCode)).toBeTruthy();
         const validConfirmationCode = emailConformation?.confirmationCode;
@@ -69,6 +71,7 @@ describe('AuthsController', () => {
         const response = await request(httpServer)
           .post('/api/auth/registration-confirmation')
           .send({ code: validConfirmationCode });
+
         expect(response.status).toBe(204);
         expect(response.body).toEqual({});
       });
@@ -78,15 +81,18 @@ describe('AuthsController', () => {
             where: { userEmail: process.env.IMAP_YANDEX_EMAIL },
           },
         );
+
         expect(userEmailConfirmation?.isConfirmed).toBeTruthy();
       });
     });
+
     describe('Alternative registration scenarios', () => {
       describe('The user tries to register with the same email', () => {
         it('should fail to create a user with the same email', async () => {
           const response = await request(httpServer)
             .post('/api/auth/registration')
             .send(authStub.registration.validUser);
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -96,12 +102,14 @@ describe('AuthsController', () => {
           expect(response.body.message).toHaveLength(1);
         });
       });
+
       describe('The user tries to confirm an email with wrong code', () => {
         const validConfirmationCode = expect.getState().validConfirmationCode;
         it('should fail to confirm an email that was already confirmed', async () => {
           const response = await request(httpServer)
             .post('/api/auth/registration-confirmation')
             .send({ code: validConfirmationCode });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -114,6 +122,7 @@ describe('AuthsController', () => {
           const response = await request(httpServer)
             .post('/api/auth/registration-confirmation')
             .send({ code: '123' });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -123,6 +132,7 @@ describe('AuthsController', () => {
           expect(response.body.message).toHaveLength(1);
         });
       });
+
       describe('The user did not receive email and tries to send it again', () => {
         it('should register user with new email', async () => {
           const response = await request(httpServer)
@@ -140,6 +150,7 @@ describe('AuthsController', () => {
             .send({
               email: 'Random123@yandex.ru',
             });
+
           expect(response.status).toBe(404);
           expect(response.body).toEqual({
             statusCode: 404,
@@ -168,6 +179,7 @@ describe('AuthsController', () => {
             .send({
               email: 'Aegoraaa@yandex.ru',
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -177,6 +189,7 @@ describe('AuthsController', () => {
           expect(response.body.message).toHaveLength(1);
         });
       });
+
       describe('The user send incorrect data during registration', () => {
         it('should return 400 status code and array of error because the data was not sent', async () => {
           const response = await request(httpServer)
@@ -188,6 +201,7 @@ describe('AuthsController', () => {
             message: expect.any(Array),
             path: '/api/auth/registration',
           });
+
           expect(response.body.message).toHaveLength(3);
         });
         it('should return 400 status code and array of error because the data was incorrect', async () => {
@@ -198,6 +212,7 @@ describe('AuthsController', () => {
               email: 'email',
               password: 123456,
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -214,6 +229,7 @@ describe('AuthsController', () => {
               email: 'correct@email.com',
               password: helperFunctionsForTesting.generateString(4),
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -230,6 +246,7 @@ describe('AuthsController', () => {
               email: 'correct@email.com',
               password: helperFunctionsForTesting.generateString(21),
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -246,6 +263,7 @@ describe('AuthsController', () => {
               email: 'correct@email.com',
               password: 'correct123',
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -262,6 +280,7 @@ describe('AuthsController', () => {
               email: 'correct@email.com',
               password: 'correct123',
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -271,11 +290,13 @@ describe('AuthsController', () => {
           expect(response.body.message).toHaveLength(1);
         });
       });
+
       describe('The user send incorrect data during registration-confirmation', () => {
         it('should return 400 if the code is empty', async () => {
           const response = await request(httpServer)
             .post('/api/auth/registration-confirmation')
             .send({});
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -288,6 +309,7 @@ describe('AuthsController', () => {
           const response = await request(httpServer)
             .post('/api/auth/registration-confirmation')
             .send({ code: true });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -297,11 +319,13 @@ describe('AuthsController', () => {
           expect(response.body.message).toHaveLength(1);
         });
       });
+
       describe('The user send incorrect data during registration-email-resending', () => {
         it('should return 400 if the email is empty', async () => {
           const response = await request(httpServer)
             .post('/api/auth/registration-email-resending')
             .send({});
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -316,6 +340,7 @@ describe('AuthsController', () => {
             .send({
               email: 'incorrect-email',
             });
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -337,12 +362,14 @@ describe('AuthsController', () => {
         await prisma.user.deleteMany({});
       });
     });
+
     describe('The user successfully logs in', () => {
       it('should prepare data', async () => {
         // create user
         const response = await request(httpServer)
           .post('/api/auth/registration')
           .send(authStub.registration.validUser);
+
         expect(response.status).toBe(204);
         expect(response.body).toEqual({});
         // manually confirm user
@@ -359,20 +386,25 @@ describe('AuthsController', () => {
           .post('/api/auth/login')
           .set('User-Agent', 'agent007')
           .send(authStub.login);
+
         expect(token_1.status).toBe(200);
         expect(isUUID(token_1.body.accessToken));
         expect(token_1.headers['set-cookie']).toBeDefined();
+
         const token_2 = await request(httpServer)
           .post('/api/auth/login')
           .set('User-Agent', 'agent007')
           .send(authStub.login);
+
         expect(token_2.status).toBe(200);
         expect(isUUID(token_2.body.accessToken));
         expect(token_2.headers['set-cookie']).toBeDefined();
+
         const token_3 = await request(httpServer)
           .post('/api/auth/login')
           .set('User-Agent', 'agent007')
           .send(authStub.login);
+
         expect(token_3.status).toBe(200);
         expect(isUUID(token_3.body.accessToken));
         expect(token_3.headers['set-cookie']).toBeDefined();
@@ -394,6 +426,7 @@ describe('AuthsController', () => {
         const allSessions = await prisma.deviceSession.findMany({
           where: { userId: RtPayload_1.userID },
         });
+
         expect(allSessions).toBeDefined();
         // expect(allSessions).toBe(Array);
         expect(allSessions).toHaveLength(3);
@@ -418,6 +451,7 @@ describe('AuthsController', () => {
         const response = await request(httpServer)
           .get('/api/sessions/devices')
           .set('Cookie', token_1);
+
         expect(response.status).toBe(401);
       });
       it('/api/sessions/devices (GET) should find devices if new refreshToken is used', async () => {
@@ -425,9 +459,11 @@ describe('AuthsController', () => {
         const response = await request(httpServer)
           .get('/api/sessions/devices')
           .set('Cookie', token_2);
+
         expect(response.status).toBe(200);
       });
     });
+
     describe('Alternative scenario', () => {
       describe('User provides incorrect data types during log in', () => {
         it('/api/auth/login (POST) should not log in if user email is of wrong type', async () => {
@@ -435,6 +471,7 @@ describe('AuthsController', () => {
             .post('/api/auth/login')
             .set('User-Agent', 'agent007')
             .send(authStub.login.invalidUserEmail);
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -448,6 +485,7 @@ describe('AuthsController', () => {
             .post('/api/auth/login')
             .set('User-Agent', 'agent007')
             .send(authStub.login.invalidUserPassword);
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -461,6 +499,7 @@ describe('AuthsController', () => {
             .post('/api/auth/login')
             .set('User-Agent', 'agent007')
             .send(authStub.login.invalidUser);
+
           expect(response.status).toBe(400);
           expect(response.body).toEqual({
             statusCode: 400,
@@ -470,12 +509,14 @@ describe('AuthsController', () => {
           expect(response.body.message).toHaveLength(2);
         });
       });
+
       describe('User provides incorrect credentials', () => {
         it('/api/auth/login (POST) should not log in if user email is incorrect', async () => {
           const response = await request(httpServer)
             .post('/api/auth/login')
             .set('User-Agent', 'agent007')
             .send(authStub.login.incorrectUserEmail);
+
           expect(response.status).toBe(401);
           expect(response.body).toEqual({
             statusCode: 401,
@@ -489,6 +530,7 @@ describe('AuthsController', () => {
             .post('/api/auth/login')
             .set('User-Agent', 'agent007')
             .send(authStub.login.incorrectUserPassword);
+
           expect(response.status).toBe(401);
           expect(response.body).toEqual({
             statusCode: 401,
@@ -502,6 +544,7 @@ describe('AuthsController', () => {
             .post('/api/auth/login')
             .set('User-Agent', 'agent007')
             .send(authStub.login.incorrectUser);
+
           expect(response.status).toBe(401);
           expect(response.body).toEqual({
             statusCode: 401,
@@ -521,14 +564,17 @@ describe('AuthsController', () => {
         await prisma.user.deleteMany({});
       });
     });
+
     describe('Successful password-recovery', () => {
       it('should prepare data', async () => {
         // create user
         const response = await request(httpServer)
           .post('/api/auth/registration')
           .send(authStub.registration.validUser);
+
         expect(response.status).toBe(204);
         expect(response.body).toEqual({});
+        expect(MailServiceMock.sendUserConfirmation).toBeCalledTimes(1);
         // manually confirm user
         const manuallyConfirmUser = await prisma.emailConfirmation.update({
           where: { userEmail: 'Aegoraa@yandex.ru' },
@@ -537,6 +583,44 @@ describe('AuthsController', () => {
           },
         });
         expect(manuallyConfirmUser.isConfirmed).toBeTruthy();
+      });
+      it(' /api/auth/password-recovery (POST) should receive 204, email and have recovery code in DB', async () => {
+        const response = await request(httpServer)
+          .post('/api/auth/password-recovery')
+          .send(authStub.registration.validUser.email);
+
+        expect(response.status).toBe(204);
+        expect(response.body).toEqual({});
+        expect(MailServiceMock.sendUserConfirmation).toBeCalledTimes(1);
+
+        const user = await prisma.user.findUnique({
+          where: { username: authStub.registration.validUser.username },
+        });
+        const passwordRecoveryCode = await prisma.passwordRecovery.findUnique({
+          where: { userId: user!.id },
+        });
+
+        expect(passwordRecoveryCode?.recoveryCode).not.toBe(null);
+
+        expect.setState({ userPassword: user?.hash });
+        expect.setState({ recoveryCode: passwordRecoveryCode?.recoveryCode });
+      });
+      it('/api/auth/new-password (POST) should receive 204 and have new password in DB', async () => {
+        const recoveryCode = expect.getState().recoveryCode;
+        const userPassword = expect.getState().userPassword;
+
+        const response = await request(httpServer)
+          .post('/api/auth/new-password')
+          .send({ newPassword: 'newPassword', recoveryCode: recoveryCode });
+
+        expect(response.status).toBe(204);
+        expect(response.body).toBe({});
+
+        const user = await prisma.user.findUnique({
+          where: { username: authStub.registration.validUser.username },
+        });
+
+        expect(user?.hash !== userPassword);
       });
     });
   });
