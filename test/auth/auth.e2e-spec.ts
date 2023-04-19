@@ -560,6 +560,7 @@ describe('AuthsController', () => {
     });
   });
 
+  ///////////////////////////////////////////////////////
   // Password-recovery
   describe('As an unauthorized user, I want to recover my password', () => {
     describe('drop database', () => {
@@ -733,6 +734,78 @@ describe('AuthsController', () => {
           });
           expect(response.body.message).toHaveLength(2);
         });
+      });
+    });
+  });
+
+  ///////////////////////////////////////////////////////
+  // LOGOUT
+  describe('As an unauthorized user, I want to be able to logout from the system', () => {
+    describe('drop database', () => {
+      it('should drop database', async () => {
+        await prisma.user.deleteMany({});
+      });
+    });
+
+    describe('Successful logout', () => {
+      it('should prepare data', async () => {
+        // create user
+        const response = await request(httpServer)
+          .post('/api/auth/registration')
+          .send(authStub.registration.validUser);
+
+        expect(response.status).toBe(204);
+        expect(response.body).toEqual({});
+        expect(MailServiceMock.sendUserConfirmation).toBeCalledTimes(1);
+        // manually confirm user
+        const manuallyConfirmUser = await prisma.emailConfirmation.update({
+          where: { userEmail: 'Aegoraa@yandex.ru' },
+          data: {
+            isConfirmed: true,
+          },
+        });
+        expect(manuallyConfirmUser.isConfirmed).toBeTruthy();
+
+        // login user 2 times to create two different sessions
+        const firstSession = await request(httpServer)
+          .post('/api/auth/login')
+          .set('User-Agent', 'agent007')
+          .send(authStub.login);
+
+        expect(firstSession.status).toBe(200);
+        expect(isUUID(firstSession.body.accessToken));
+        expect(firstSession.headers['set-cookie']).toBeDefined();
+
+        authStub.setUserDeviceSession1Tokens(
+          firstSession.headers['set-cookie'][0],
+        );
+
+        const secondSession = await request(httpServer)
+          .post('/api/auth/login')
+          .set('User-Agent', 'agent008')
+          .send(authStub.login);
+
+        expect(secondSession.status).toBe(200);
+        expect(isUUID(secondSession.body.accessToken));
+        expect(secondSession.headers['set-cookie']).toBeDefined();
+
+        const deviceSessionsAmount = await prisma.deviceSession.count();
+        expect(deviceSessionsAmount).toBe(2);
+
+        authStub.setUserDeviceSession2Tokens(
+          firstSession.headers['set-cookie'][0],
+        );
+      });
+      it('/api/auth/logout (POST) should successfully logout from the system', async () => {
+        const response = await request(httpServer)
+          .post('/api/auth/logout')
+          .set('Cookie', authStub.getUserDeviceSession1Tokens().refreshToken);
+
+        expect(response.status).toBe(204);
+        expect(response.headers['set-cookie']).toBeUndefined();
+
+        const deviceSessionsAmount = await prisma.deviceSession.count();
+        expect(deviceSessionsAmount).toBe(1);
       });
     });
   });
