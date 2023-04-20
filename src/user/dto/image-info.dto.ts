@@ -1,3 +1,4 @@
+import { Ratio } from '@prisma/client';
 import { plainToInstance, Transform, Type } from 'class-transformer';
 import {
   IsArray,
@@ -11,33 +12,26 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export enum Ratio {
-  ORIGINAL = 'ORIGINAL',
-  PORTRAIT = 'PORTRAIT',
-  LANDSCAPE = 'LANDSCAPE',
-  SQUARE = 'SQUARE',
-}
-
 export class CropInfo {
   @Min(0)
   @IsNumber()
   @IsOptional()
-  x: number;
+  public x: number;
 
   @Min(0)
   @IsNumber()
   @IsOptional()
-  y: number;
+  public y: number;
 
   @IsPositive()
   @IsNumber()
   @IsOptional()
-  height: number;
+  public height: number;
 
   @IsPositive()
   @IsNumber()
   @IsOptional()
-  width: number;
+  public width: number;
 }
 
 export class ImageInfoDto {
@@ -56,7 +50,7 @@ export class ImageInfoDto {
 
   @IsEnum(Ratio, { each: true })
   @IsOptional()
-  ratio: Ratio[];
+  public ratio: Ratio[];
 
   @ValidateNested()
   @Type(() => CropInfo)
@@ -68,7 +62,7 @@ export class ImageInfoDto {
     }
   })
   @IsOptional()
-  cropInfo: CropInfo[];
+  public cropInfo: CropInfo[];
 
   // TODO IsArrayOfStringsValiator
   @IsArray({ each: true })
@@ -80,9 +74,9 @@ export class ImageInfoDto {
     }
   })
   @IsOptional()
-  filters: string[][];
+  public filters: string[][];
 
   @IsString({ each: true })
   @IsOptional()
-  description: string[];
+  public description: string[];
 }

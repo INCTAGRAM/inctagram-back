@@ -3,10 +3,11 @@ import type {
   Image,
   ImageCropInfo,
   ImageMetadata,
+  Post,
   Profile,
   User,
 } from '@prisma/client';
-import { CropInfo, Ratio } from '../dto/image-info.dto';
+import { CropInfo } from '../dto/image-info.dto';
 
 export interface UserWithEmailConfirmation extends User {
   emailConfirmation: {
@@ -68,4 +69,21 @@ export interface ImageInfo {
   filters: string[];
   description: string;
   cropInfo: CropInfo;
+}
+
+export type CreatePostResult = Post & {
+  images: (Image & {
+    metadata:
+      | (ImageMetadata & {
+          cropInfo: ImageCropInfo | null;
+        })
+      | null;
+  })[];
+};
+
+export enum Ratio {
+  ORIGINAL = 'ORIGINAL',
+  PORTRAIT = 'PORTRAIT',
+  LANDSCAPE = 'LANDSCAPE',
+  SQUARE = 'SQUARE',
 }

@@ -1,19 +1,18 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   NotFoundException,
-  ParseArrayPipe,
+  Param,
   Post,
   Put,
   UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CommandBus } from '@nestjs/cqrs';
@@ -50,7 +49,13 @@ import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-
 import { UserEmailConfirmationGuard } from '../../common/guards/user-confirmation.guard';
 import { ImageInfoDto } from '../dto/image-info.dto';
 import { imageInfoObjectToArrayOfObjects } from '../utils/image-info-object-to-array-of-objects';
-import { CreatePostCommand } from '../use-cases/create-post.use-case';
+import { CreatePostCommand } from '../use-cases/post/create-post.use-case';
+import { DeletePostCommand } from '../use-cases/post/delete-post.use-case';
+import {
+  CreatePostApiDecorator,
+  DeletePostApiDecorator,
+} from 'src/common/decorators/swagger/posts.decorator';
+import { CreatePostResult as CreatePostResult } from '../types';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -120,6 +125,7 @@ export class UsersController {
 
   @Post('self/posts')
   @UseInterceptors(FilesInterceptor(FILES_FIELD, MAX_IMAGES_COUNT))
+  @CreatePostApiDecorator()
   public async createPost(
     @ActiveUser('userId') userId: string,
     @UploadedFiles(
@@ -134,10 +140,20 @@ export class UsersController {
   ) {
     const imageInfo = imageInfoObjectToArrayOfObjects(imagesInfoDto);
 
-    const result = await this.commandBus.execute(
+    const result: CreatePostResult = await this.commandBus.execute(
       new CreatePostCommand(userId, images, imageInfo),
     );
 
     return result;
+  }
+
+  @Delete('self/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @DeletePostApiDecorator()
+  async deletePost(
+    @ActiveUser('userId') userId: string,
+    @Param('postId') postId: string,
+  ) {
+    await this.commandBus.execute(new DeletePostCommand(userId, postId));
   }
 }

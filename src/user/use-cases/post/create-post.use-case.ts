@@ -1,17 +1,20 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Post } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 import {
   AVATAR_PREVIEW_HEIGHT,
   AVATAR_PREVIEW_WIDTH,
 } from 'src/common/constants';
-import { Ratio } from '../dto/image-info.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import type { ImageCreationData, ImageInfo } from '../types';
+import type {
+  CreatePostResult,
+  ImageCreationData,
+  ImageInfo,
+} from '../../types';
 import { ImageService } from 'src/common/services/image.service';
 import { CloudStrategy } from 'src/common/strategies/cloud.strategy';
 import { PostCreationError, POST_CREATION_ERROR } from 'src/common/errors';
+import { Ratio } from '@prisma/client';
 
 export class CreatePostCommand {
   public constructor(
@@ -29,7 +32,7 @@ export class CreatePostUseCase implements ICommandHandler {
     private readonly prismaService: PrismaService,
   ) {}
 
-  public async execute(command: CreatePostCommand): Promise<Post | null> {
+  public async execute(command: CreatePostCommand): Promise<CreatePostResult> {
     try {
       const { userId, images, imagesInfo } = command;
 
