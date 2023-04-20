@@ -20,3 +20,9 @@ export class PostCreationError extends InternalServerErrorException {
     super(message);
   }
 }
+
+export class DatabaseError extends InternalServerErrorException {
+  constructor(message: string) {
+    super(message);
+  }
+}
