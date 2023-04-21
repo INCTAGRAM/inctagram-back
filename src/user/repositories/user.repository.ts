@@ -27,6 +27,7 @@ export class UserRepository {
           },
         },
         passwordRecovery: { create: {} },
+        profile: { create: {} },
       },
       select: {
         id: true,

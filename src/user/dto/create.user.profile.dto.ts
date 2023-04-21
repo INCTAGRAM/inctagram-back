@@ -22,13 +22,13 @@ import { BadRequestException } from '@nestjs/common';
 export class CreateUserProfileDto {
   @Length(NAME_LENGTH_MIN, NAME_LENGTH_MAX)
   @IsString()
-  @IsNotEmpty()
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @Length(SURNAME_LENGTH_MIN, SURNAME_LENGTH_MAX)
   @IsString()
-  @IsNotEmpty()
-  surname: string;
+  @IsOptional()
+  surname?: string;
   @Transform(({ value }) => {
     try {
       return new Date(format(parseISO(value), 'yyyy-MM-dd'));
@@ -40,15 +40,15 @@ export class CreateUserProfileDto {
   })
   @IsDate({ message: 'birthday must be ISOString of format yyyy-MM-dd' })
   @IsOptional()
-  birthday: Date | null;
+  birthday?: Date;
 
   @Length(CITY_LENGTH_MIN, CITY_LENGTH_MAX)
   @IsString()
-  @IsNotEmpty()
-  city: string;
+  @IsOptional()
+  city?: string;
 
   @Length(ABOUT_ME_LENGTH_MIN, ABOUT_ME_LENGTH_MAX)
   @IsString()
   @IsOptional()
-  aboutMe: string | null;
+  aboutMe?: string;
 }

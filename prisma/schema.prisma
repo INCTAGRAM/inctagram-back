@@ -28,10 +28,10 @@ model User {
 
 model Profile {
   id        String    @id @default(uuid())
-  name      String
-  surname   String
+  name      String?
+  surname   String?
   birthday  DateTime?
-  city      String
+  city      String?
   aboutMe   String?
   user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String    @unique
