@@ -99,17 +99,17 @@ export class UsersController {
     return ProfileMapper.toViewModel(profile);
   }
 
-  @Post('self/profile')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @CreateProfileApiDecorator()
-  async createProfile(
-    @Body() createUserProfileDto: CreateUserProfileDto,
-    @ActiveUser('userId') id: string,
-  ) {
-    return this.commandBus.execute(
-      new CreateProfileCommand(id, createUserProfileDto),
-    );
-  }
+  // @Post('self/profile')
+  // @HttpCode(HttpStatus.NO_CONTENT)
+  // @CreateProfileApiDecorator()
+  // async createProfile(
+  //   @Body() createUserProfileDto: CreateUserProfileDto,
+  //   @ActiveUser('userId') id: string,
+  // ) {
+  //   return this.commandBus.execute(
+  //     new CreateProfileCommand(id, createUserProfileDto),
+  //   );
+  // }
 
   @Put('self/profile')
   @HttpCode(HttpStatus.NO_CONTENT)
