@@ -1,10 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Ratio } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
-import {
-  AVATAR_PREVIEW_HEIGHT,
-  AVATAR_PREVIEW_WIDTH,
-} from 'src/common/constants';
 import { PrismaService } from 'src/prisma/prisma.service';
 import type {
   CreatePostResult,
@@ -12,14 +9,15 @@ import type {
   ImageInfo,
 } from '../../types';
 import { ImageService } from 'src/common/services/image.service';
+import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from 'src/common/constants';
 import { CloudStrategy } from 'src/common/strategies/cloud.strategy';
 import { PostCreationError, POST_CREATION_ERROR } from 'src/common/errors';
-import { Ratio } from '@prisma/client';
 
 export class CreatePostCommand {
   public constructor(
     public userId: string,
     public images: Express.Multer.File[],
+    public description: string,
     public imagesInfo: ImageInfo[],
   ) {}
 }
@@ -33,11 +31,11 @@ export class CreatePostUseCase implements ICommandHandler {
   ) {}
 
   public async execute(command: CreatePostCommand): Promise<CreatePostResult> {
+    const { userId, images, description, imagesInfo } = command;
+
+    const postId = randomUUID();
+
     try {
-      const { userId, images, imagesInfo } = command;
-
-      const postId = randomUUID();
-
       const imagesWithPaths: [string, Express.Multer.File][] = [];
       const imagesMetadata: { size: number; width: number; height: number }[] =
         [];
@@ -63,8 +61,8 @@ export class CreatePostUseCase implements ICommandHandler {
         const imagePath = `${this.createPrefix(userId, postId)}${imageName}`;
 
         const preview = await this.imageService.resize(transformedImage, {
-          width: AVATAR_PREVIEW_WIDTH,
-          height: AVATAR_PREVIEW_HEIGHT,
+          width: PREVIEW_WIDTH,
+          height: PREVIEW_HEIGHT,
         });
 
         const previewName = `${randomUUID()}.${ext}`;
@@ -85,7 +83,7 @@ export class CreatePostUseCase implements ICommandHandler {
         );
 
         const imageCreationData: ImageCreationData[] = images.map((_, idx) => {
-          const { cropInfo, description, ...rest } = imagesInfo[idx] ?? {};
+          const { cropInfo, ...rest } = imagesInfo[idx] ?? {};
 
           return {
             metadata: {
@@ -93,7 +91,6 @@ export class CreatePostUseCase implements ICommandHandler {
               ...(imagesMetadata[idx] ?? {}),
             },
             cropInfo: cropInfo ?? {},
-            description: description ?? null,
             url: imagesUrls[idx * 2],
             previewUrl: imagesUrls[idx * 2 + 1],
           };
@@ -103,12 +100,12 @@ export class CreatePostUseCase implements ICommandHandler {
           data: {
             id: postId,
             userId,
+            description,
             images: {
               create: [
                 ...imageCreationData.map((info) => ({
                   url: info.url,
                   previewUrl: info.previewUrl,
-                  description: info.description,
                   metadata: {
                     create: {
                       ...info.metadata,

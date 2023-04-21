@@ -2,10 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Avatar } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
-import {
-  AVATAR_PREVIEW_HEIGHT,
-  AVATAR_PREVIEW_WIDTH,
-} from 'src/common/constants';
+import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from 'src/common/constants';
 import { ImageService } from 'src/common/services/image.service';
 import { CloudStrategy } from 'src/common/strategies/cloud.strategy';
 import { AvatarCreationError, FILE_UPLOAD_ERROR } from 'src/common/errors';
@@ -45,8 +42,8 @@ export class UploadAvatarUseCase implements ICommandHandler {
       const avatarPath = `${this.createPrefix(userId)}${avatarName}`;
 
       const preview = await this.imageService.resize(file, {
-        width: AVATAR_PREVIEW_WIDTH,
-        height: AVATAR_PREVIEW_HEIGHT,
+        width: PREVIEW_WIDTH,
+        height: PREVIEW_HEIGHT,
       });
 
       const previewName = `${randomUUID()}.${ext}`;

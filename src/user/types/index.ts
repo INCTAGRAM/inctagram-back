@@ -51,10 +51,7 @@ export type ProfileViewModel = Omit<
   avatar: Pick<Avatar, 'url' | 'previewUrl'>;
 } & Pick<User, 'username'>;
 
-export type ImageCreationData = Pick<
-  Image,
-  'previewUrl' | 'url' | 'description'
-> & {
+export type ImageCreationData = Pick<Image, 'previewUrl' | 'url'> & {
   metadata: Pick<
     ImageMetadata,
     'filters' | 'height' | 'size' | 'width' | 'ratio' | 'zoom'
@@ -67,7 +64,6 @@ export interface ImageInfo {
   zoom: number;
   ratio: Ratio;
   filters: string[];
-  description: string;
   cropInfo: CropInfo;
 }
 
