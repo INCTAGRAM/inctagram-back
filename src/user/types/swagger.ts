@@ -8,6 +8,9 @@ export class CreatePostResponse implements CreatePostResult {
   public id: string;
 
   @ApiProperty()
+  public description: string;
+
+  @ApiProperty()
   public userId: string;
 
   @ApiProperty({ type: () => [Image] })
@@ -85,9 +88,6 @@ class Image {
 
   @ApiProperty()
   public previewUrl: string;
-
-  @ApiProperty()
-  public description: string;
 
   @ApiProperty()
   public createdAt: Date;

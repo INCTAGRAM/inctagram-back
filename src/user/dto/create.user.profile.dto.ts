@@ -16,7 +16,7 @@ import {
   SURNAME_LENGTH_MIN,
 } from 'src/common/constants';
 import { Transform } from 'class-transformer';
-import { format, parse, parseISO } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { BadRequestException } from '@nestjs/common';
 
 export class CreateUserProfileDto {

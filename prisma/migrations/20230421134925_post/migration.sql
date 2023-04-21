@@ -5,6 +5,7 @@ CREATE TYPE "Ratio" AS ENUM ('ORIGINAL', 'PORTRAIT', 'LANDSCAPE', 'SQUARE');
 CREATE TABLE "Post" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    "description" VARCHAR(500),
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
@@ -14,7 +15,6 @@ CREATE TABLE "Image" (
     "id" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     "previewUrl" TEXT,
-    "description" VARCHAR(500),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "postId" TEXT NOT NULL,

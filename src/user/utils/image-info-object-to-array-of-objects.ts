@@ -1,8 +1,9 @@
 import type { ImageInfoDto } from '../dto/image-info.dto';
 import type { ImageInfo } from '../types';
 
-export const imageInfoObjectToArrayOfObjects = (value: ImageInfoDto) => {
-  console.log(value);
+type ImageInfoArrayType = Omit<ImageInfoDto, 'description'>;
+
+export const imageInfoObjectToArrayOfObjects = (value: ImageInfoArrayType) => {
   const result = (
     Object.entries(value)
       .map((v: [string, any]) => [v[0], v[1].length])
@@ -10,8 +11,8 @@ export const imageInfoObjectToArrayOfObjects = (value: ImageInfoDto) => {
   ).map((_, idx) =>
     Object.fromEntries(
       Object.keys(value).reduce((acc: [string, any][], key) => {
-        value[key as keyof ImageInfoDto][idx] &&
-          acc.push([key, value[key as keyof ImageInfoDto][idx]]);
+        value[key as keyof ImageInfoArrayType][idx] &&
+          acc.push([key, value[key as keyof ImageInfoArrayType][idx]]);
 
         return acc;
       }, []),
