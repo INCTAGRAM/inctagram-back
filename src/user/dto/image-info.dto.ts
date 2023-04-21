@@ -76,7 +76,7 @@ export class ImageInfoDto {
   @IsOptional()
   public filters: string[][];
 
-  @IsString({ each: true })
+  @IsString()
   @IsOptional()
-  public description: string[];
+  public description: string;
 }

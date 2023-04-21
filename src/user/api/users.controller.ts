@@ -7,6 +7,7 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Put,
   UploadedFile,
@@ -33,14 +34,14 @@ import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
-  CreateProfileApiDecorator,
+  // CreateProfileApiDecorator,
   GetProfileApiDecorator,
   UpdateProfileApiDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
-import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
-import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
+// import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
+// import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { ProfileMapper } from '../utils/profile-mapper';
 
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
@@ -56,6 +57,8 @@ import {
   DeletePostApiDecorator,
 } from 'src/common/decorators/swagger/posts.decorator';
 import { CreatePostResult as CreatePostResult } from '../types';
+import { UpdatePostCommand } from '../use-cases/post/update-post.use-case';
+import { UpdatePostDto } from '../dto/update-post.dto';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -138,10 +141,11 @@ export class UsersController {
     @Body()
     imagesInfoDto: ImageInfoDto,
   ) {
-    const imageInfo = imageInfoObjectToArrayOfObjects(imagesInfoDto);
+    const { description, ...imagesInfo } = imagesInfoDto;
+    const imageInfo = imageInfoObjectToArrayOfObjects(imagesInfo);
 
     const result: CreatePostResult = await this.commandBus.execute(
-      new CreatePostCommand(userId, images, imageInfo),
+      new CreatePostCommand(userId, images, description, imageInfo),
     );
 
     return result;
@@ -155,5 +159,17 @@ export class UsersController {
     @Param('postId') postId: string,
   ) {
     await this.commandBus.execute(new DeletePostCommand(userId, postId));
+  }
+
+  @Patch('self/posts/:postId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async updatePost(
+    @ActiveUser('userId') userId: string,
+    @Param('postId') postId: string,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
+    await this.commandBus.execute(
+      new UpdatePostCommand(userId, postId, updatePostDto),
+    );
   }
 }
