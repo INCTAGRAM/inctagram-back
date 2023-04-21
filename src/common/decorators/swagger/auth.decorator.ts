@@ -2,6 +2,7 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCookieAuth,
+  ApiGoneResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
@@ -146,7 +147,10 @@ export function AuthPasswordRecoverySwaggerDecorator() {
         "Even if current email is not registered (for prevent user's email detection)",
     }),
     ApiBadRequestResponse({
-      description: 'inputModel has invalid email (for example 222^gmail.com)',
+      description: 'InputModel has invalid email (for example 222^gmail.com)',
+    }),
+    ApiGoneResponse({
+      description: 'Code expired',
     }),
   );
 }
