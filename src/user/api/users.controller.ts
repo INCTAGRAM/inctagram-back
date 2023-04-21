@@ -55,6 +55,7 @@ import { DeletePostCommand } from '../use-cases/post/delete-post.use-case';
 import {
   CreatePostApiDecorator,
   DeletePostApiDecorator,
+  UpdatePostApiDecorator,
 } from 'src/common/decorators/swagger/posts.decorator';
 import { CreatePostResult as CreatePostResult } from '../types';
 import { UpdatePostCommand } from '../use-cases/post/update-post.use-case';
@@ -163,6 +164,7 @@ export class UsersController {
 
   @Patch('self/posts/:postId')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UpdatePostApiDecorator()
   async updatePost(
     @ActiveUser('userId') userId: string,
     @Param('postId') postId: string,
