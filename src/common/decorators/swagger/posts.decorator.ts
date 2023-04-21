@@ -101,4 +101,17 @@ export function CreatePostApiDecorator() {
   );
 }
 
-export function UpdatePostApiDecorator() {}
+export function UpdatePostApiDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Update user post',
+    }),
+    ApiNoContentResponse({
+      description: 'Post has been successfully updated',
+    }),
+    ApiInternalServerErrorResponse({
+      description: 'An error occurs when attempting to update the post.',
+    }),
+    ApiBearerAuth(),
+  );
+}

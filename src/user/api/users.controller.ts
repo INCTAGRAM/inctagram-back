@@ -34,14 +34,14 @@ import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
-  CreateProfileApiDecorator,
+  // CreateProfileApiDecorator,
   GetProfileApiDecorator,
   UpdateProfileApiDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
-import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
-import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
+// import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
+// import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { ProfileMapper } from '../utils/profile-mapper';
 
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
@@ -61,7 +61,7 @@ import { UpdatePostCommand } from '../use-cases/post/update-post.use-case';
 import { UpdatePostDto } from '../dto/update-post.dto';
 
 @ApiTags('Users')
-// @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
+@UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
 @Controller(API.USERS)
 export class UsersController {
   public constructor(
