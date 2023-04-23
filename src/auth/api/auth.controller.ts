@@ -8,7 +8,6 @@ import {
   UseGuards,
   Headers,
   UnauthorizedException,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
