@@ -5,10 +5,10 @@ export class ProfileMapper {
   public static toViewModel(model: ProfileDbModel | null): ProfileViewModel {
     return {
       username: model?.username ?? '',
-      name: model?.profile?.name ?? '',
-      surname: model?.profile?.surname ?? '',
+      name: model?.profile?.name ?? null,
+      surname: model?.profile?.surname ?? null,
       aboutMe: model?.profile?.aboutMe ?? null,
-      city: model?.profile?.city ?? '',
+      city: model?.profile?.city ?? null,
       birthday: model?.profile?.birthday
         ? format(
             parseISO(model.profile.birthday.toISOString()),

@@ -23,6 +23,7 @@ import { CreatePostUseCase } from './use-cases/post/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/post/delete-post.use-case';
 import { PostsRepositoryAdapter } from './repositories/adapters/post/posts-repository.adapter';
 import { PostsRepository } from './repositories/post/post.repository';
+import { UpdatePostUseCase } from './use-cases/post/update-post.use-case';
 
 const useCases = [
   UploadAvatarUseCase,
@@ -30,6 +31,7 @@ const useCases = [
   UpdateProfileUseCase,
   CreatePostUseCase,
   DeletePostUseCase,
+  UpdatePostUseCase,
 ];
 
 @Module({
