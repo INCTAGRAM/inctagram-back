@@ -13,6 +13,7 @@ export class SchemaDropNotificationService
   public constructor(private readonly configService: ConfigService) {
     this.pgClient = new pg.Client({
       connectionString: this.configService.get<string>('DATABASE_URL'),
+      ssl: true,
     });
   }
 
