@@ -9,7 +9,6 @@ import { AdaptorModule } from './adaptors/adaptor.module';
 import { configValidationSchema } from './config/validation-schema';
 import { TestingModule } from './testing-remove-all-data/testing.module';
 import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
-// import { SchemaDropNotificationService } from './common/services/schema-drop-notification.service';
 
 @Module({
   imports: [
@@ -24,7 +23,6 @@ import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
     DeviceSessionsModule,
     TestingModule,
   ],
-  // providers: [SchemaDropNotificationService],
   controllers: [AppController],
 })
 export class AppModule {}
