@@ -35,3 +35,5 @@ export const CITY_LENGTH_MAX = 60;
 
 export const ABOUT_ME_LENGTH_MIN = 1;
 export const ABOUT_ME_LENGTH_MAX = 200;
+
+export const PRODUCTION_MODE = 'production';
