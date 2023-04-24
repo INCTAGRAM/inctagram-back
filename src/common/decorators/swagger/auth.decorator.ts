@@ -87,8 +87,11 @@ export function AuthRegistrationConfirmationSwaggerDecorator() {
       description: 'Email was verified. Account was activated',
     }),
     ApiBadRequestResponse({
-      description:
-        'Confirmation code is incorrect, expired or already been applied',
+      description: 'Confirmation code is incorrect or has been applied',
+      type: FieldError,
+    }),
+    ApiGoneResponse({
+      description: 'Confirmation code expired',
       type: FieldError,
     }),
   );
