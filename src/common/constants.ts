@@ -37,3 +37,5 @@ export const ABOUT_ME_LENGTH_MIN = 1;
 export const ABOUT_ME_LENGTH_MAX = 200;
 
 export const PRODUCTION_MODE = 'production';
+
+export const RECAPTCHA_TOKEN = 'recaptchaToken';
