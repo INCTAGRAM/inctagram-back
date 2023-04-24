@@ -40,6 +40,7 @@ import { NewPasswordCommand } from '../use-cases/new-password.use-case';
 import { ActiveUser } from '../../common/decorators/active-user.decorator';
 import { ActiveUserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
+import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -128,6 +129,7 @@ export class AuthController {
 
   @Post('password-recovery')
   @AuthPasswordRecoverySwaggerDecorator()
+  @UseGuards(RecaptchaGuard)
   @HttpCode(204)
   async passwordRecovery(@Body() emailDto: EmailDto) {
     const { email } = emailDto;

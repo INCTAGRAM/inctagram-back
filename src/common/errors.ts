@@ -11,6 +11,8 @@ export const POST_CREATION_ERROR = 'Could not create post';
 
 export const NO_TELEGRAM_URL_ERROR = 'No Telegram url has been provided';
 
+export const NO_RECAPTCHA_TOKEN_ERROR = 'No recaptcha token has been provided';
+
 export class AvatarCreationError extends InternalServerErrorException {
   constructor(message: string) {
     super(message);
