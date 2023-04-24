@@ -11,12 +11,12 @@ import { NO_RECAPTCHA_TOKEN_ERROR } from '../errors';
 
 @Injectable()
 export class RecaptchaGuard implements CanActivate {
-  public constructor(private readonly confiService: ConfigService) {}
+  public constructor(private readonly configService: ConfigService) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     console.log('guard');
     const request = context.switchToHttp().getRequest();
-    const secret = this.confiService.get<string>('RECAPTCHA_SECRET_KEY');
+    const secret = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
     const response = request.body[RECAPTCHA_TOKEN];
 
     if (!response) throw new BadRequestException(NO_RECAPTCHA_TOKEN_ERROR);

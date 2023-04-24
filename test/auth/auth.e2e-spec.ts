@@ -4,7 +4,7 @@ import { useGlobalPipes } from '../../src/common/pipes/global.pipe';
 import { useGlobalFilters } from '../../src/common/filters/global.filter';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import request from 'supertest';
-import { INestApplication } from '@nestjs/common';
+import { CanActivate, INestApplication } from '@nestjs/common';
 import { isUUID } from 'class-validator';
 import { authStub } from './stubs/auth.stub';
 import { delay, helperFunctionsForTesting } from './helpers/helper-functions';
@@ -12,13 +12,22 @@ import { JwtService } from '@nestjs/jwt';
 import cookieParser from 'cookie-parser';
 import { MailService } from '../../src/mail/mail.service';
 import { MailServiceMock } from './mocks/mail-service-mock';
+import { RecaptchaGuard } from '../../src/common/guards/recaptcha.guard';
 
+// jest.mock('src/common/guards/recaptcha.guard.ts', () => {
+//   class MockedGuard implements CanActivate {
+//     canActivate(): boolean {
+//       return true;
+//     }
+//   }
+// });
 describe('AuthsController', () => {
   jest.setTimeout(60 * 1000);
   let app: INestApplication;
   let httpServer: any;
   let prisma: PrismaService;
   let jwtService: JwtService;
+  let recaptchaGuard: RecaptchaGuard;
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
@@ -35,6 +44,7 @@ describe('AuthsController', () => {
 
     prisma = moduleRef.get(PrismaService);
     jwtService = moduleRef.get(JwtService);
+    recaptchaGuard = moduleRef.get(RecaptchaGuard);
     httpServer = app.getHttpServer();
   });
 
@@ -589,9 +599,16 @@ describe('AuthsController', () => {
         expect(manuallyConfirmUser.isConfirmed).toBeTruthy();
       });
       it('/api/auth/password-recovery (POST) should receive 204, email and have recovery code in DB', async () => {
+        jest
+          .spyOn(recaptchaGuard, 'canActivate')
+          .mockReturnValueOnce(Promise.resolve(true));
+
         const response = await request(httpServer)
           .post('/api/auth/password-recovery')
-          .send({ email: authStub.registration.validUser.email });
+          .send({
+            email: authStub.registration.validUser.email,
+            recaptchaToken: '123',
+          });
 
         expect(response.status).toBe(204);
         expect(response.body).toEqual({});
@@ -662,10 +679,47 @@ describe('AuthsController', () => {
       });
 
       describe('user provides incorrect credentials during password-recovery or new-password', () => {
-        it('/api/auth/password-recovery (POST) should receive 204 if email is incorrect to prevent user detection', async () => {
+        it('/api/auth/password-recovery (POST) should receive 400 if recaptchaToken is not provided in body', async () => {
           const response = await request(httpServer)
             .post('/api/auth/password-recovery')
-            .send({ email: 'test-email@yandex.ru' });
+            .send({
+              email: 'test-email@yandex.ru',
+            });
+
+          expect(response.status).toBe(400);
+          expect(response.body).toEqual({
+            statusCode: 400,
+            message: expect.any(Array),
+            path: '/api/auth/password-recovery',
+          });
+          expect(response.body.message).toHaveLength(1);
+        });
+        it('/api/auth/password-recovery  (POST) should receive 400 if recaptchaToken is incorrect', async () => {
+          const response = await request(httpServer)
+            .post('/api/auth/password-recovery')
+            .send({
+              email: 'test-email@yandex.ru',
+              recaptchaToken: 'randomToken',
+            });
+
+          expect(response.status).toBe(403);
+          expect(response.body).toEqual({
+            statusCode: 403,
+            message: expect.any(Array),
+            path: '/api/auth/password-recovery',
+          });
+        });
+        it('/api/auth/password-recovery (POST) should receive 204 if email is incorrect to prevent user detection', async () => {
+          jest
+            .spyOn(recaptchaGuard, 'canActivate')
+            .mockReturnValueOnce(Promise.resolve(true));
+
+          const response = await request(httpServer)
+            .post('/api/auth/password-recovery')
+            .send({
+              email: 'test-email@yandex.ru',
+              recaptchaToken: 'mockedToken',
+            });
 
           expect(response.status).toBe(204);
           expect(response.body).toEqual({});
