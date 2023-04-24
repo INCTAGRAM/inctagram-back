@@ -26,6 +26,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     const user = await this.userRepository.findUserByEmail(
       command.loginDto.email,
     );
+
     if (!user)
       throw new UnauthorizedException(
         'User with the given email does not exist',
@@ -38,6 +39,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
       command.loginDto.password,
       user.hash,
     );
+
     if (!checkPassword) throw new UnauthorizedException();
     // tokens
     const deviceId = randomUUID();

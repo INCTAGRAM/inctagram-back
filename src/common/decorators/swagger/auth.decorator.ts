@@ -2,6 +2,7 @@ import {
   ApiBadRequestResponse,
   ApiBody,
   ApiCookieAuth,
+  ApiForbiddenResponse,
   ApiGoneResponse,
   ApiNotFoundResponse,
   ApiOperation,
@@ -143,14 +144,32 @@ export function AuthPasswordRecoverySwaggerDecorator() {
       summary:
         'Password recovery via Email confirmation. Email should be sent with the RecoveryCode inside',
     }),
-    ApiBody({ type: EmailDto }),
+    ApiBody({
+      schema: {
+        type: 'object',
+        required: ['email', 'recaptchaToken'],
+        properties: {
+          email: {
+            type: 'string',
+            example: 'Jamesbond@yandex.ru',
+          },
+          recaptchaToken: {
+            type: 'string',
+          },
+        },
+      },
+    }),
     ApiResponse({
       status: 204,
       description:
         "Even if current email is not registered (for prevent user's email detection)",
     }),
     ApiBadRequestResponse({
-      description: 'InputModel has invalid email (for example 222^gmail.com)',
+      description:
+        'InputModel has invalid email or recaptcha was not provided (for example 222^gmail.com)',
+    }),
+    ApiForbiddenResponse({
+      description: 'invalid-input-response (recaptcha is not correct)',
     }),
     ApiGoneResponse({
       description: 'Code expired',
