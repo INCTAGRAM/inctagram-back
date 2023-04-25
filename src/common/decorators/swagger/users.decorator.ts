@@ -24,6 +24,8 @@ import {
   NAME_LENGTH_MIN,
   SURNAME_LENGTH_MAX,
   SURNAME_LENGTH_MIN,
+  USERNAME_LENGTH_MAX,
+  USERNAME_LENGTH_MIN,
 } from 'src/common/constants';
 import { FieldError } from 'src/types';
 
@@ -184,6 +186,12 @@ export function UpdateProfileApiDecorator() {
       schema: {
         type: 'object',
         properties: {
+          username: {
+            type: 'string',
+            minimum: USERNAME_LENGTH_MIN,
+            maximum: USERNAME_LENGTH_MAX,
+            example: 'Licence_to_kill',
+          },
           name: {
             type: 'string',
             minimum: NAME_LENGTH_MIN,
