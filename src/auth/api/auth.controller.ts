@@ -8,6 +8,7 @@ import {
   UseGuards,
   Headers,
   UnauthorizedException,
+  Req,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -30,7 +31,7 @@ import { ConfirmRegistrationCommand } from '../use-cases/confirm-registration-us
 import { RegistrationEmailResendingCommand } from '../use-cases/registration-email-resending-use-case';
 import { LoginUserCommand } from '../use-cases/login-user-use-case';
 import { LoginDto } from '../dto/login.dto';
-import { Response } from 'express';
+import { CookieOptions, Request, Response } from 'express';
 import { LogginSuccessViewModel } from '../../types';
 import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
 
@@ -46,6 +47,12 @@ import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
+  private cookieOptions: Partial<CookieOptions> = {
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  };
+
   constructor(
     private commandBus: CommandBus,
     private readonly jwtAdaptor: JwtAdaptor,
@@ -87,17 +94,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Headers('user-agent') userAgent: string,
     @ActiveUser('deviceId') deviceId: string | null,
-  ): Promise<LogginSuccessViewModel> {
+  ) {
     if (!userAgent) throw new UnauthorizedException();
 
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       { accessToken: string; refreshToken: string }
     >(new LoginUserCommand(loginDto, ip, userAgent, deviceId));
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-    });
+    res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }
 
@@ -123,10 +127,7 @@ export class AuthController {
     const { accessToken, refreshToken } = await this.jwtAdaptor.refreshToken(
       user,
     );
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-    });
+    res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }
 
