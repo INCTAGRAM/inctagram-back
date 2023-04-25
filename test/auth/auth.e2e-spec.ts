@@ -14,13 +14,6 @@ import { MailService } from '../../src/mail/mail.service';
 import { MailServiceMock } from './mocks/mail-service-mock';
 import { RecaptchaGuard } from '../../src/common/guards/recaptcha.guard';
 
-// jest.mock('src/common/guards/recaptcha.guard.ts', () => {
-//   class MockedGuard implements CanActivate {
-//     canActivate(): boolean {
-//       return true;
-//     }
-//   }
-// });
 describe('AuthsController', () => {
   jest.setTimeout(60 * 1000);
   let app: INestApplication;

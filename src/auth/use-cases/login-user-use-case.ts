@@ -6,11 +6,13 @@ import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { DeviceSessionsRepository } from '../../deviceSessions/repositories/device-sessions.repository';
+
 export class LoginUserCommand {
   constructor(
     public loginDto: LoginDto,
     public ip: string,
     public userAgent: string,
+    public deviceId: string | null,
   ) {}
 }
 @CommandHandler(LoginUserCommand)
@@ -49,15 +51,30 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
       deviceId,
     );
     const hashedTokens = await this.jwtAdaptor.updateTokensHash(tokens);
-    // create device session
-    const newDeviceSession =
-      await this.deviceSessionsRepository.createNewDeviceSession(
-        deviceId,
-        user.id,
-        command.ip,
-        command.userAgent,
-        hashedTokens,
-      );
+    // update or create new session
+    if (command.deviceId) {
+      const isDeviceSession =
+        await this.deviceSessionsRepository.findSessionByDeviceId(
+          command.deviceId,
+        );
+
+      if (isDeviceSession) {
+        await this.deviceSessionsRepository.updateTokensByDeviceSessionId(
+          command.deviceId,
+          hashedTokens,
+        );
+      }
+    } else {
+      // create device session
+      const newDeviceSession =
+        await this.deviceSessionsRepository.createNewDeviceSession(
+          deviceId,
+          user.id,
+          command.ip,
+          command.userAgent,
+          hashedTokens,
+        );
+    }
 
     return tokens;
   }
