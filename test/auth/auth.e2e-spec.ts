@@ -13,6 +13,7 @@ import cookieParser from 'cookie-parser';
 import { MailService } from '../../src/mail/mail.service';
 import { MailServiceMock } from './mocks/mail-service-mock';
 import { RecaptchaGuard } from '../../src/common/guards/recaptcha.guard';
+import { getApp } from '../testing-connection';
 
 describe('AuthsController', () => {
   jest.setTimeout(60 * 1000);
@@ -22,22 +23,11 @@ describe('AuthsController', () => {
   let jwtService: JwtService;
   let recaptchaGuard: RecaptchaGuard;
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(MailService)
-      .useValue(MailServiceMock)
-      .compile();
-
-    app = moduleRef.createNestApplication();
-    app.use(cookieParser());
-    useGlobalPipes(app);
-    useGlobalFilters(app);
-    await app.init();
-
-    prisma = moduleRef.get(PrismaService);
-    jwtService = moduleRef.get(JwtService);
-    recaptchaGuard = moduleRef.get(RecaptchaGuard);
+    app = await getApp();
+    prisma = await app.resolve(PrismaService);
+    jwtService = await app.resolve(JwtService);
+    httpServer = app.getHttpServer();
+    recaptchaGuard = app.get(RecaptchaGuard);
     httpServer = app.getHttpServer();
   });
 
