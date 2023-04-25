@@ -1,7 +1,3 @@
-import { Test } from '@nestjs/testing';
-import { AppModule } from '../../src/app.module';
-import { useGlobalPipes } from '../../src/common/pipes/global.pipe';
-import { useGlobalFilters } from '../../src/common/filters/global.filter';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import request from 'supertest';
 import { CanActivate, INestApplication } from '@nestjs/common';
@@ -9,8 +5,6 @@ import { isUUID } from 'class-validator';
 import { authStub } from './stubs/auth.stub';
 import { delay, helperFunctionsForTesting } from './helpers/helper-functions';
 import { JwtService } from '@nestjs/jwt';
-import cookieParser from 'cookie-parser';
-import { MailService } from '../../src/mail/mail.service';
 import { MailServiceMock } from './mocks/mail-service-mock';
 import { RecaptchaGuard } from '../../src/common/guards/recaptcha.guard';
 import { getApp } from '../testing-connection';
@@ -28,7 +22,6 @@ describe('AuthsController', () => {
     jwtService = await app.resolve(JwtService);
     httpServer = app.getHttpServer();
     recaptchaGuard = app.get(RecaptchaGuard);
-    httpServer = app.getHttpServer();
   });
 
   afterAll(async () => {
