@@ -43,6 +43,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     );
 
     if (!checkPassword) throw new UnauthorizedException();
+
     // tokens
     const deviceId = randomUUID();
     const tokens = await this.jwtAdaptor.getTokens(
@@ -57,24 +58,23 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
         await this.deviceSessionsRepository.findSessionByDeviceId(
           command.deviceId,
         );
-
       if (isDeviceSession) {
         await this.deviceSessionsRepository.updateTokensByDeviceSessionId(
           command.deviceId,
           hashedTokens,
         );
       }
-    } else {
-      // create device session
-      const newDeviceSession =
-        await this.deviceSessionsRepository.createNewDeviceSession(
-          deviceId,
-          user.id,
-          command.ip,
-          command.userAgent,
-          hashedTokens,
-        );
     }
+
+    // create device session
+    const newDeviceSession =
+      await this.deviceSessionsRepository.createNewDeviceSession(
+        deviceId,
+        user.id,
+        command.ip,
+        command.userAgent,
+        hashedTokens,
+      );
 
     return tokens;
   }
