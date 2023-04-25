@@ -20,7 +20,7 @@ export class JwtAdaptor {
         { userId, deviceId },
         {
           secret: this.config.get<string>('AT_SECRET'),
-          expiresIn: 30,
+          expiresIn: 600,
         },
       ),
       this.jwtService.signAsync(
