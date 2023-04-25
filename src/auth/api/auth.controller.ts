@@ -41,6 +41,7 @@ import { ActiveUser } from '../../common/decorators/active-user.decorator';
 import { ActiveUserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
+import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -78,19 +79,21 @@ export class AuthController {
 
   @Post('login')
   @AuthLoginSwaggerDecorator()
+  @UseGuards(CookieAuthGuard)
   @HttpCode(200)
   async login(
     @Body() loginDto: LoginDto,
     @Ip() ip: string,
     @Res({ passthrough: true }) res: Response,
     @Headers('user-agent') userAgent: string,
+    @ActiveUser('deviceId') deviceId: string | null,
   ): Promise<LogginSuccessViewModel> {
     if (!userAgent) throw new UnauthorizedException();
 
     const { accessToken, refreshToken } = await this.commandBus.execute<
       LoginUserCommand,
       { accessToken: string; refreshToken: string }
-    >(new LoginUserCommand(loginDto, ip, userAgent));
+    >(new LoginUserCommand(loginDto, ip, userAgent, deviceId));
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
