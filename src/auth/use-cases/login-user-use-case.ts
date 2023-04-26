@@ -58,7 +58,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
         await this.deviceSessionsRepository.findSessionByDeviceId(
           command.deviceId,
         );
-      if (isDeviceSession) {
+      if (isDeviceSession && isDeviceSession.userId === user.id) {
         await this.deviceSessionsRepository.updateTokensByDeviceSessionId(
           command.deviceId,
           hashedTokens,
