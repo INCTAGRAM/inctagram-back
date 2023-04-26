@@ -113,7 +113,8 @@ export class AuthController {
     @ActiveUser('deviceId') deviceId: string,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.commandBus.execute(new LogoutUserCommand(deviceId));
+    await this.commandBus.execute(new LogoutUserCommand(deviceId));
+    res.clearCookie('refreshToken');
   }
 
   @UseGuards(JwtRtGuard)
