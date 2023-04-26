@@ -63,6 +63,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
           command.deviceId,
           hashedTokens,
         );
+        return tokens;
       }
     }
 
