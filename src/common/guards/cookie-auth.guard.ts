@@ -17,8 +17,6 @@ export class CookieAuthGuard implements CanActivate {
     }
     const payload: any = this.jwtService.decode(refreshToken);
 
-    await this.jwtAdaptor.validateRtToken(refreshToken, payload.deviceId);
-
     request.user = payload;
     return true;
   }
