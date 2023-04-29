@@ -9,7 +9,6 @@ import {
   ApiOperation,
   ApiProperty,
 } from '@nestjs/swagger';
-import { Ratio } from '@prisma/client';
 import { CreatePostResponse } from 'src/user/types/swagger';
 
 const deletePost = DeletePostApiDecorator;
@@ -31,20 +30,6 @@ export function DeletePostApiDecorator() {
   );
 }
 
-class CropInfo {
-  @ApiProperty({ required: true })
-  public x: number;
-
-  @ApiProperty({ required: true })
-  public y: number;
-
-  @ApiProperty({ required: true })
-  public width: number;
-
-  @ApiProperty({ required: true })
-  public height: number;
-}
-
 class CreatePostRequestBody {
   @ApiProperty({
     type: 'array',
@@ -54,30 +39,10 @@ class CreatePostRequestBody {
   public files: string[];
 
   @ApiProperty({
-    type: 'array',
     required: false,
-    items: { type: 'number', minimum: 0, maximum: 1 },
+    type: 'string',
   })
-  public zoom: number[];
-
-  @ApiProperty({ type: 'array', required: false, items: { type: 'string' } })
-  public filters: string[];
-
-  @ApiProperty({
-    type: () => [CropInfo],
-    required: false,
-  })
-  public cropInfo: CropInfo[];
-
-  @ApiProperty({
-    required: false,
-    type: 'array',
-    items: {
-      type: 'Ratio',
-      default: Ratio.SQUARE,
-    },
-  })
-  public ratio: Ratio[];
+  public description: string;
 }
 
 export function CreatePostApiDecorator() {
