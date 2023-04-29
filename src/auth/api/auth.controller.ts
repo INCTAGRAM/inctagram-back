@@ -9,6 +9,7 @@ import {
   Headers,
   UnauthorizedException,
   Req,
+  Get,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -104,6 +105,15 @@ export class AuthController {
     >(new LoginUserCommand(loginDto, ip, userAgent, deviceId));
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
+  }
+  @Get('google/login')
+  handleLogin() {
+    return { msg: 'Google Authentication' };
+  }
+
+  @Get('google/redirect')
+  handleRedirect() {
+    return { msg: 'OK' };
   }
 
   @UseGuards(JwtRtGuard)
