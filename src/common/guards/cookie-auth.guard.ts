@@ -11,6 +11,7 @@ export class CookieAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const refreshToken = request?.cookies.refreshToken;
+    console.log('refreshtoken', refreshToken);
     if (!refreshToken) {
       request.user = null;
       return true;
