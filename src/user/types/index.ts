@@ -1,13 +1,11 @@
 import type {
   Avatar,
   Image,
-  ImageCropInfo,
   ImageMetadata,
   Post,
   Profile,
   User,
 } from '@prisma/client';
-import { CropInfo } from '../dto/image-info.dto';
 
 export interface UserWithEmailConfirmation extends User {
   emailConfirmation: {
@@ -51,35 +49,12 @@ export type ProfileViewModel = Omit<
   avatar: Pick<Avatar, 'url' | 'previewUrl'>;
 } & Pick<User, 'username'>;
 
-export type ImageCreationData = Pick<Image, 'previewUrl' | 'url'> & {
-  metadata: Pick<
-    ImageMetadata,
-    'filters' | 'height' | 'size' | 'width' | 'ratio' | 'zoom'
-  >;
-} & {
-  cropInfo: Pick<ImageCropInfo, 'height' | 'width' | 'x' | 'y'>;
-};
-
-export interface ImageInfo {
-  zoom: number;
-  ratio: Ratio;
-  filters: string[];
-  cropInfo: CropInfo;
-}
-
 export type CreatePostResult = Post & {
   images: (Image & {
-    metadata:
-      | (ImageMetadata & {
-          cropInfo: ImageCropInfo | null;
-        })
-      | null;
+    metadata: ImageMetadata | null;
   })[];
 };
 
-export enum Ratio {
-  ORIGINAL = 'ORIGINAL',
-  PORTRAIT = 'PORTRAIT',
-  LANDSCAPE = 'LANDSCAPE',
-  SQUARE = 'SQUARE',
-}
+export type ImageCreationData = Pick<Image, 'previewUrl' | 'url'> & {
+  metadata: Pick<ImageMetadata, 'height' | 'size' | 'width'>;
+};

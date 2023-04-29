@@ -48,8 +48,6 @@ import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
 import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
 import { ProfileQueryRepositoryAdapter } from '../repositories/adapters/profile-query-repository.adapter';
 import { UserEmailConfirmationGuard } from '../../common/guards/user-confirmation.guard';
-import { ImageInfoDto } from '../dto/image-info.dto';
-import { imageInfoObjectToArrayOfObjects } from '../utils/image-info-object-to-array-of-objects';
 import { CreatePostCommand } from '../use-cases/post/create-post.use-case';
 import { DeletePostCommand } from '../use-cases/post/delete-post.use-case';
 import {
@@ -60,6 +58,7 @@ import {
 import { CreatePostResult as CreatePostResult } from '../types';
 import { UpdatePostCommand } from '../use-cases/post/update-post.use-case';
 import { UpdatePostDto } from '../dto/update-post.dto';
+import { CreatePostDto } from '../dto/create-post.dto';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -140,13 +139,12 @@ export class UsersController {
     )
     images: Express.Multer.File[],
     @Body()
-    imagesInfoDto: ImageInfoDto,
+    createPostDto: CreatePostDto,
   ) {
-    const { description, ...imagesInfo } = imagesInfoDto;
-    const imageInfo = imageInfoObjectToArrayOfObjects(imagesInfo);
+    const { description } = createPostDto;
 
     const result: CreatePostResult = await this.commandBus.execute(
-      new CreatePostCommand(userId, images, description, imageInfo),
+      new CreatePostCommand(userId, images, description),
     );
 
     return result;
