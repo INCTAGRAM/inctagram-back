@@ -28,6 +28,12 @@ export interface ActiveUserData {
   deviceId: string;
 }
 
+export interface Oauth20UserData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
+}
 export type AvatarPayload = Pick<
   Avatar,
   'height' | 'width' | 'url' | 'previewUrl' | 'size'

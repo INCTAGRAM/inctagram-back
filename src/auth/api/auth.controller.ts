@@ -40,10 +40,13 @@ import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../use-cases/new-password.use-case';
 import { ActiveUser } from '../../common/decorators/active-user.decorator';
-import { ActiveUserData } from '../../user/types';
+import { ActiveUserData, Oauth20UserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
+import { GoogleAuthGuard } from '../../common/guards/google-auth.guard';
+import { Oauth20LoginUserCommand } from '../use-cases/oauth20-login-user-use-case';
+import { Oath20UserDecorator } from '../../common/decorators/oath20-user.decorator';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -106,14 +109,18 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }
+  @UseGuards(GoogleAuthGuard)
   @Get('google/login')
-  handleLogin() {
+  async handleLogin() {
     return { msg: 'Google Authentication' };
   }
 
+  @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  handleRedirect() {
-    return { msg: 'OK' };
+  async handleRedirect(@Oath20UserDecorator() user: Oauth20UserData) {
+    const tokens = await this.commandBus.execute(
+      new Oauth20LoginUserCommand(user),
+    );
   }
 
   @UseGuards(JwtRtGuard)
