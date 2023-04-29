@@ -14,6 +14,7 @@ import { LogoutUserUseCase } from './use-cases/logout-user-use-case';
 import { PasswordRecoveryUserUseCase } from './use-cases/password-recovery.use-case';
 import { NewPasswordUseCase } from './use-cases/new-password.use-case';
 import { DeviceSessionsModule } from '../deviceSessions/device-sessions.module';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 const useCases = [
   RegistrationEmailResendingUseCase,
@@ -35,7 +36,7 @@ const useCases = [
     DeviceSessionsModule,
   ],
   controllers: [AuthController],
-  providers: [AtStrategy, RtStrategy, ...useCases],
+  providers: [AtStrategy, RtStrategy, GoogleStrategy, ...useCases],
   exports: [],
 })
 export class AuthModule {}
