@@ -1,16 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Ratio } from '@prisma/client';
 import { randomUUID } from 'crypto';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import type {
-  CreatePostResult,
-  ImageCreationData,
-  ImageInfo,
-} from '../../types';
 import { ImageService } from 'src/common/services/image.service';
 import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from 'src/common/constants';
 import { CloudStrategy } from 'src/common/strategies/cloud.strategy';
+import type { CreatePostResult, ImageCreationData } from '../../types';
 import { PostCreationError, POST_CREATION_ERROR } from 'src/common/errors';
 
 export class CreatePostCommand {
@@ -18,7 +13,6 @@ export class CreatePostCommand {
     public userId: string,
     public images: Express.Multer.File[],
     public description: string,
-    public imagesInfo: ImageInfo[],
   ) {}
 }
 
@@ -31,7 +25,7 @@ export class CreatePostUseCase implements ICommandHandler {
   ) {}
 
   public async execute(command: CreatePostCommand): Promise<CreatePostResult> {
-    const { userId, images, description, imagesInfo } = command;
+    const { userId, images, description } = command;
 
     const postId = randomUUID();
 
@@ -40,14 +34,7 @@ export class CreatePostUseCase implements ICommandHandler {
       const imagesMetadata: { size: number; width: number; height: number }[] =
         [];
 
-      for (const [index, image] of Object.entries(images)) {
-        const ratio = imagesInfo[Number(index)]?.ratio || Ratio.SQUARE;
-
-        const transformedImage =
-          ratio === Ratio.ORIGINAL
-            ? image
-            : await this.imageService.changeRatio(image, ratio);
-
+      for (const image of images) {
         const {
           size = 0,
           width = 0,
@@ -60,7 +47,7 @@ export class CreatePostUseCase implements ICommandHandler {
         const imageName = `${randomUUID()}.${ext}`;
         const imagePath = `${this.createPrefix(userId, postId)}${imageName}`;
 
-        const preview = await this.imageService.resize(transformedImage, {
+        const preview = await this.imageService.resize(image, {
           width: PREVIEW_WIDTH,
           height: PREVIEW_HEIGHT,
         });
@@ -71,7 +58,7 @@ export class CreatePostUseCase implements ICommandHandler {
           postId,
         )}.preivew.${previewName}`;
 
-        imagesWithPaths.push([imagePath, transformedImage]);
+        imagesWithPaths.push([imagePath, image]);
         imagesWithPaths.push([previewPath, preview]);
       }
 
@@ -83,14 +70,10 @@ export class CreatePostUseCase implements ICommandHandler {
         );
 
         const imageCreationData: ImageCreationData[] = images.map((_, idx) => {
-          const { cropInfo, ...rest } = imagesInfo[idx] ?? {};
-
           return {
             metadata: {
-              ...(rest ?? {}),
               ...(imagesMetadata[idx] ?? {}),
             },
-            cropInfo: cropInfo ?? {},
             url: imagesUrls[idx * 2],
             previewUrl: imagesUrls[idx * 2 + 1],
           };
@@ -109,11 +92,6 @@ export class CreatePostUseCase implements ICommandHandler {
                   metadata: {
                     create: {
                       ...info.metadata,
-                      cropInfo: {
-                        create: {
-                          ...info.cropInfo,
-                        },
-                      },
                     },
                   },
                 })),
@@ -123,11 +101,7 @@ export class CreatePostUseCase implements ICommandHandler {
           include: {
             images: {
               include: {
-                metadata: {
-                  include: {
-                    cropInfo: true,
-                  },
-                },
+                metadata: {},
               },
             },
           },

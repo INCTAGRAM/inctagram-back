@@ -110,19 +110,8 @@ model Image {
   metadata   ImageMetadata?
 }
 
-enum Ratio {
-  ORIGINAL
-  PORTRAIT
-  LANDSCAPE
-  SQUARE
-}
-
 model ImageMetadata {
   id        String         @id @default(uuid())
-  zoom      Int?           @default(0)
-  ratio     Ratio?         @default(SQUARE)
-  cropInfo  ImageCropInfo?
-  filters   String[]
   size      Int
   height    Int
   width     Int
@@ -130,16 +119,4 @@ model ImageMetadata {
   image     Image          @relation(fields: [imageId], references: [id], onDelete: Cascade)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-}
-
-model ImageCropInfo {
-  id         String        @id @default(uuid())
-  x          Int?
-  y          Int?
-  height     Int?
-  width      Int?
-  metadataId String        @unique
-  metadata   ImageMetadata @relation(fields: [metadataId], references: [id], onDelete: Cascade)
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
 }
