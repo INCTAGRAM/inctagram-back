@@ -7,7 +7,7 @@ export class MailService {
   constructor(private mailerService: MailerService) {}
 
   async sendUserConfirmation(user: Partial<User>, token: string) {
-    const url = `example.com/auth/confirm?code=${token}&email=${user.email}`;
+    const url = `https://inctagram-m9ju.vercel.app/registration/confirmation?code=${token}&email=${user.email}`;
 
     await this.mailerService.sendMail({
       to: user.email,
@@ -21,7 +21,7 @@ export class MailService {
   }
 
   async sendPasswordRecovery(user: User, token: string) {
-    const url = `example.com/auth/confirm?code=${token}&email=${user.email}`;
+    const url = `https://inctagram-m9ju.vercel.app/recovery/new-password?code=${token}&email=${user.email}`;
 
     await this.mailerService.sendMail({
       to: user.email,
