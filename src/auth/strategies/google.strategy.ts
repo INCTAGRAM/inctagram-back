@@ -1,7 +1,11 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { GoogleAuthAdaptor } from '../../adaptors/google/google-auth.adaptor';
 
 @Injectable()
@@ -21,19 +25,22 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
   async validate(
     accessToken: string,
     refreshToken: string,
-    profile: any,
+    profile: Profile,
     done: VerifyCallback,
   ) {
     console.log(accessToken);
     console.log(refreshToken);
     console.log(profile);
 
+    if (!profile.emails) throw new ForbiddenException('Email is absent');
+
     const { name, emails, displayName } = profile;
     const user = {
+      oauthClientId: profile.id,
       email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      displayName: displayName,
+      firstName: name ? name.givenName : '',
+      lastName: name ? name.familyName : '',
+      displayName: displayName ? displayName : '',
     };
     done(null, user);
   }

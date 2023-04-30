@@ -51,8 +51,6 @@ export class OauthLoginUserUseCase
     //
     // return tokens;
 
-    // what to do with hash
-    // should we separate user data on two tables LocalAccount and Oauth20Account
-    // what to do with username (currently can take it from displayName from profile provided by Google(but need to check if user already exists))
+
   }
 }

@@ -32,5 +32,7 @@ export class GoogleAuthAdaptor {
     //     u,
     //   },
     // });
+
+    // mannualy confirm user email
   }
 }
