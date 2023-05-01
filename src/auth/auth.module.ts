@@ -15,6 +15,7 @@ import { PasswordRecoveryUserUseCase } from './use-cases/password-recovery.use-c
 import { NewPasswordUseCase } from './use-cases/new-password.use-case';
 import { DeviceSessionsModule } from '../deviceSessions/device-sessions.module';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { OauthLoginUserUseCase } from './use-cases/oauth20-login-user-use-case';
 
 const useCases = [
   RegistrationEmailResendingUseCase,
@@ -24,6 +25,7 @@ const useCases = [
   NewPasswordUseCase,
   LoginUserUseCase,
   LogoutUserUseCase,
+  OauthLoginUserUseCase,
 ];
 
 @Module({

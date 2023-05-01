@@ -111,16 +111,21 @@ export class AuthController {
   }
   @UseGuards(GoogleAuthGuard)
   @Get('google/login')
-  async handleLogin() {
-    return { msg: 'Google Authentication' };
-  }
+  async googleAuth(@Req() req: Request) {}
 
   @UseGuards(GoogleAuthGuard)
   @Get('google/redirect')
-  async handleRedirect(@Oath20UserDecorator() user: Oauth20UserData) {
-    const tokens = await this.commandBus.execute(
-      new Oauth20LoginUserCommand(user),
+  async googleAuthRedirect(
+    @Oath20UserDecorator() user: Oauth20UserData,
+    @Ip() ip: string,
+    @Res({ passthrough: true }) res: Response,
+    @Headers('user-agent') userAgent: string,
+  ) {
+    const { accessToken, refreshToken } = await this.commandBus.execute(
+      new Oauth20LoginUserCommand(user, ip, userAgent),
     );
+    res.cookie('refreshToken', refreshToken, this.cookieOptions);
+    return { accessToken };
   }
 
   @UseGuards(JwtRtGuard)

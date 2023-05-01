@@ -18,7 +18,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
       clientID: config.get<string>('OATH_CLIENT_ID'),
       clientSecret: config.get<string>('OATH_CLIENT_SECRET'),
       callbackURL: 'http://localhost:5000/api/auth/google/redirect',
-      scope: ['profile', 'email'],
+      scope: ['email', 'profile'],
     });
   }
 
@@ -28,10 +28,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     profile: Profile,
     done: VerifyCallback,
   ) {
-    console.log(accessToken);
-    console.log(refreshToken);
-    console.log(profile);
-
     if (!profile.emails) throw new ForbiddenException('Email is absent');
 
     const { name, emails, displayName } = profile;

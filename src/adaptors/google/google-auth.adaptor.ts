@@ -11,12 +11,16 @@ export class GoogleAuthAdaptor {
     console.log(userInfo);
 
     const user = await this.userRepository.findUserByEmail(userInfo.email);
+
+    // if (user?.hash && !user.oauthClientId) {
+    //   console.log('You have been registered');
+    // }
     if (user) return user;
 
     const checkUsername = await this.validateUserName(userInfo.displayName);
 
     // create user and manually confirm email
-    const newUser = await this.userRepository.createOauthUser({
+    return this.userRepository.createOauthUser({
       ...userInfo,
       displayName: checkUsername,
     });
