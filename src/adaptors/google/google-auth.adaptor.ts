@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { UserRepository } from '../../user/repositories/user.repository';
 import { Oauth20UserData } from '../../user/types';
-import { PrismaService } from '../../prisma/prisma.service';
 
+import { uid } from 'uid';
 @Injectable()
 export class GoogleAuthAdaptor {
-  constructor(
-    private userRepository: UserRepository,
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private userRepository: UserRepository) {}
 
   async validateUser(userInfo: Oauth20UserData) {
     console.log(userInfo);
@@ -16,23 +13,22 @@ export class GoogleAuthAdaptor {
     const user = await this.userRepository.findUserByEmail(userInfo.email);
     if (user) return user;
 
-    const checkUserName = await this.userRepository.findUserByUserName(
-      userInfo.displayName,
+    const checkUsername = await this.validateUserName(userInfo.displayName);
+
+    // create user and manually confirm email
+    const newUser = await this.userRepository.createOauthUser({
+      ...userInfo,
+      displayName: checkUsername,
+    });
+  }
+  async validateUserName(username: string): Promise<string> {
+    const checkUsername = await this.userRepository.findUserByUserName(
+      username,
     );
-
-    if (checkUserName) {
-      const temporaryUsername = userInfo.displayName.concat();
-      // const checkUserName = await this.userRepository.findUserByUserName(
-      //     temporaryUsername
-      // );
+    if (checkUsername) {
+      const temporaryUsername = username.concat(uid(5));
+      return this.validateUserName(temporaryUsername);
     }
-    //
-    // const newUser = await this.prisma.user.create({
-    //   data: {
-    //     u,
-    //   },
-    // });
-
-    // mannualy confirm user email
+    return username;
   }
 }

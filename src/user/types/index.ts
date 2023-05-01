@@ -29,6 +29,7 @@ export interface ActiveUserData {
 }
 
 export interface Oauth20UserData {
+  oauthClientId: string;
   email: string;
   firstName: string;
   lastName: string;
