@@ -8,7 +8,8 @@ import {
   UseGuards,
   Headers,
   UnauthorizedException,
-  Req,
+  Inject,
+  HttpStatus,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -31,8 +32,7 @@ import { ConfirmRegistrationCommand } from '../use-cases/confirm-registration-us
 import { RegistrationEmailResendingCommand } from '../use-cases/registration-email-resending-use-case';
 import { LoginUserCommand } from '../use-cases/login-user-use-case';
 import { LoginDto } from '../dto/login.dto';
-import { CookieOptions, Request, Response } from 'express';
-import { LogginSuccessViewModel } from '../../types';
+import { CookieOptions, Response } from 'express';
 import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
 
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
@@ -43,6 +43,11 @@ import { ActiveUserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
+import { githubOauthConfig } from 'src/config/github-oauth.config';
+import { ConfigType } from '@nestjs/config';
+import { LoginUserWithGithubCommand } from '../use-cases/login-user-with-github.use-case';
+import { GithubCodeDto } from '../dto/github-code.dto';
+import { TokensPair } from '../types';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -56,6 +61,8 @@ export class AuthController {
   constructor(
     private commandBus: CommandBus,
     private readonly jwtAdaptor: JwtAdaptor,
+    @Inject(githubOauthConfig.KEY)
+    private readonly githubConfig: ConfigType<typeof githubOauthConfig>,
   ) {}
   @Post('registration')
   @AuthRegistrationSwaggerDecorator()
@@ -151,5 +158,32 @@ export class AuthController {
     return this.commandBus.execute(
       new NewPasswordCommand(newPassword, recoveryCode),
     );
+  }
+
+  @Post('github/login')
+  @UseGuards(CookieAuthGuard)
+  async initiateGithubOauth(
+    @Ip() ip: string,
+    @Body() githubCodeDto: GithubCodeDto,
+    @Headers('user-agent') userAgent: string,
+    @Res({ passthrough: true }) response: Response,
+    @ActiveUser('deviceId') deviceId: string | null,
+  ) {
+    const { code } = githubCodeDto;
+
+    const result = await this.commandBus.execute<
+      LoginUserWithGithubCommand,
+      TokensPair
+    >(new LoginUserWithGithubCommand({ code, deviceId, ip, userAgent }));
+
+    if (!result) {
+      response.sendStatus(HttpStatus.ACCEPTED);
+      return;
+    }
+
+    const { accessToken, refreshToken } = result;
+
+    response.cookie('refreshToken', refreshToken, this.cookieOptions);
+    response.status(HttpStatus.OK).json({ accessToken });
   }
 }

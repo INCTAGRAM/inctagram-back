@@ -1,11 +1,13 @@
 import type {
   Avatar,
+  EmailConfirmation,
   Image,
   ImageMetadata,
   Post,
   Profile,
   User,
 } from '@prisma/client';
+import { CreateUserDto } from '../dto/create.user.dto';
 
 export interface UserWithEmailConfirmation extends User {
   emailConfirmation: {
@@ -58,3 +60,15 @@ export type CreatePostResult = Post & {
 export type ImageCreationData = Pick<Image, 'previewUrl' | 'url'> & {
   metadata: Pick<ImageMetadata, 'height' | 'size' | 'width'>;
 };
+
+export interface CreateUserData
+  extends Omit<CreateUserDto, 'password'>,
+    Partial<Pick<Profile, 'name' | 'surname'>>,
+    Partial<{
+      avatarPayload: Pick<
+        Avatar,
+        'size' | 'height' | 'width' | 'url' | 'previewUrl'
+      >;
+    }>,
+    Partial<Pick<EmailConfirmation, 'isConfirmed'>>,
+    Partial<Pick<User, 'oauthClientId'>> {}

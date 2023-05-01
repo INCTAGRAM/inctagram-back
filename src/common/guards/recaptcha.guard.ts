@@ -14,7 +14,6 @@ export class RecaptchaGuard implements CanActivate {
   public constructor(private readonly configService: ConfigService) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
-    console.log('guard');
     const request = context.switchToHttp().getRequest();
     const secret = this.configService.get<string>('RECAPTCHA_SECRET_KEY');
     const response = request.body[RECAPTCHA_TOKEN];

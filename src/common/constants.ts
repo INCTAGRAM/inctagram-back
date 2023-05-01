@@ -39,3 +39,5 @@ export const ABOUT_ME_LENGTH_MAX = 200;
 export const PRODUCTION_MODE = 'production';
 
 export const RECAPTCHA_TOKEN = 'recaptchaToken';
+
+export const GITHUB_TOKEN_ENDPOINT = 'https://github.com/login/oauth/authorize';

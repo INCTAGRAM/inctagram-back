@@ -39,7 +39,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
       );
     const checkPassword = await bcrypt.compare(
       command.loginDto.password,
-      user.hash,
+      user.hash ?? '',
     );
 
     if (!checkPassword) throw new UnauthorizedException();
