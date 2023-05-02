@@ -35,13 +35,15 @@ export class CreatePostUseCase implements ICommandHandler {
         [];
 
       for (const image of images) {
-        const {
-          size = 0,
-          width = 0,
-          height = 0,
-        } = await this.imageService.getMetadata(image.buffer);
+        const { size, width, height } = await this.imageService.getMetadata(
+          image.buffer,
+        );
 
-        imagesMetadata.push({ size, width, height });
+        imagesMetadata.push({
+          size: size || 0,
+          width: width || 0,
+          height: height || 0,
+        });
 
         const ext = image.originalname.split('.')[1];
         const imageName = `${randomUUID()}.${ext}`;

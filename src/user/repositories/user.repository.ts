@@ -1,38 +1,53 @@
-import { EmailConfirmation, User } from '@prisma/client';
+import { AccountsMergeInfo, Avatar, EmailConfirmation, User  } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from '../dto/create.user.dto';
-import { Oauth20UserData, UserWithEmailConfirmation } from '../types';
+import { CreateUserData, UserWithEmailConfirmation, Oauth20UserData } from '../types';
+
 
 @Injectable()
 export class UserRepository {
   public constructor(private prisma: PrismaService) {}
 
-  public async createUser(createUserDto: CreateUserDto, hash: string) {
+  public async createUser(createUserData: CreateUserData, hash: string | null) {
+    const { username, email, isConfirmed, avatarPayload, oauthClientId } =
+      createUserData;
+    let avatar: Partial<Avatar> = {};
+
+    if (avatarPayload) {
+      const { url, previewUrl, size, height, width } = avatarPayload;
+      avatar = { url, previewUrl, size, height, width };
+    }
+
     return this.prisma.user.create({
       data: {
-        username: createUserDto.username,
-        email: createUserDto.email,
-        hash: hash,
+        username,
+        email,
+        hash,
+        oauthClientId: oauthClientId || null,
         emailConfirmation: {
           create: {
             confirmationCode: randomUUID(),
             expirationDate: add(new Date(), {
               minutes: 1,
             }).toISOString(),
-            isConfirmed: false,
+            isConfirmed: Boolean(isConfirmed),
           },
         },
         passwordRecovery: { create: {} },
         profile: { create: {} },
+        accountsMergeInfo: { create: {} },
+        avatar: { create: avatar },
       },
       select: {
         id: true,
         email: true,
+        username: true,
         createdAt: true,
+        oauthClientId: true,
         emailConfirmation: {
           select: {
             confirmationCode: true,
@@ -216,5 +231,41 @@ export class UserRepository {
 
   public async deleteAll() {
     return this.prisma.user.deleteMany({});
+  }
+
+  public async updateAccountsMergeInfo(
+    id: string,
+    payload: Partial<
+      Pick<AccountsMergeInfo, 'isMerged' | 'mergeCode' | 'expirationDate'>
+    >,
+  ) {
+    try {
+      return this.prisma.accountsMergeInfo.upsert({
+        where: {
+          userId: id,
+        },
+        update: payload,
+        create: {
+          userId: id,
+          ...payload,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      return null;
+    }
+  }
+
+  public async createUniqueUsername(username: string) {
+    let uniqueUsername = username;
+    let count = 1;
+
+    while (await this.findUserByUserName(username)) {
+      uniqueUsername = `${username}${count}`;
+      count++;
+    }
+
+    return uniqueUsername;
   }
 }
