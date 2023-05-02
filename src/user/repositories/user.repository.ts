@@ -1,10 +1,12 @@
-import { AccountsMergeInfo, Avatar, EmailConfirmation } from '@prisma/client';
+import { AccountsMergeInfo, Avatar, EmailConfirmation, User  } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateUserData, UserWithEmailConfirmation } from '../types';
+import { CreateUserDto } from '../dto/create.user.dto';
+import { CreateUserData, UserWithEmailConfirmation, Oauth20UserData } from '../types';
+
 
 @Injectable()
 export class UserRepository {
@@ -53,6 +55,30 @@ export class UserRepository {
         },
       },
     });
+  }
+
+  public async createOauthUser(userInfo: Oauth20UserData): Promise<User> {
+    try {
+      return this.prisma.user.create({
+        data: {
+          oauthClientId: userInfo.oauthClientId,
+          username: userInfo.displayName,
+          email: userInfo.email,
+          emailConfirmation: {
+            create: {
+              confirmationCode: randomUUID(),
+              expirationDate: add(new Date(), {
+                minutes: 1,
+              }).toISOString(),
+              isConfirmed: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   public async findUserByEmail(email: string) {
