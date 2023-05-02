@@ -10,7 +10,6 @@ import {
   UnauthorizedException,
   Req,
   Get,
-  BadRequestException,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -122,9 +121,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Headers('user-agent') userAgent: string,
   ) {
-    if (!user) {
-      throw new BadRequestException('Unauthenticated');
-    }
     const { accessToken, refreshToken } = await this.commandBus.execute(
       new Oauth20LoginUserCommand(user, ip, userAgent),
     );
