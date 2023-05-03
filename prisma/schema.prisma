@@ -13,7 +13,6 @@ datasource db {
 
 model User {
   id                String             @id @default(uuid())
-  oauthClientId     String?
   username          String             @unique
   email             String             @unique
   hash              String?
@@ -25,16 +24,25 @@ model User {
   avatar            Avatar?
   profile           Profile?
   post              Post[]
-  accountsMergeInfo AccountsMergeInfo?
+  oauthAccount      OauthAccount[]
 }
 
-model AccountsMergeInfo {
-  id             String    @id @default(uuid())
-  mergeCode      String?
-  isMerged       Boolean   @default(false)
-  expirationDate DateTime?
-  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId         String    @unique
+enum OauthProvider {
+  GITHUB
+  GOOGLE
+}
+
+model OauthAccount {
+  id               String        @id @default(uuid())
+  clientId         String
+  type             OauthProvider
+  linked           Boolean       @default(false)
+  mergeCode        String?
+  mergeCodeExpDate DateTime?
+  user             User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String
+
+  @@unique([clientId, type])
 }
 
 model Profile {

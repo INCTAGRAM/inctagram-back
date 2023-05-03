@@ -31,23 +31,24 @@ export class OauthLoginUserUseCase
 
     // create tokens and session
     const deviceId = randomUUID();
-    const tokens = await this.jwtAdaptor.getTokens(
-      validateUser.id,
-      validateUser.username,
-      deviceId,
-    );
-    const hashedTokens = await this.jwtAdaptor.updateTokensHash(tokens);
+    // const tokens = await this.jwtAdaptor.getTokens(
+    //   validateUser.id,
+    //   validateUser.username,
+    //   deviceId,
+    // );
+    // const hashedTokens = await this.jwtAdaptor.updateTokensHash(tokens);
     //
     // // create device session
-    const newDeviceSession =
-      await this.deviceSessionsRepository.createNewDeviceSession(
-        deviceId,
-        validateUser.id,
-        command.ip,
-        command.userAgent,
-        hashedTokens,
-      );
+    // const newDeviceSession =
+    //   await this.deviceSessionsRepository.createNewDeviceSession(
+    //     deviceId,
+    //     validateUser.id,
+    //     command.ip,
+    //     command.userAgent,
+    //     hashedTokens,
+    //   );
     //
-    return tokens;
+    // return tokens;
+    return {};
   }
 }
