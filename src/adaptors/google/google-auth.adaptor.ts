@@ -13,6 +13,7 @@ export class GoogleAuthAdaptor {
     const user = await this.userRepository.findUserByEmail(userInfo.email);
 
     // if (user?.hash && !user.oauthClientId) {
+    // send mail
     //   console.log('You have been registered');
     // }
     if (user) return user;

@@ -54,7 +54,6 @@ import { LoginUserWithGithubCommand } from '../use-cases/login-user-with-github.
 import { GithubCodeDto } from '../dto/github-code.dto';
 import { TokensPair } from '../types';
 
-
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
@@ -134,7 +133,9 @@ export class AuthController {
       new Oauth20LoginUserCommand(user, ip, userAgent),
     );
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
-    return { accessToken };
+
+    res.redirect('http://localhost:3000/login');
+    // return { accessToken };
   }
 
   @UseGuards(JwtRtGuard)
