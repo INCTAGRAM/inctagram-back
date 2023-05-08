@@ -7,7 +7,6 @@ import { UserModule } from '../user/user.module';
 import { AtStrategy, RtStrategy } from './strategies';
 import { AuthController } from './api/auth.controller';
 import { AdaptorModule } from '../adaptors/adaptor.module';
-import { GoogleStrategy } from './strategies/google.strategy';
 import { ImageService } from 'src/common/services/image.service';
 import { SharpService } from 'src/common/services/sharp.service';
 import { LoginUserUseCase } from './use-cases/login-user-use-case';
@@ -52,7 +51,6 @@ const useCases = [
     RtStrategy,
     GithubUsersService,
     DevicesSessionsService,
-    GoogleStrategy,
     {
       provide: ImageService,
       useClass: SharpService,

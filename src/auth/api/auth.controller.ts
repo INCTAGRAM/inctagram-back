@@ -46,7 +46,6 @@ import { ActiveUserData, Oauth20UserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
-import { GoogleAuthGuard } from '../../common/guards/google-auth.guard';
 import { Oauth20LoginUserCommand } from '../use-cases/oauth20-login-user-use-case';
 import { Oath20UserDecorator } from '../../common/decorators/oath20-user.decorator';
 import { githubOauthConfig } from 'src/config/github-oauth.config';
@@ -120,12 +119,8 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }
-  @UseGuards(GoogleAuthGuard)
-  @Get('google/login')
-  async googleAuth(@Req() req: Request) {}
 
-  @UseGuards(GoogleAuthGuard)
-  @Get('google/redirect')
+  @Get('google/sign-in')
   async googleAuthRedirect(
     @Oath20UserDecorator() user: Oauth20UserData,
     @Ip() ip: string,
