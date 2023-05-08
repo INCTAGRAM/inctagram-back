@@ -66,7 +66,7 @@ export class SignUpUserWithGithubUseCase
 
         let uniqueUsername = username;
 
-        if (!isUsernameInUse) {
+        if (isUsernameInUse) {
           uniqueUsername = await this.userRepository.createUniqueUsername(
             username,
           );
