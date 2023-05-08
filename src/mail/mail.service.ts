@@ -39,7 +39,7 @@ export class MailService {
     token: string,
   ) {
     const { email, username } = user;
-    const mergeUrl = `https://inctagram.herokuapp.com/api/auth/merge-accounts?code=${token}`;
+    const mergeUrl = `https://inctagram.herokuapp.com/api/auth/merge-account?code=${token}`;
     const loginUrl = `https://inctagram-m9ju.vercel.app/login`;
 
     await this.mailerService.sendMail({

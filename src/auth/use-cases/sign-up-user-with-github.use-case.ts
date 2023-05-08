@@ -5,22 +5,17 @@ import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 import Joi from 'joi';
 
+import type { OauthCommandData } from '../types';
 import { MailService } from 'src/mail/mail.service';
+import { OauthProvider } from 'src/common/constants';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
-import { AvatarPayload, CreateUserData } from 'src/user/types';
 import { DevicesSessionsService } from '../services/devices.service';
 import { GithubUsersService } from '../services/github-users.service';
 import { UserRepository } from '../../user/repositories/user.repository';
+import { AvatarPayload, CreateUserWithOauthAccountData } from 'src/user/types';
 
-export interface LoginUserWithGithubCommandData {
-  code: string;
-  deviceId: string | null;
-  ip: string;
-  userAgent: string;
-}
-
-export class LoginUserWithGithubCommand {
-  public constructor(public readonly data: LoginUserWithGithubCommandData) {
+export class SignUpWithGithubCommand {
+  public constructor(public readonly data: OauthCommandData) {
     const schema = Joi.object({
       code: Joi.string().required(),
     });
@@ -33,9 +28,9 @@ export class LoginUserWithGithubCommand {
   }
 }
 
-@CommandHandler(LoginUserWithGithubCommand)
-export class LoginUserWithGithubUseCase
-  implements ICommandHandler<LoginUserWithGithubCommand>
+@CommandHandler(SignUpWithGithubCommand)
+export class SignUpUserWithGithubUseCase
+  implements ICommandHandler<SignUpWithGithubCommand>
 {
   public constructor(
     private readonly devicesSessionsService: DevicesSessionsService,
@@ -45,7 +40,9 @@ export class LoginUserWithGithubUseCase
     private readonly jwtAdaptor: JwtAdaptor,
   ) {}
 
-  public async execute(command: LoginUserWithGithubCommand) {
+  private readonly type = OauthProvider.GITHUB;
+
+  public async execute(command: SignUpWithGithubCommand) {
     try {
       const { code, ip, userAgent } = command.data;
 
@@ -55,19 +52,13 @@ export class LoginUserWithGithubUseCase
 
       const { email } = githubUserData;
 
-      let user: Pick<
-        User,
-        'username' | 'id' | 'oauthClientId' | 'email'
-      > | null = await this.userRepository.findUserByEmail(email);
+      let user: Pick<User, 'username' | 'id' | 'email'> | null =
+        await this.userRepository.findUserByEmail(email);
+
+      const { id: clientId } = githubUserData;
 
       if (!user) {
-        const {
-          username,
-          avatarUrl,
-          firstName,
-          lastName,
-          id: oauthClientId,
-        } = githubUserData;
+        const { username, avatarUrl, firstName, lastName } = githubUserData;
 
         const isUsernameInUse = await this.userRepository.findUserByUserName(
           username,
@@ -94,29 +85,42 @@ export class LoginUserWithGithubUseCase
           };
         }
 
-        const createUserData: CreateUserData = {
+        const createUserData: CreateUserWithOauthAccountData = {
           email,
+          clientId,
           name: firstName,
           surname: lastName,
-          oauthClientId,
           username: uniqueUsername,
-          isConfirmed: true,
+          type: this.type,
         };
 
         if (avatarPayload) {
           createUserData.avatarPayload = avatarPayload;
         }
 
-        user = await this.userRepository.createUser(createUserData, null);
-      } else if (!user.oauthClientId) {
-        const mergeCode = randomUUID();
+        user = await this.userRepository.createUserWithOauthAccount(
+          createUserData,
+        );
+      } else {
+        const existingOauthAccount =
+          await this.userRepository.findOauthAccountByQuery({
+            clientId,
+            type: this.type,
+          });
 
-        await this.userRepository.updateAccountsMergeInfo(user.id, {
-          mergeCode,
-          expirationDate: add(new Date(), { minutes: 10 }),
-        });
+        if (!existingOauthAccount || !existingOauthAccount.linked) {
+          const mergeCode = randomUUID();
 
-        return this.emailService.sendAccountsMerge(user, code);
+          await this.userRepository.updateOrCreateOauthAccount({
+            userId: user.id,
+            mergeCode,
+            clientId,
+            type: this.type,
+            mergeCodeExpDate: add(new Date(), { minutes: 10 }),
+          });
+
+          return this.emailService.sendAccountsMerge(user, code);
+        }
       }
 
       const deviceId = command.data.deviceId || randomUUID();

@@ -1,17 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 
 @Injectable()
 export class CookieAuthGuard implements CanActivate {
-  constructor(
-    private readonly jwtService: JwtService,
-    private readonly jwtAdaptor: JwtAdaptor,
-  ) {}
+  constructor(private readonly jwtService: JwtService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const refreshToken = request?.cookies.refreshToken;
-    console.log('refreshtoken', refreshToken);
+
     if (!refreshToken) {
       request.user = null;
       return true;

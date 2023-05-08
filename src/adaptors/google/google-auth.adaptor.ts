@@ -21,10 +21,10 @@ export class GoogleAuthAdaptor {
     const checkUsername = await this.validateUserName(userInfo.displayName);
 
     // create user and manually confirm email
-    return this.userRepository.createOauthUser({
-      ...userInfo,
-      displayName: checkUsername,
-    });
+    // return this.userRepository.createOauthUser({
+    //   ...userInfo,
+    //   displayName: checkUsername,
+    // });
   }
   async validateUserName(username: string): Promise<string> {
     const checkUsername = await this.userRepository.findUserByUserName(

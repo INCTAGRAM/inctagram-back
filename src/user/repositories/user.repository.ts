@@ -1,53 +1,47 @@
-import { AccountsMergeInfo, Avatar, EmailConfirmation, User  } from '@prisma/client';
+import { EmailConfirmation, OauthAccount, OauthProvider } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from '../dto/create.user.dto';
-import { CreateUserData, UserWithEmailConfirmation, Oauth20UserData } from '../types';
-
+import {
+  CreateUserWithOauthAccountData,
+  UserWithEmailConfirmation,
+  Oauth20UserData,
+} from '../types';
+import { da } from 'date-fns/locale';
+import { UpdateOrCreateOauthAccountPaylod } from 'src/auth/types';
 
 @Injectable()
 export class UserRepository {
   public constructor(private prisma: PrismaService) {}
 
-  public async createUser(createUserData: CreateUserData, hash: string | null) {
-    const { username, email, isConfirmed, avatarPayload, oauthClientId } =
-      createUserData;
-    let avatar: Partial<Avatar> = {};
-
-    if (avatarPayload) {
-      const { url, previewUrl, size, height, width } = avatarPayload;
-      avatar = { url, previewUrl, size, height, width };
-    }
+  public async createUser(createUserDto: CreateUserDto, hash: string) {
+    const { username, email } = createUserDto;
 
     return this.prisma.user.create({
       data: {
         username,
         email,
         hash,
-        oauthClientId: oauthClientId || null,
         emailConfirmation: {
           create: {
             confirmationCode: randomUUID(),
             expirationDate: add(new Date(), {
-              minutes: 1,
+              minutes: 5,
             }).toISOString(),
-            isConfirmed: Boolean(isConfirmed),
+            isConfirmed: false,
           },
         },
         passwordRecovery: { create: {} },
         profile: { create: {} },
-        accountsMergeInfo: { create: {} },
-        avatar: { create: avatar },
       },
       select: {
         id: true,
         email: true,
         username: true,
         createdAt: true,
-        oauthClientId: true,
         emailConfirmation: {
           select: {
             confirmationCode: true,
@@ -57,29 +51,78 @@ export class UserRepository {
     });
   }
 
-  public async createOauthUser(userInfo: Oauth20UserData): Promise<User> {
-    try {
-      return this.prisma.user.create({
-        data: {
-          oauthClientId: userInfo.oauthClientId,
-          username: userInfo.displayName,
-          email: userInfo.email,
-          emailConfirmation: {
-            create: {
-              confirmationCode: randomUUID(),
-              expirationDate: add(new Date(), {
-                minutes: 1,
-              }).toISOString(),
-              isConfirmed: true,
-            },
+  public async createUserWithOauthAccount(
+    createUserData: CreateUserWithOauthAccountData,
+  ) {
+    const { username, email, avatarPayload, clientId, type } = createUserData;
+
+    const { url, previewUrl, size, height, width } = avatarPayload || {};
+
+    return this.prisma.user.create({
+      data: {
+        username,
+        email,
+        hash: null,
+        emailConfirmation: {
+          create: {
+            confirmationCode: '',
+            expirationDate: new Date().toISOString(),
+            isConfirmed: true,
           },
         },
-      });
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+        passwordRecovery: { create: {} },
+        profile: { create: {} },
+        avatar: {
+          create: avatarPayload ? { url, previewUrl, size, height, width } : {},
+        },
+        oauthAccount: {
+          create: {
+            clientId,
+            type,
+            linked: true,
+            mergeCode: randomUUID(),
+            mergeCodeExpDate: add(new Date(), { minutes: 10 }),
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        oauthAccount: {
+          select: {
+            mergeCode: true,
+          },
+        },
+      },
+    });
   }
+
+  // public async createOauthUser(userInfo: Oauth20UserData): Promise<User> {
+  //   try {
+  //     return this.prisma.user.create({
+  //       data: {
+  //         username: userInfo.displayName,
+  //         email: userInfo.email,
+  //         oauthAccount: {
+  //           create: { clientId: userInfo.oauthClientId },
+  //         },
+  //         emailConfirmation: {
+  //           create: {
+  //             confirmationCode: randomUUID(),
+  //             expirationDate: add(new Date(), {
+  //               minutes: 1,
+  //             }).toISOString(),
+  //             isConfirmed: true,
+  //           },
+  //         },
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.log(error);
+  //     throw error;
+  //   }
+  // }
 
   public async findUserByEmail(email: string) {
     return this.prisma.user.findUnique({
@@ -233,22 +276,21 @@ export class UserRepository {
     return this.prisma.user.deleteMany({});
   }
 
-  public async updateAccountsMergeInfo(
-    id: string,
-    payload: Partial<
-      Pick<AccountsMergeInfo, 'isMerged' | 'mergeCode' | 'expirationDate'>
-    >,
+  public async updateOrCreateOauthAccount(
+    payload: UpdateOrCreateOauthAccountPaylod,
   ) {
+    const { clientId, type } = payload;
+
     try {
-      return this.prisma.accountsMergeInfo.upsert({
+      return this.prisma.oauthAccount.upsert({
         where: {
-          userId: id,
+          clientId_type: {
+            clientId,
+            type,
+          },
         },
         update: payload,
-        create: {
-          userId: id,
-          ...payload,
-        },
+        create: payload,
       });
     } catch (error) {
       console.log(error);
@@ -267,5 +309,21 @@ export class UserRepository {
     }
 
     return uniqueUsername;
+  }
+
+  public async findOauthAccountByQuery(
+    query: Partial<
+      Pick<OauthAccount, 'clientId' | 'id' | 'userId' | 'type' | 'mergeCode'>
+    >,
+  ) {
+    try {
+      return this.prisma.oauthAccount.findFirst({
+        where: query,
+      });
+    } catch (error) {
+      console.log(error);
+
+      return null;
+    }
   }
 }

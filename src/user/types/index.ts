@@ -3,6 +3,7 @@ import type {
   EmailConfirmation,
   Image,
   ImageMetadata,
+  OauthAccount,
   Post,
   Profile,
   User,
@@ -37,6 +38,7 @@ export interface Oauth20UserData {
   lastName: string;
   displayName: string;
 }
+
 export type AvatarPayload = Pick<
   Avatar,
   'height' | 'width' | 'url' | 'previewUrl' | 'size'
@@ -68,8 +70,8 @@ export type ImageCreationData = Pick<Image, 'previewUrl' | 'url'> & {
   metadata: Pick<ImageMetadata, 'height' | 'size' | 'width'>;
 };
 
-export interface CreateUserData
-  extends Omit<CreateUserDto, 'password'>,
+export interface CreateUserWithOauthAccountData
+  extends Pick<CreateUserDto, 'email' | 'username'>,
     Partial<Pick<Profile, 'name' | 'surname'>>,
     Partial<{
       avatarPayload: Pick<
@@ -77,5 +79,4 @@ export interface CreateUserData
         'size' | 'height' | 'width' | 'url' | 'previewUrl'
       >;
     }>,
-    Partial<Pick<EmailConfirmation, 'isConfirmed'>>,
-    Partial<Pick<User, 'oauthClientId'>> {}
+    Pick<OauthAccount, 'clientId' | 'type'> {}
