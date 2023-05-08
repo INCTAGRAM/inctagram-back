@@ -64,7 +64,6 @@ export class AuthController {
     httpOnly: true,
     sameSite: 'none',
     secure: true,
-    domain: 'localhost',
   };
 
   constructor(
