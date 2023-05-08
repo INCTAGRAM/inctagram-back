@@ -1,11 +1,14 @@
 import type {
   Avatar,
+  EmailConfirmation,
   Image,
   ImageMetadata,
+  OauthAccount,
   Post,
   Profile,
   User,
 } from '@prisma/client';
+import { CreateUserDto } from '../dto/create.user.dto';
 
 export interface UserWithEmailConfirmation extends User {
   emailConfirmation: {
@@ -26,6 +29,14 @@ export interface ActiveUserData {
   userId: string;
   username: string;
   deviceId: string;
+}
+
+export interface Oauth20UserData {
+  oauthClientId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  displayName: string;
 }
 
 export type AvatarPayload = Pick<
@@ -58,3 +69,14 @@ export type CreatePostResult = Post & {
 export type ImageCreationData = Pick<Image, 'previewUrl' | 'url'> & {
   metadata: Pick<ImageMetadata, 'height' | 'size' | 'width'>;
 };
+
+export interface CreateUserWithOauthAccountData
+  extends Pick<CreateUserDto, 'email' | 'username'>,
+    Partial<Pick<Profile, 'name' | 'surname'>>,
+    Partial<{
+      avatarPayload: Pick<
+        Avatar,
+        'size' | 'height' | 'width' | 'url' | 'previewUrl'
+      >;
+    }>,
+    Pick<OauthAccount, 'clientId' | 'type'> {}

@@ -9,6 +9,10 @@ import {
   Headers,
   UnauthorizedException,
   Req,
+  Get,
+  Inject,
+  HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { AuthDto } from '../dto/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -32,17 +36,26 @@ import { RegistrationEmailResendingCommand } from '../use-cases/registration-ema
 import { LoginUserCommand } from '../use-cases/login-user-use-case';
 import { LoginDto } from '../dto/login.dto';
 import { CookieOptions, Request, Response } from 'express';
-import { LogginSuccessViewModel } from '../../types';
 import { LogoutUserCommand } from '../use-cases/logout-user-use-case';
 
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../use-cases/new-password.use-case';
 import { ActiveUser } from '../../common/decorators/active-user.decorator';
-import { ActiveUserData } from '../../user/types';
+import { ActiveUserData, Oauth20UserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
+import { GoogleAuthGuard } from '../../common/guards/google-auth.guard';
+import { Oauth20LoginUserCommand } from '../use-cases/oauth20-login-user-use-case';
+import { Oath20UserDecorator } from '../../common/decorators/oath20-user.decorator';
+import { githubOauthConfig } from 'src/config/github-oauth.config';
+import { ConfigType } from '@nestjs/config';
+import { SignUpWithGithubCommand } from '../use-cases/sign-up-user-with-github.use-case';
+import { GithubCodeDto } from '../dto/github-code.dto';
+import { TokensPair } from '../types';
+import { MergeAccountCommand } from '../use-cases/merge-account.use-case';
+import { SignInWithGithubCommand } from '../use-cases/sign-in-user-with-github.use-case';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -51,11 +64,14 @@ export class AuthController {
     httpOnly: true,
     sameSite: 'none',
     secure: true,
+    domain: 'localhost',
   };
 
   constructor(
     private commandBus: CommandBus,
     private readonly jwtAdaptor: JwtAdaptor,
+    @Inject(githubOauthConfig.KEY)
+    private readonly githubConfig: ConfigType<typeof githubOauthConfig>,
   ) {}
   @Post('registration')
   @AuthRegistrationSwaggerDecorator()
@@ -101,6 +117,24 @@ export class AuthController {
       LoginUserCommand,
       { accessToken: string; refreshToken: string }
     >(new LoginUserCommand(loginDto, ip, userAgent, deviceId));
+    res.cookie('refreshToken', refreshToken, this.cookieOptions);
+    return { accessToken };
+  }
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/login')
+  async googleAuth(@Req() req: Request) {}
+
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/redirect')
+  async googleAuthRedirect(
+    @Oath20UserDecorator() user: Oauth20UserData,
+    @Ip() ip: string,
+    @Res({ passthrough: true }) res: Response,
+    @Headers('user-agent') userAgent: string,
+  ) {
+    const { accessToken, refreshToken } = await this.commandBus.execute(
+      new Oauth20LoginUserCommand(user, ip, userAgent),
+    );
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }
@@ -151,5 +185,60 @@ export class AuthController {
     return this.commandBus.execute(
       new NewPasswordCommand(newPassword, recoveryCode),
     );
+  }
+
+  @Post('github/sign-in')
+  @UseGuards(CookieAuthGuard)
+  async githubSignIn(
+    @Ip() ip: string,
+    @Body() githubCodeDto: GithubCodeDto,
+    @Headers('user-agent') userAgent: string,
+    @Res({ passthrough: true }) response: Response,
+    @ActiveUser('deviceId') deviceId: string | null,
+  ) {
+    const { code } = githubCodeDto;
+
+    const result = await this.commandBus.execute<
+      SignInWithGithubCommand,
+      TokensPair
+    >(new SignInWithGithubCommand({ code, deviceId, ip, userAgent }));
+
+    const { accessToken, refreshToken } = result;
+
+    response.cookie('refreshToken', refreshToken, this.cookieOptions);
+    response.status(HttpStatus.OK).json({ accessToken });
+  }
+
+  @Post('github/sign-up')
+  @UseGuards(CookieAuthGuard)
+  async gihtubSignUp(
+    @Ip() ip: string,
+    @Body() githubCodeDto: GithubCodeDto,
+    @Headers('user-agent') userAgent: string,
+    @Res({ passthrough: true }) response: Response,
+    @ActiveUser('deviceId') deviceId: string | null,
+  ) {
+    const { code } = githubCodeDto;
+
+    const result = await this.commandBus.execute<
+      SignUpWithGithubCommand,
+      TokensPair
+    >(new SignUpWithGithubCommand({ code, deviceId, ip, userAgent }));
+
+    if (!result) {
+      response.sendStatus(HttpStatus.ACCEPTED);
+      return;
+    }
+
+    const { accessToken, refreshToken } = result;
+
+    response.cookie('refreshToken', refreshToken, this.cookieOptions);
+    response.status(HttpStatus.OK).json({ accessToken });
+  }
+
+  @Post('merge-account')
+  @HttpCode(HttpStatus.OK)
+  async mergeAccounts(@Query('code') code: string) {
+    return this.commandBus.execute(new MergeAccountCommand(code));
   }
 }
