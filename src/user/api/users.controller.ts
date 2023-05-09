@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseGuards,
@@ -53,12 +54,15 @@ import { DeletePostCommand } from '../use-cases/post/delete-post.use-case';
 import {
   CreatePostApiDecorator,
   DeletePostApiDecorator,
+  GetPostsApiDecorator,
   UpdatePostApiDecorator,
 } from 'src/common/decorators/swagger/posts.decorator';
 import { CreatePostResult as CreatePostResult } from '../types';
 import { UpdatePostCommand } from '../use-cases/post/update-post.use-case';
 import { UpdatePostDto } from '../dto/update-post.dto';
 import { CreatePostDto } from '../dto/create-post.dto';
+import { PostsQueryDto } from '../dto/posts-query.dto';
+import { PostsQueryRepositoryAdatapter } from '../repositories/adapters/post/posts.query-adapter';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -67,6 +71,7 @@ export class UsersController {
   public constructor(
     private readonly commandBus: CommandBus,
     private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
+    private readonly postsQueryRepository: PostsQueryRepositoryAdatapter,
   ) {}
 
   @Post('self/images/avatar')
@@ -171,5 +176,14 @@ export class UsersController {
     await this.commandBus.execute(
       new UpdatePostCommand(userId, postId, updatePostDto),
     );
+  }
+
+  @Get('self/posts')
+  @GetPostsApiDecorator()
+  async getPosts(
+    @ActiveUser('userId') userId: string,
+    @Query() postsQuery: PostsQueryDto,
+  ) {
+    return this.postsQueryRepository.getPostsByQuery(userId, postsQuery);
   }
 }

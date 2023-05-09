@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 
-import { CreatePostResult } from '.';
+import { CreatePostResult, UserPosts } from '.';
 
 export class CreatePostResponse implements CreatePostResult {
   @ApiProperty()
@@ -12,11 +12,34 @@ export class CreatePostResponse implements CreatePostResult {
   @ApiProperty()
   public userId: string;
 
-  @ApiProperty({ type: () => [Image] })
-  public images: Image[];
+  @ApiProperty({ type: () => [CreatePostResponseImage] })
+  public images: CreatePostResponseImage[];
+
+  @ApiProperty({ type: () => Date })
+  public createdAt: Date;
+
+  @ApiProperty({ type: () => Date })
+  public updatedAt: Date;
 }
 
-class Metadata {
+export class GetUserPostsResponse implements UserPosts {
+  @ApiProperty()
+  public id: string;
+
+  @ApiProperty()
+  public description: string;
+
+  @ApiProperty({ type: () => [GetUserPostsResponstImage] })
+  public images: GetUserPostsResponstImage[];
+
+  @ApiProperty({ type: () => Date })
+  public createdAt: Date;
+
+  @ApiProperty({ type: () => Date })
+  public updatedAt: Date;
+}
+
+class CreatePostResponseMetadata {
   @ApiProperty()
   public id: string;
 
@@ -39,7 +62,12 @@ class Metadata {
   public updatedAt: Date;
 }
 
-class Image {
+class GetUserPostsResponseMetadata extends PickType(
+  CreatePostResponseMetadata,
+  ['width', 'height'] as const,
+) {}
+
+class CreatePostResponseImage {
   @ApiProperty()
   public id: string;
 
@@ -59,5 +87,13 @@ class Image {
   public postId: string;
 
   @ApiProperty()
-  public metadata: Metadata;
+  public metadata: CreatePostResponseMetadata;
+}
+
+class GetUserPostsResponstImage extends PickType(CreatePostResponseImage, [
+  'url',
+  'previewUrl',
+] as const) {
+  @ApiProperty()
+  public metadata: GetUserPostsResponseMetadata;
 }

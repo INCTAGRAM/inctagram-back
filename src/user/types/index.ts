@@ -1,6 +1,5 @@
 import type {
   Avatar,
-  EmailConfirmation,
   Image,
   ImageMetadata,
   OauthAccount,
@@ -80,3 +79,14 @@ export interface CreateUserWithOauthAccountData
       >;
     }>,
     Pick<OauthAccount, 'clientId' | 'type'> {}
+
+export type UserPosts = Pick<
+  Post,
+  'id' | 'description' | 'createdAt' | 'updatedAt'
+> & {
+  images: (
+    | Pick<Image, 'url' | 'previewUrl'> & {
+        metadata: Pick<ImageMetadata, 'width' | 'height'> | null;
+      }
+  )[];
+};
