@@ -1,6 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 
-import { CreatePostResult, UserPosts } from '.';
+import type { CreatePostResult, UserPost } from '.';
 
 export class CreatePostResponse implements CreatePostResult {
   @ApiProperty()
@@ -22,7 +22,7 @@ export class CreatePostResponse implements CreatePostResult {
   public updatedAt: Date;
 }
 
-export class GetUserPostsResponse implements UserPosts {
+export class GetUserPostResponse implements UserPost {
   @ApiProperty()
   public id: string;
 
