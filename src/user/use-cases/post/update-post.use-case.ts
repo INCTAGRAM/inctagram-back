@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Post } from '@prisma/client';
 import { UpdatePostDto } from 'src/user/dto/update-post.dto';
 
-import { PostsRepositoryAdapter } from 'src/user/repositories/adapters/post/posts-repository.adapter';
+import { PostsRepositoryAdapter } from 'src/user/repositories/adapters/post/posts.adapter';
 
 export class UpdatePostCommand {
   public constructor(

@@ -13,6 +13,8 @@ export const NO_TELEGRAM_URL_ERROR = 'No Telegram url has been provided';
 
 export const NO_RECAPTCHA_TOKEN_ERROR = 'No recaptcha token has been provided';
 
+export const DATABASE_ERROR = 'Database exception';
+
 export class AvatarCreationError extends InternalServerErrorException {
   constructor(message: string) {
     super(message);
