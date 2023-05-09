@@ -80,7 +80,7 @@ export interface CreateUserWithOauthAccountData
     }>,
     Pick<OauthAccount, 'clientId' | 'type'> {}
 
-export type UserPosts = Pick<
+export type UserPost = Pick<
   Post,
   'id' | 'description' | 'createdAt' | 'updatedAt'
 > & {

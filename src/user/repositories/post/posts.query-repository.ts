@@ -3,6 +3,7 @@ import { DATABASE_ERROR } from 'src/common/errors';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PostsQueryDto } from 'src/user/dto/posts-query.dto';
+import { UserPost } from 'src/user/types';
 import { PostsQueryRepositoryAdatapter } from '../adapters/post/posts.query-adapter';
 
 @Injectable()
@@ -10,6 +11,25 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
   public constructor(private readonly prismaService: PrismaService) {
     super();
   }
+
+  private postSelectData = {
+    id: true,
+    description: true,
+    createdAt: true,
+    updatedAt: true,
+    images: {
+      select: {
+        metadata: {
+          select: {
+            height: true,
+            width: true,
+          },
+        },
+        url: true,
+        previewUrl: true,
+      },
+    },
+  };
 
   public async getPostsByQuery(userId: string, postsQuery: PostsQueryDto) {
     const { page, pageSize } = postsQuery;
@@ -24,27 +44,29 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
         },
         take: pageSize,
         skip: (page - 1) * pageSize,
-        select: {
-          id: true,
-          description: true,
-          createdAt: true,
-          updatedAt: true,
-          images: {
-            select: {
-              metadata: {
-                select: {
-                  height: true,
-                  width: true,
-                },
-              },
-              url: true,
-              previewUrl: true,
-            },
-          },
-        },
+        select: this.postSelectData,
       });
 
       return posts;
+    } catch (error) {
+      console.log(error);
+
+      throw new InternalServerErrorException({ cause: DATABASE_ERROR });
+    }
+  }
+
+  public async getPostById(
+    userId: string,
+    postId: string,
+  ): Promise<UserPost | null> {
+    try {
+      return this.prismaService.post.findFirst({
+        where: {
+          userId,
+          id: postId,
+        },
+        select: this.postSelectData,
+      });
     } catch (error) {
       console.log(error);
 

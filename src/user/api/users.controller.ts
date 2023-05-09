@@ -7,6 +7,7 @@ import {
   HttpStatus,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Put,
@@ -54,6 +55,7 @@ import { DeletePostCommand } from '../use-cases/post/delete-post.use-case';
 import {
   CreatePostApiDecorator,
   DeletePostApiDecorator,
+  GetPostApiDecorator,
   GetPostsApiDecorator,
   UpdatePostApiDecorator,
 } from 'src/common/decorators/swagger/posts.decorator';
@@ -185,5 +187,18 @@ export class UsersController {
     @Query() postsQuery: PostsQueryDto,
   ) {
     return this.postsQueryRepository.getPostsByQuery(userId, postsQuery);
+  }
+
+  @Get('self/posts/:postId')
+  @GetPostApiDecorator()
+  async getPost(
+    @ActiveUser('userId') userId: string,
+    @Param('postId', ParseUUIDPipe) postId: string,
+  ) {
+    const post = await this.postsQueryRepository.getPostById(userId, postId);
+
+    if (!post) throw new NotFoundException();
+
+    return post;
   }
 }
