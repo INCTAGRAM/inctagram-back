@@ -21,9 +21,11 @@ import { ProfileRepositoryAdapter } from './repositories/adapters/profile-reposi
 import { ProfileQueryRepositoryAdapter } from './repositories/adapters/profile-query-repository.adapter';
 import { CreatePostUseCase } from './use-cases/post/create-post.use-case';
 import { DeletePostUseCase } from './use-cases/post/delete-post.use-case';
-import { PostsRepositoryAdapter } from './repositories/adapters/post/posts-repository.adapter';
-import { PostsRepository } from './repositories/post/post.repository';
+import { PostsRepositoryAdapter } from './repositories/adapters/post/posts.adapter';
+import { PostsRepository } from './repositories/post/posts.repository';
 import { UpdatePostUseCase } from './use-cases/post/update-post.use-case';
+import { PostsQueryRepositoryAdatapter } from './repositories/adapters/post/posts.query-adapter';
+import { PostsQueryRepository } from './repositories/post/posts.query-repository';
 
 const useCases = [
   UploadAvatarUseCase,
@@ -68,6 +70,10 @@ const useCases = [
     {
       provide: PostsRepositoryAdapter,
       useClass: PostsRepository,
+    },
+    {
+      provide: PostsQueryRepositoryAdatapter,
+      useClass: PostsQueryRepository,
     },
   ],
   exports: [UserRepository],

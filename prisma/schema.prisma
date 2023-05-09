@@ -111,11 +111,13 @@ model Avatar {
 }
 
 model Post {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   userId      String
-  description String? @db.VarChar(500)
-  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  description String?  @db.VarChar(500)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   images      Image[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Image {

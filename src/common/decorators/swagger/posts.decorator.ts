@@ -6,14 +6,19 @@ import {
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNoContentResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiProperty,
 } from '@nestjs/swagger';
-import { CreatePostResponse } from 'src/user/types/swagger';
+import {
+  CreatePostResponse,
+  GetUserPostsResponse,
+} from 'src/user/types/swagger';
 
-const deletePost = DeletePostApiDecorator;
-const createPost = CreatePostApiDecorator;
-const updatePost = UpdatePostApiDecorator;
+DeletePostApiDecorator;
+CreatePostApiDecorator;
+UpdatePostApiDecorator;
+GetPostsApiDecorator;
 
 export function DeletePostApiDecorator() {
   return applyDecorators(
@@ -76,6 +81,21 @@ export function UpdatePostApiDecorator() {
     }),
     ApiInternalServerErrorResponse({
       description: 'An error occurs when attempting to update the post.',
+    }),
+    ApiBearerAuth(),
+  );
+}
+
+export function GetPostsApiDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Get user posts',
+    }),
+    ApiOkResponse({
+      type: GetUserPostsResponse,
+    }),
+    ApiInternalServerErrorResponse({
+      description: 'An error occurs when attempting to get posts from database',
     }),
     ApiBearerAuth(),
   );
