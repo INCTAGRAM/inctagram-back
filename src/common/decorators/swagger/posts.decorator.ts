@@ -12,13 +12,14 @@ import {
 } from '@nestjs/swagger';
 import {
   CreatePostResponse,
-  GetUserPostsResponse,
+  GetUserPostResponse,
 } from 'src/user/types/swagger';
 
 DeletePostApiDecorator;
 CreatePostApiDecorator;
 UpdatePostApiDecorator;
 GetPostsApiDecorator;
+GetPostApiDecorator;
 
 export function DeletePostApiDecorator() {
   return applyDecorators(
@@ -92,10 +93,26 @@ export function GetPostsApiDecorator() {
       summary: 'Get user posts',
     }),
     ApiOkResponse({
-      type: GetUserPostsResponse,
+      type: GetUserPostResponse,
+      isArray: true,
     }),
     ApiInternalServerErrorResponse({
       description: 'An error occurs when attempting to get posts from database',
+    }),
+    ApiBearerAuth(),
+  );
+}
+
+export function GetPostApiDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Get user post',
+    }),
+    ApiOkResponse({
+      type: GetUserPostResponse,
+    }),
+    ApiInternalServerErrorResponse({
+      description: 'An error occurs when attempting to get post from database',
     }),
     ApiBearerAuth(),
   );
