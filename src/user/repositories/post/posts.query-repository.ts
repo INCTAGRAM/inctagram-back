@@ -3,7 +3,7 @@ import { DATABASE_ERROR } from 'src/common/errors';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PostsQueryDto } from 'src/user/dto/posts-query.dto';
-import { UserPost } from 'src/user/types';
+import { UserPost, UserPosts } from 'src/user/types';
 import { PostsQueryRepositoryAdatapter } from '../adapters/post/posts.query-adapter';
 
 @Injectable()
@@ -31,10 +31,19 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
     },
   };
 
-  public async getPostsByQuery(userId: string, postsQuery: PostsQueryDto) {
+  public async getPostsByQuery(
+    userId: string,
+    postsQuery: PostsQueryDto,
+  ): Promise<[number, UserPosts[]]> {
     const { page, pageSize } = postsQuery;
 
     try {
+      const count = await this.prismaService.post.count({
+        where: {
+          userId,
+        },
+      });
+
       const posts = await this.prismaService.post.findMany({
         where: {
           userId,
@@ -44,10 +53,18 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
         },
         take: pageSize,
         skip: (page - 1) * pageSize,
-        select: this.postSelectData,
+        select: {
+          id: true,
+          createdAt: true,
+          images: {
+            select: {
+              previewUrl: true,
+            },
+          },
+        },
       });
 
-      return posts;
+      return [count, posts];
     } catch (error) {
       console.log(error);
 

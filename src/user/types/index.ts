@@ -80,6 +80,10 @@ export interface CreateUserWithOauthAccountData
     }>,
     Pick<OauthAccount, 'clientId' | 'type'> {}
 
+export type UserPosts = Pick<Post, 'id' | 'createdAt'> & {
+  images: Pick<Image, 'previewUrl'>[];
+};
+
 export type UserPost = Pick<
   Post,
   'id' | 'description' | 'createdAt' | 'updatedAt'
