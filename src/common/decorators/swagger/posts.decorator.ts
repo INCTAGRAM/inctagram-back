@@ -13,6 +13,7 @@ import {
 import {
   CreatePostResponse,
   GetUserPostResponse,
+  PostsResponse,
 } from 'src/user/types/swagger';
 
 DeletePostApiDecorator;
@@ -93,7 +94,7 @@ export function GetPostsApiDecorator() {
       summary: 'Get user posts',
     }),
     ApiOkResponse({
-      type: GetUserPostResponse,
+      type: PostsResponse,
       isArray: true,
     }),
     ApiInternalServerErrorResponse({

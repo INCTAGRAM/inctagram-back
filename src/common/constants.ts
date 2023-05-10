@@ -14,7 +14,7 @@ export const MIN_AVATAR_WIDTH = 400;
 export const MAX_AVATAR_HEIGHT = 800;
 export const MAX_AVATAR_WIDTH = 800;
 export const PREVIEW_WIDTH = 257;
-export const PREVIEW_HEIGHT = 256;
+export const PREVIEW_HEIGHT = 257;
 export const MAX_POST_PHOTO_SIZE = 1024 * 1024 * 5;
 
 // Cloud

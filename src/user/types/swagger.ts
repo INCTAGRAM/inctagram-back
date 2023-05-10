@@ -1,4 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
+import { number } from 'joi';
 
 import type { CreatePostResult, UserPost } from '.';
 
@@ -96,4 +97,26 @@ class GetUserPostsResponstImage extends PickType(CreatePostResponseImage, [
 ] as const) {
   @ApiProperty()
   public metadata: GetUserPostsResponseMetadata;
+}
+
+export class Post {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  previewUrl: string;
+
+  @ApiProperty()
+  imagesCount: number;
+
+  @ApiProperty()
+  createdAt: Date;
+}
+
+export class PostsResponse {
+  @ApiProperty()
+  count: number;
+
+  @ApiProperty({ type: [Post] })
+  posts: Post[];
 }
