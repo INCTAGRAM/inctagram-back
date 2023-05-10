@@ -65,6 +65,7 @@ import { UpdatePostDto } from '../dto/update-post.dto';
 import { CreatePostDto } from '../dto/create-post.dto';
 import { PostsQueryDto } from '../dto/posts-query.dto';
 import { PostsQueryRepositoryAdatapter } from '../repositories/adapters/post/posts.query-adapter';
+import { PostsMapper } from '../utils/posts.mapper';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -186,7 +187,12 @@ export class UsersController {
     @ActiveUser('userId') userId: string,
     @Query() postsQuery: PostsQueryDto,
   ) {
-    return this.postsQueryRepository.getPostsByQuery(userId, postsQuery);
+    const result = await this.postsQueryRepository.getPostsByQuery(
+      userId,
+      postsQuery,
+    );
+
+    return PostsMapper.toViewModel(result);
   }
 
   @Get('self/posts/:postId')
