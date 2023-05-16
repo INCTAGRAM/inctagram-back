@@ -20,6 +20,7 @@ import { ConfirmationCodeDto } from '../dto/confirmation-code.dto';
 import { EmailDto } from '../dto/email.dto';
 import { NewPasswordDto } from '../dto/new-password.dto';
 import {
+  AuthGoogleDecorator,
   AuthLoginSwaggerDecorator,
   AuthLogoutSwaggerDecorator,
   AuthNewPasswordSwaggerDecorator,
@@ -46,9 +47,6 @@ import { ActiveUserData, Oauth20UserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
-import { GoogleAuthGuard } from '../../common/guards/google-auth.guard';
-import { Oauth20LoginUserCommand } from '../use-cases/oauth20-login-user-use-case';
-import { Oath20UserDecorator } from '../../common/decorators/oath20-user.decorator';
 import { githubOauthConfig } from 'src/config/github-oauth.config';
 import { ConfigType } from '@nestjs/config';
 import { SignUpWithGithubCommand } from '../use-cases/sign-up-user-with-github.use-case';
@@ -56,7 +54,9 @@ import { GithubCodeDto } from '../dto/github-code.dto';
 import { TokensPair } from '../types';
 import { MergeAccountCommand } from '../use-cases/merge-account.use-case';
 import { SignInWithGithubCommand } from '../use-cases/sign-in-user-with-github.use-case';
-
+import { GoogleCodeDto } from '../dto/google-code.dto';
+import { SignInWithGoogleCommand } from '../use-cases/oauth20-login-user-use-case';
+import querystring from 'querystring';
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
@@ -119,23 +119,25 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }
-  @UseGuards(GoogleAuthGuard)
-  @Get('google/login')
-  async googleAuth(@Req() req: Request) {}
 
-  @UseGuards(GoogleAuthGuard)
-  @Get('google/redirect')
-  async googleAuthRedirect(
-    @Oath20UserDecorator() user: Oauth20UserData,
+  @UseGuards(CookieAuthGuard)
+  @AuthGoogleDecorator()
+  @Post('google/sign-in')
+  async googleSignIn(
     @Ip() ip: string,
+    @Body() googleCodeDto: GoogleCodeDto,
     @Res({ passthrough: true }) res: Response,
-    @Headers('user-agent') userAgent: string,
+    @Req() req: Request,
+    @Headers('user-agent')
+    userAgent: string,
+    @ActiveUser('deviceId') deviceId: string | null,
   ) {
+    const { code } = googleCodeDto;
+
     const { accessToken, refreshToken } = await this.commandBus.execute(
-      new Oauth20LoginUserCommand(user, ip, userAgent),
+      new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }),
     );
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
-    return { accessToken };
   }
 
   @UseGuards(JwtRtGuard)
@@ -210,7 +212,7 @@ export class AuthController {
 
   @Post('github/sign-up')
   @UseGuards(CookieAuthGuard)
-  async gihtubSignUp(
+  async githubSignUp(
     @Ip() ip: string,
     @Body() githubCodeDto: GithubCodeDto,
     @Headers('user-agent') userAgent: string,
