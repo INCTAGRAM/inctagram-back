@@ -22,7 +22,7 @@ export class SharpService extends ImageService {
       .resize({
         width,
         height,
-        fit: 'inside',
+        fit: 'cover',
       })
       .toBuffer();
 

@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Post } from '@prisma/client';
 
-import { PostsRepositoryAdapter } from 'src/user/repositories/adapters/post/posts-repository.adapter';
+import { PostsRepositoryAdapter } from 'src/user/repositories/adapters/post/posts.adapter';
 
 export class DeletePostCommand {
   public constructor(

@@ -52,7 +52,7 @@ export class LoginUserUseCase implements ICommandHandler<LoginUserCommand> {
     const tokens = await this.jwtAdaptor.getTokens(
       user.id,
       user.username,
-      deviceId,
+      command.deviceId ? command.deviceId : deviceId,
     );
     const hashedTokens = await this.jwtAdaptor.updateTokensHash(tokens);
     // update or create new session
