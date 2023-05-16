@@ -1,18 +1,8 @@
-import {
-  ForbiddenException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserRepository } from '../../user/repositories/user.repository';
 import { google, Auth } from 'googleapis';
-import { uid } from 'uid';
 import { googleOauthConfig } from '../../config/google-oauth.config';
 import { ConfigType } from '@nestjs/config';
-import { OauthProvider } from '../../common/constants';
-import { CreateUserWithOauthAccountData } from '../../user/types';
-import { randomUUID } from 'crypto';
-import { add } from 'date-fns';
 
 @Injectable()
 export class GoogleAuthAdaptor {
@@ -26,14 +16,14 @@ export class GoogleAuthAdaptor {
     this.oauthClient = new google.auth.OAuth2(
       this.oauthConfig.clientId,
       this.oauthConfig.clientSecret,
-      'http://localhost:5000/api/auth/google/redirect',
     );
   }
 
   async validateUser(code: string) {
     const { tokens } = await this.oauthClient.getToken(code);
 
-    if (!tokens || !tokens.access_token) throw new UnauthorizedException();
+    if (!tokens || !tokens.access_token)
+      throw new UnauthorizedException('code provided is not valid');
 
     const googleUserData = await this.getUserData(tokens.access_token);
     const { name, given_name, family_name, email, id } = googleUserData;

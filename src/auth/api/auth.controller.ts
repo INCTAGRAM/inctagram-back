@@ -20,6 +20,7 @@ import { ConfirmationCodeDto } from '../dto/confirmation-code.dto';
 import { EmailDto } from '../dto/email.dto';
 import { NewPasswordDto } from '../dto/new-password.dto';
 import {
+  AuthGoogleDecorator,
   AuthLoginSwaggerDecorator,
   AuthLogoutSwaggerDecorator,
   AuthNewPasswordSwaggerDecorator,
@@ -121,7 +122,8 @@ export class AuthController {
   }
 
   @UseGuards(CookieAuthGuard)
-  @Get('google/sign-in')
+  @AuthGoogleDecorator()
+  @Post('google/sign-in')
   async googleSignIn(
     @Ip() ip: string,
     @Body() googleCodeDto: GoogleCodeDto,

@@ -16,6 +16,7 @@ import { ConfirmationCodeDto } from '../../../auth/dto/confirmation-code.dto';
 import { EmailDto } from '../../../auth/dto/email.dto';
 import { NewPasswordDto } from '../../../auth/dto/new-password.dto';
 import { LoginDto } from '../../../auth/dto/login.dto';
+import { GoogleCodeDto } from '../../../auth/dto/google-code.dto';
 
 export function AuthRegistrationSwaggerDecorator() {
   return applyDecorators(
@@ -190,6 +191,23 @@ export function AuthNewPasswordSwaggerDecorator() {
     ApiBadRequestResponse({
       description:
         'If the inputModel has incorrect value (incorrect password length) or RecoveryCode is incorrect or expired',
+    }),
+  );
+}
+
+export function AuthGoogleDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Sign in via Google account',
+    }),
+    ApiBody({ type: GoogleCodeDto }),
+    ApiResponse({
+      status: 200,
+      description:
+        'If google credentials are correct, returns JWT accessToken (expires after 1 hour) in body and JWT refreshToken in cookie (http-only, secure) (expires after 2 hours). If user is already registered, returns an email with suggestion to merge accounts',
+    }),
+    ApiUnauthorizedResponse({
+      description: 'If the code provided is incorrect',
     }),
   );
 }
