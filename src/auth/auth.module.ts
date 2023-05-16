@@ -7,7 +7,6 @@ import { UserModule } from '../user/user.module';
 import { AtStrategy, RtStrategy } from './strategies';
 import { AuthController } from './api/auth.controller';
 import { AdaptorModule } from '../adaptors/adaptor.module';
-import { GoogleStrategy } from './strategies/google.strategy';
 import { ImageService } from 'src/common/services/image.service';
 import { SharpService } from 'src/common/services/sharp.service';
 import { LoginUserUseCase } from './use-cases/login-user-use-case';
@@ -17,7 +16,7 @@ import { LogoutUserUseCase } from './use-cases/logout-user-use-case';
 import { NewPasswordUseCase } from './use-cases/new-password.use-case';
 import { RegisterUserUseCase } from './use-cases/register-user-use-case';
 import { DeviceSessionsModule } from '../deviceSessions/device-sessions.module';
-import { OauthLoginUserUseCase } from './use-cases/oauth20-login-user-use-case';
+import { SignInUserWithGoogleUseCase } from './use-cases/oauth20-login-user-use-case';
 import { PasswordRecoveryUserUseCase } from './use-cases/password-recovery.use-case';
 import { ConfirmRegistrationUseCase } from './use-cases/confirm-registration-use-case';
 import { SignInUserWithGithubUseCase } from './use-cases/sign-in-user-with-github.use-case';
@@ -34,7 +33,7 @@ const useCases = [
   NewPasswordUseCase,
   LoginUserUseCase,
   LogoutUserUseCase,
-  OauthLoginUserUseCase,
+  SignInUserWithGoogleUseCase,
 ];
 
 @Module({
@@ -52,7 +51,6 @@ const useCases = [
     RtStrategy,
     GithubUsersService,
     DevicesSessionsService,
-    GoogleStrategy,
     {
       provide: ImageService,
       useClass: SharpService,
