@@ -3,10 +3,10 @@ import { randomUUID } from 'crypto';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ImageService } from 'src/common/services/image.service';
-import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from 'src/common/constants';
 import { CloudStrategy } from 'src/common/strategies/cloud.strategy';
 import type { CreatePostResult, ImageCreationData } from '../../types';
 import { PostCreationError, POST_CREATION_ERROR } from 'src/common/errors';
+import { POST_PREVIEW_HEIGHT, POST_PREVIEW_WIDTH } from 'src/common/constants';
 
 export class CreatePostCommand {
   public constructor(
@@ -50,8 +50,8 @@ export class CreatePostUseCase implements ICommandHandler {
         const imagePath = `${this.createPrefix(userId, postId)}${imageName}`;
 
         const preview = await this.imageService.resize(image, {
-          width: PREVIEW_WIDTH,
-          height: PREVIEW_HEIGHT,
+          width: POST_PREVIEW_WIDTH,
+          height: POST_PREVIEW_HEIGHT,
         });
 
         const previewName = `${randomUUID()}.${ext}`;
