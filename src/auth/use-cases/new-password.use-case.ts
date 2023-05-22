@@ -1,9 +1,9 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import bcrypt from 'bcrypt';
 
-import { UserRepository } from 'src/user/repositories/user.repository';
-import { MailService } from 'src/mail/mail.service';
 import { BadRequestException, GoneException } from '@nestjs/common';
+import { UserRepository } from 'src/user/repositories/user.repository';
+import { DeviceSessionsRepository } from 'src/deviceSessions/repositories/device-sessions.repository';
 
 export class NewPasswordCommand {
   public constructor(
@@ -14,7 +14,10 @@ export class NewPasswordCommand {
 
 @CommandHandler(NewPasswordCommand)
 export class NewPasswordUseCase implements ICommandHandler<NewPasswordCommand> {
-  public constructor(private readonly usersRepository: UserRepository) {}
+  public constructor(
+    private readonly usersRepository: UserRepository,
+    private readonly deviceSessionsRepository: DeviceSessionsRepository,
+  ) {}
 
   public async execute(command: NewPasswordCommand) {
     const { newPassword, recoveryCode } = command;
@@ -34,6 +37,7 @@ export class NewPasswordUseCase implements ICommandHandler<NewPasswordCommand> {
           const hash = await bcrypt.hash(newPassword, 10);
 
           await this.usersRepository.updatePassword(user.id, hash);
+          await this.deviceSessionsRepository.deleteAllUserSessions(user.id);
         } else {
           throw new GoneException();
         }

@@ -56,7 +56,7 @@ import { MergeAccountCommand } from '../use-cases/merge-account.use-case';
 import { SignInWithGithubCommand } from '../use-cases/sign-in-user-with-github.use-case';
 import { GoogleCodeDto } from '../dto/google-code.dto';
 import { SignInWithGoogleCommand } from '../use-cases/oauth20-login-user-use-case';
-import querystring from 'querystring';
+
 @ApiTags('Auth')
 @Controller('/api/auth')
 export class AuthController {
@@ -149,7 +149,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.commandBus.execute(new LogoutUserCommand(deviceId));
-    res.clearCookie('refreshToken');
+    res.clearCookie('refreshToken', this.cookieOptions);
   }
 
   @UseGuards(JwtRtGuard)
@@ -180,12 +180,16 @@ export class AuthController {
   @Post('new-password')
   @AuthNewPasswordSwaggerDecorator()
   @HttpCode(204)
-  async newPassword(@Body() newPasswordDto: NewPasswordDto) {
+  async newPassword(
+    @Body() newPasswordDto: NewPasswordDto,
+    @Res() res: Response,
+  ) {
     const { newPassword, recoveryCode } = newPasswordDto;
 
-    return this.commandBus.execute(
+    await this.commandBus.execute(
       new NewPasswordCommand(newPassword, recoveryCode),
     );
+    res.clearCookie('refreshToken', this.cookieOptions);
   }
 
   @Post('github/sign-in')
