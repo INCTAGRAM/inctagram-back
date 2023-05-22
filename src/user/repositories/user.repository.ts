@@ -1,4 +1,4 @@
-import { EmailConfirmation, OauthAccount, OauthProvider } from '@prisma/client';
+import { EmailConfirmation, OauthAccount } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
@@ -8,9 +8,7 @@ import { CreateUserDto } from '../dto/create.user.dto';
 import {
   CreateUserWithOauthAccountData,
   UserWithEmailConfirmation,
-  Oauth20UserData,
 } from '../types';
-import { da } from 'date-fns/locale';
 import { UpdateOrCreateOauthAccountPaylod } from 'src/auth/types';
 
 @Injectable()
@@ -134,6 +132,7 @@ export class UserRepository {
       },
     });
   }
+
   public async findUserByUserName(username: string) {
     return this.prisma.user.findUnique({
       where: { username },
