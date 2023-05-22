@@ -37,4 +37,21 @@ export class SubscriptionsQueryRepository {
       new DatabaseException();
     }
   }
+
+  public async getPriceList() {
+    try {
+      return this.prisma.subscriptionPrice.findMany({
+        select: {
+          id: true,
+          currency: true,
+          period: true,
+          value: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      new DatabaseException();
+    }
+  }
 }
