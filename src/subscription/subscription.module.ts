@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { SubscriptionController } from './subscription.controller';
 
-@Module({})
+@Module({
+  controllers: [SubscriptionController],
+})
 export class SubscriptionModule {}
