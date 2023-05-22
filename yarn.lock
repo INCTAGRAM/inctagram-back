@@ -1744,10 +1744,10 @@
     path-to-regexp "3.2.0"
     tslib "2.5.0"
 
-"@nestjs/cqrs@^9.0.3":
-  version "9.0.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/cqrs/-/cqrs-9.0.3.tgz#1ccd87feffebf33b2f3b0170f98eda8c6c74796f"
-  integrity sha512-hmbrqf51BVdgmnnxErnLVXfPNTEqr4Hz8DyLa9dKLIW3BuOyI5RDwJ/9sKbJ47UDBhumC5nQlNK9qk27mhqHfw==
+"@nestjs/cqrs@^9.0.4":
+  version "9.0.4"
+  resolved "https://registry.yarnpkg.com/@nestjs/cqrs/-/cqrs-9.0.4.tgz#be1a01971944869e8eed64f0d69a0514b5f21e29"
+  integrity sha512-nWDF+xs4jqs6OjxFg/wVSd0NiIV9+EFCJrJNTo4VRWe78CcAaitbp56CBspUh4gKyfkci95i+EhHdEqRXKFptg==
   dependencies:
     uuid "9.0.0"
 
