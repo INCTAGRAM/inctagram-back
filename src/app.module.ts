@@ -12,6 +12,7 @@ import { TestingModule } from './testing-remove-all-data/testing.module';
 import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
 import { googleOauthConfig } from './config/google-oauth.config';
 import { PaymentSystemModule } from './payment-system/payment-system.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PaymentSystemModule } from './payment-system/payment-system.module';
     DeviceSessionsModule,
     TestingModule,
     PaymentSystemModule,
+    SubscriptionModule,
   ],
   controllers: [AppController],
 })
