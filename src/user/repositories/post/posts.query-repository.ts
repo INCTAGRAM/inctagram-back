@@ -68,7 +68,7 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
     } catch (error) {
       console.log(error);
 
-      throw new InternalServerErrorException({ cause: DATABASE_ERROR });
+      throw new InternalServerErrorException(DATABASE_ERROR);
     }
   }
 
@@ -87,7 +87,7 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
     } catch (error) {
       console.log(error);
 
-      throw new InternalServerErrorException({ cause: DATABASE_ERROR });
+      throw new InternalServerErrorException(DATABASE_ERROR);
     }
   }
 }

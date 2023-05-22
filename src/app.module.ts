@@ -13,13 +13,20 @@ import { DeviceSessionsModule } from './deviceSessions/device-sessions.module';
 import { googleOauthConfig } from './config/google-oauth.config';
 import { PaymentSystemModule } from './payment-system/payment-system.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { subscriptionsConfig } from './config/subscriptions.config';
+import { stripeConfig } from './config/stripe.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: configValidationSchema,
-      load: [githubOauthConfig, googleOauthConfig],
+      load: [
+        githubOauthConfig,
+        googleOauthConfig,
+        subscriptionsConfig,
+        stripeConfig,
+      ],
     }),
     AuthModule,
     UserModule,

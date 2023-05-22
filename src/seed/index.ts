@@ -7,17 +7,9 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function seed() {
-  await prisma.user.deleteMany();
   await prisma.subscriptionPrice.deleteMany();
 
   await prisma.$transaction(async (tx) => {
-    await tx.user.create({
-      data: {
-        email: 'eve@gmail.com',
-        username: 'eve',
-      },
-    });
-
     await tx.subscriptionPrice.createMany({
       data: [
         {

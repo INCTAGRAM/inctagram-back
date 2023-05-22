@@ -188,7 +188,7 @@ model Payment {
   currency            Currency
   price               Float
   status              PaymentStatus
-  reference           PaymentReference
+  reference           PaymentReference     @default(SUBSCRIPTION)
   provider            PaymentProvider
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
@@ -234,6 +234,7 @@ model Subscription {
   endDate   DateTime            @db.Timestamptz(3)
   startDate DateTime            @db.Timestamptz(3)
   status    SubscriptionStatus
+  type      SubscriptionType
   user      User                @relation(references: [id], fields: [userId], onDelete: Cascade)
   userId    String
   payment   SubscriptionPayment @relation(references: [id], fields: [paymentId], onDelete: Cascade)

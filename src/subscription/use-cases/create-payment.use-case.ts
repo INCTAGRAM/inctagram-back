@@ -1,16 +1,17 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Inject, NotFoundException } from '@nestjs/common';
+import { PaymentProvider } from '@prisma/client';
 
 import {
   PaymentCommand,
   PaymentStrategy,
 } from '../payment-strategies/abstract.strategy';
-import { PaymentSystem, PAYMENT_STRATEGIES } from '../constants';
+import { PAYMENT_STRATEGIES } from '../constants';
 import { SubscriptionsQueryRepository } from '../repositories/subscriptions.query-repository';
 
 export class CreatePaymentCommand {
   public constructor(
-    public readonly paymentSystem: PaymentSystem,
+    public readonly paymentProvider: PaymentProvider,
     public readonly priceId: string,
     public readonly userId: string,
     public readonly renew: boolean,
@@ -18,7 +19,7 @@ export class CreatePaymentCommand {
 }
 
 type PaymentServices = {
-  [key in PaymentSystem]?: PaymentStrategy;
+  [key in PaymentProvider]?: PaymentStrategy;
 };
 
 @CommandHandler(CreatePaymentCommand)
@@ -38,18 +39,20 @@ export class CreatePaymentHandler
   }
 
   public async execute(command: CreatePaymentCommand): Promise<string | null> {
-    const { priceId, userId, paymentSystem, renew } = command;
+    const { priceId, userId, paymentProvider, renew } = command;
 
     const price =
       await this.subscriptionsQueryRepository.getSubscriptionPriceById(priceId);
 
     if (!price)
-      throw new NotFoundException({
-        cause: 'Price for subscription was not found',
-      });
+      throw new NotFoundException('Price for subscription was not found');
+
+    if (!this.paymentServices[paymentProvider]) {
+      throw new NotFoundException('Payment provider not found');
+    }
 
     const result =
-      (await this.paymentServices[paymentSystem]?.execute(
+      (await this.paymentServices[paymentProvider]?.execute(
         new PaymentCommand(userId, price.id, renew),
       )) || null;
 

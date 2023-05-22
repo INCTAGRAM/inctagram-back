@@ -9,7 +9,6 @@ import {
   Headers,
   UnauthorizedException,
   Req,
-  Get,
   Inject,
   HttpStatus,
   Query,
@@ -43,7 +42,7 @@ import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
 import { PasswordRecoveryCommand } from '../use-cases/password-recovery.use-case';
 import { NewPasswordCommand } from '../use-cases/new-password.use-case';
 import { ActiveUser } from '../../common/decorators/active-user.decorator';
-import { ActiveUserData, Oauth20UserData } from '../../user/types';
+import { ActiveUserData } from '../../user/types';
 import { JwtRtGuard } from '../../common/guards/jwt-auth.guard';
 import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';

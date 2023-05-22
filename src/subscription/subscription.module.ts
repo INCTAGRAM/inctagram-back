@@ -1,8 +1,10 @@
 import { ConfigService } from '@nestjs/config';
+import { CqrsModule } from '@nestjs/cqrs';
 import { Module } from '@nestjs/common';
 
 import { SubscriptionController } from './subscription.controller';
 import { CreatePaymentHandler } from './use-cases/create-payment.use-case';
+import { StripePaymentStrategy } from './payment-strategies/stripe.strategy';
 import { PaymentSystemModule } from 'src/payment-system/payment-system.module';
 import { PaymentStrategiesProvider } from './providers/payment-strategies.provider';
 import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
@@ -11,6 +13,7 @@ const commandHandlers = [CreatePaymentHandler];
 
 @Module({
   imports: [
+    CqrsModule,
     PaymentSystemModule.setupStripeAsync({
       useFactory: (configService: ConfigService) => ({
         apiKey: <string>configService.get('stripe.apiKey'),
@@ -29,6 +32,7 @@ const commandHandlers = [CreatePaymentHandler];
   controllers: [SubscriptionController],
   providers: [
     ...commandHandlers,
+    StripePaymentStrategy,
     PaymentStrategiesProvider,
     SubscriptionsQueryRepository,
   ],

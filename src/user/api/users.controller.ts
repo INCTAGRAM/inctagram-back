@@ -22,7 +22,6 @@ import { CommandBus } from '@nestjs/cqrs';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 
 import {
-  API,
   FILES_FIELD,
   FILE_FIELD,
   MAX_IMAGES_COUNT,
@@ -69,7 +68,7 @@ import { PostsMapper } from '../utils/posts.mapper';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
-@Controller(API.USERS)
+@Controller('/api/users')
 export class UsersController {
   public constructor(
     private readonly commandBus: CommandBus,
