@@ -15,6 +15,7 @@ import type { StripeEvent } from './interfaces/events.interface';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { CreatePaymentCommand } from './use-cases/create-payment.use-case';
 import { StripeWebhookGuard } from 'src/common/guards/stripe-webhook.guard';
+import { ProcessPaymentCommand } from './use-cases/process-payment.user-case';
 import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
 
 @Controller('api/subscriptions')
@@ -48,5 +49,7 @@ export class SubscriptionController {
   @Post('stripe-webhook')
   @UseGuards(StripeWebhookGuard)
   @HttpCode(HttpStatus.OK)
-  async webhook(@Body() event: StripeEvent<any>) {}
+  async webhook(@Body() event: StripeEvent<any>) {
+    this.commandBus.execute(new ProcessPaymentCommand(event));
+  }
 }
