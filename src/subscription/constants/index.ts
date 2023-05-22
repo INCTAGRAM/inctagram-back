@@ -1,8 +1,4 @@
 export const PAYMENT_STRATEGIES = 'PAYMENT_STRATEGIES';
-export enum PaymentSystem {
-  PAYPAL = 'PAYPAL',
-  STRIPE = 'STRIPE',
-}
 export const WEBHOOK_EVENT_HANDLERS = 'WEBHOOK_EVENT_HANDLERS';
 export const CHECKOUT_SESSION_COMPLETED = 'checkout.session.completed';
 export const INVOICE_PAYMENT_SUCCEEDED = 'invoice.payment_succeeded';
