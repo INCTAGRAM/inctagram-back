@@ -11,7 +11,7 @@ import { CommandBus } from '@nestjs/cqrs';
 
 import { CheckoutDto } from './dto/checkout.dto';
 import { JwtAtGuard } from 'src/common/guards/jwt-auth.guard';
-import type { StripeEvent } from './interfaces/stripe-events.interface';
+import type { StripeEvent } from './interfaces/events.interface';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { CreatePaymentCommand } from './use-cases/create-payment.use-case';
 import { StripeWebhookGuard } from 'src/common/guards/stripe-webhook.guard';

@@ -5,11 +5,13 @@ import { Module } from '@nestjs/common';
 import { SubscriptionController } from './subscription.controller';
 import { CreatePaymentHandler } from './use-cases/create-payment.use-case';
 import { StripePaymentStrategy } from './payment-strategies/stripe.strategy';
+import { ProcessPaymentHandler } from './use-cases/process-payment.user-case';
 import { PaymentSystemModule } from 'src/payment-system/payment-system.module';
 import { PaymentStrategiesProvider } from './providers/payment-strategies.provider';
 import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
+import { WebhookEventHandlersProvider } from './providers/webhook-event-handlers.provider';
 
-const commandHandlers = [CreatePaymentHandler];
+const commandHandlers = [CreatePaymentHandler, ProcessPaymentHandler];
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ const commandHandlers = [CreatePaymentHandler];
     ...commandHandlers,
     StripePaymentStrategy,
     PaymentStrategiesProvider,
+    WebhookEventHandlersProvider,
     SubscriptionsQueryRepository,
   ],
 })
