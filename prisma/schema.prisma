@@ -18,6 +18,7 @@ model User {
   hash              String?
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  accountPlan       AccountPlan        @default(PERSONAL)
   passwordRecovery  PasswordRecovery?
   emailConfirmation EmailConfirmation?
   deviceSession     DeviceSession[]
@@ -25,6 +26,8 @@ model User {
   profile           Profile?
   post              Post[]
   oauthAccount      OauthAccount[]
+  payment           Payment[]
+  subscription      Subscription[]
 }
 
 enum OauthProvider {
@@ -140,4 +143,102 @@ model ImageMetadata {
   image     Image    @relation(fields: [imageId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Subscriptions 
+enum AccountPlan {
+  PERSONAL
+  BUSINESS
+}
+
+enum Currency {
+  USD
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum PaymentReference {
+  SUBSCRIPTION
+  OTHER
+}
+
+enum PaymentProvider {
+  STRIPE
+  PAYPAL
+}
+
+enum SubscriptionType {
+  ONETIME
+  RECCURING
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+}
+
+model Payment {
+  id                  String               @id @default(uuid())
+  user                User                 @relation(references: [id], fields: [userId], onDelete: Cascade)
+  userId              String
+  currency            Currency
+  price               Float
+  status              PaymentStatus
+  reference           PaymentReference     @default(SUBSCRIPTION)
+  provider            PaymentProvider
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  subscriptionPayment SubscriptionPayment?
+}
+
+model SubscriptionPayment {
+  id                     String                  @id @default(uuid())
+  info                   Json?
+  providerSubscriptionId String?
+  payment                Payment                 @relation(references: [id], fields: [paymentId], onDelete: Cascade)
+  paymentId              String                  @unique
+  period                 Int
+  pricingPlan            SubscriptionPricingPlan @relation(references: [id], fields: [pricingPlanId], onDelete: Cascade)
+  pricingPlanId          String
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  subscription           Subscription?
+}
+
+model SubscriptionPricingPlan {
+  id                  String                @id @default(uuid())
+  providerPriceId     String
+  priceId             String
+  provider            PaymentProvider
+  subscriptionType    SubscriptionType
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  subscriptionPayment SubscriptionPayment[]
+}
+
+model SubscriptionPrice {
+  id        String   @id @default(uuid())
+  currency  Currency
+  value     Float
+  period    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subscription {
+  id                    String              @id @default(uuid())
+  endDate               DateTime            @db.Timestamptz(3)
+  startDate             DateTime            @default(now()) @db.Timestamptz(3)
+  status                SubscriptionStatus
+  type                  SubscriptionType
+  user                  User                @relation(references: [id], fields: [userId], onDelete: Cascade)
+  userId                String
+  subscriptionPayment   SubscriptionPayment @relation(references: [id], fields: [subscriptionPaymentId], onDelete: Cascade)
+  subscriptionPaymentId String              @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 }
