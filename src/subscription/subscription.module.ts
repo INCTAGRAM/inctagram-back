@@ -13,8 +13,13 @@ import {
   webhookEventHandlers,
   WebhookEventHandlersProvider,
 } from './providers/webhook-event-handlers.provider';
+import { CancelSubscriptionHandler } from './use-cases/cancel-subscription.use-case';
 
-const commandHandlers = [CreatePaymentHandler, ProcessPaymentHandler];
+const commandHandlers = [
+  CreatePaymentHandler,
+  ProcessPaymentHandler,
+  CancelSubscriptionHandler,
+];
 
 @Module({
   imports: [
