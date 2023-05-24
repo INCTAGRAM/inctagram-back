@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { ProfileDbModel } from '../types';
 import { ProfileQueryRepositoryAdapter } from './adapters/profile-query-repository.adapter';
 
@@ -9,11 +9,11 @@ export class ProfileQueryRepository extends ProfileQueryRepositoryAdapter {
     super();
   }
 
-  async findProfileAndAvatarByUserId(
-    userId: string,
+  async findProfileAndAvatarByQuery(
+    payload: Partial<Pick<User, 'id' | 'username' | 'email'>>,
   ): Promise<ProfileDbModel | null> {
     const result = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: payload,
       select: {
         username: true,
         profile: {

@@ -10,6 +10,7 @@ import {
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -82,7 +83,7 @@ export function UploadUserAvatarApiDecorator() {
 export function GetProfileApiDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Return self user profile',
+      summary: 'Return user profile',
     }),
     ApiResponse({
       status: 200,
@@ -103,10 +104,8 @@ export function GetProfileApiDecorator() {
         },
       },
     }),
-    ApiForbiddenResponse({
-      description:
-        'If user profile already exists, or if the user has not confirmed their emai',
-      type: FieldError,
+    ApiNotFoundResponse({
+      description: 'User not found',
     }),
     ApiUnauthorizedResponse({
       description: 'JWT accessToken is missing, expired or incorrect',
