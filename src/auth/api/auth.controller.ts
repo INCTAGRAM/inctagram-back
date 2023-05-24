@@ -138,6 +138,7 @@ export class AuthController {
       new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }),
     );
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
+    return { accessToken };
   }
 
   @UseGuards(JwtRtGuard)
