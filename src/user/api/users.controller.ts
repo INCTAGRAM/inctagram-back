@@ -63,6 +63,7 @@ import { CreatePostDto } from '../dto/create-post.dto';
 import { PostsQueryDto } from '../dto/posts-query.dto';
 import { PostsQueryRepositoryAdatapter } from '../repositories/adapters/post/posts.query-adapter';
 import { PostsMapper } from '../utils/posts.mapper';
+import { UserRepository } from '../repositories/user.repository';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -72,6 +73,7 @@ export class UsersController {
     private readonly commandBus: CommandBus,
     private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
     private readonly postsQueryRepository: PostsQueryRepositoryAdatapter,
+    private readonly userRepository: UserRepository,
   ) {}
 
   @Post('self/images/avatar')
@@ -97,7 +99,7 @@ export class UsersController {
   }
 
   @Get('self/profile')
-  @GetProfileApiDecorator('self')
+  @GetProfileApiDecorator()
   public async getProfile(@ActiveUser('userId') id: string) {
     const profile =
       await this.profileQueryRepository.findProfileAndAvatarByQuery({ id });
@@ -167,7 +169,7 @@ export class UsersController {
   }
 
   @Get('self/posts')
-  @GetPostsApiDecorator()
+  @GetPostsApiDecorator('self')
   async getPosts(
     @ActiveUser('userId') userId: string,
     @Query() postsQuery: PostsQueryDto,
@@ -199,5 +201,23 @@ export class UsersController {
     return this.profileQueryRepository.findProfileAndAvatarByQuery({
       username,
     });
+  }
+
+  @Get(':username/posts')
+  @GetPostsApiDecorator()
+  async getUserPosts(
+    @Param('username') username: string,
+    @Query() postsQuery: PostsQueryDto,
+  ) {
+    const user = await this.userRepository.findUserByUserName(username);
+
+    if (!user) throw new NotFoundException();
+
+    const result = await this.postsQueryRepository.getPostsByQuery(
+      user.id,
+      postsQuery,
+    );
+
+    return PostsMapper.toViewModel(result);
   }
 }

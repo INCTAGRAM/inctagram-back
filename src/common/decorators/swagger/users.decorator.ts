@@ -80,17 +80,11 @@ export function UploadUserAvatarApiDecorator() {
   );
 }
 
-export function GetProfileApiDecorator(type?: 'self') {
+export function GetProfileApiDecorator() {
   return applyDecorators(
     ApiOperation({
       summary: 'Return user profile',
     }),
-    !type
-      ? ApiParam({
-          name: 'username',
-          type: 'string',
-        })
-      : () => null,
     ApiResponse({
       status: 200,
       description: 'Success',
@@ -110,10 +104,8 @@ export function GetProfileApiDecorator(type?: 'self') {
         },
       },
     }),
-    ApiForbiddenResponse({
-      description:
-        'If user profile already exists, or if the user has not confirmed their emai',
-      type: FieldError,
+    ApiNotFoundResponse({
+      description: 'User not found',
     }),
     ApiUnauthorizedResponse({
       description: 'JWT accessToken is missing, expired or incorrect',
