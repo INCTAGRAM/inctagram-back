@@ -23,7 +23,7 @@ export class SignUpWithGithubCommand {
     const { error } = schema.validate({ code: this.data.code });
 
     if (error) {
-      throw new BadRequestException({ cause: error });
+      throw new BadRequestException(error);
     }
   }
 }

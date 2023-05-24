@@ -9,9 +9,12 @@ import { useGlobalPipes } from './common/pipes/global.pipe';
 import { useGlobalFilters } from './common/filters/global.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
   app.enableCors({
-    origin: ['http://localhost:3000', 'https://inctagram-m9ju.vercel.app'],
+    origin: [
+      process.env.FRONTEND_LOCAL_DOMAIN as string,
+      process.env.FRONTEND_DOMAIN as string,
+    ],
     credentials: true,
   });
   app.use(cookieParser());

@@ -2,10 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DeviceSessionsRepository } from '../../deviceSessions/repositories/device-sessions.repository';
 import { UserRepository } from '../../user/repositories/user.repository';
 import { JwtAdaptor } from '../../adaptors/jwt/jwt.adaptor';
-import {
-  CreateUserWithOauthAccountData,
-  Oauth20UserData,
-} from '../../user/types';
+import { CreateUserWithOauthAccountData } from '../../user/types';
 import { GoogleAuthAdaptor } from '../../adaptors/google/google-auth.adaptor';
 import { randomUUID } from 'crypto';
 import { OauthCommandData } from '../types';
@@ -26,7 +23,7 @@ export class SignInWithGoogleCommand {
     const { error } = schema.validate({ code: this.data.code });
 
     if (error) {
-      throw new BadRequestException({ cause: error });
+      throw new BadRequestException(error);
     }
   }
 }
