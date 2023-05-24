@@ -36,14 +36,11 @@ import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
-  // CreateProfileApiDecorator,
   GetProfileApiDecorator,
   UpdateProfileApiDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
-// import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
-// import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { ProfileMapper } from '../utils/profile-mapper';
 
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
@@ -100,27 +97,15 @@ export class UsersController {
   }
 
   @Get('self/profile')
-  @GetProfileApiDecorator()
+  @GetProfileApiDecorator('self')
   public async getProfile(@ActiveUser('userId') id: string) {
     const profile =
-      await this.profileQueryRepository.findProfileAndAvatarByUserId(id);
+      await this.profileQueryRepository.findProfileAndAvatarByQuery({ id });
 
     if (!profile) throw new NotFoundException();
 
     return ProfileMapper.toViewModel(profile);
   }
-
-  // @Post('self/profile')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @CreateProfileApiDecorator()
-  // async createProfile(
-  //   @Body() createUserProfileDto: CreateUserProfileDto,
-  //   @ActiveUser('userId') id: string,
-  // ) {
-  //   return this.commandBus.execute(
-  //     new CreateProfileCommand(id, createUserProfileDto),
-  //   );
-  // }
 
   @Put('self/profile')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -206,5 +191,13 @@ export class UsersController {
     if (!post) throw new NotFoundException();
 
     return post;
+  }
+
+  @Get(':username/profile')
+  @GetProfileApiDecorator()
+  async getAnotherUserProfile(@Param('username') username: string) {
+    return this.profileQueryRepository.findProfileAndAvatarByQuery({
+      username,
+    });
   }
 }

@@ -10,6 +10,7 @@ import {
   ApiNoContentResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -79,11 +80,17 @@ export function UploadUserAvatarApiDecorator() {
   );
 }
 
-export function GetProfileApiDecorator() {
+export function GetProfileApiDecorator(type?: 'self') {
   return applyDecorators(
     ApiOperation({
-      summary: 'Return self user profile',
+      summary: 'Return user profile',
     }),
+    !type
+      ? ApiParam({
+          name: 'username',
+          type: 'string',
+        })
+      : () => null,
     ApiResponse({
       status: 200,
       description: 'Success',
