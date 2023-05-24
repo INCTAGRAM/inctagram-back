@@ -114,6 +114,9 @@ export function GetPostApiDecorator() {
     ApiOkResponse({
       type: GetUserPostResponse,
     }),
+    ApiNotFoundResponse({
+      description: 'Post or user not found',
+    }),
     ApiInternalServerErrorResponse({
       description: 'An error occurs when attempting to get post from database',
     }),
