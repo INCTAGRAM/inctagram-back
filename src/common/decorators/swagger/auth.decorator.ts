@@ -6,6 +6,7 @@ import {
   ApiGoneResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
@@ -17,6 +18,7 @@ import { EmailDto } from '../../../auth/dto/email.dto';
 import { NewPasswordDto } from '../../../auth/dto/new-password.dto';
 import { LoginDto } from '../../../auth/dto/login.dto';
 import { GoogleCodeDto } from '../../../auth/dto/google-code.dto';
+import { GithubCodeDto } from 'src/auth/dto/github-code.dto';
 
 export function AuthRegistrationSwaggerDecorator() {
   return applyDecorators(
@@ -208,6 +210,39 @@ export function AuthGoogleDecorator() {
     }),
     ApiUnauthorizedResponse({
       description: 'If the code provided is incorrect',
+    }),
+  );
+}
+
+export function AuthGithubDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Sign in via Github account',
+    }),
+    ApiBody({ type: GithubCodeDto }),
+    ApiResponse({
+      status: 200,
+      description: 'Success',
+      type: LogginSuccessViewModel,
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Incorrect code',
+    }),
+  );
+}
+
+export function MergeAccountsDecorator() {
+  return applyDecorators(
+    ApiOperation({
+      summary: 'Merge existing accounts',
+    }),
+    ApiQuery({ name: 'code', type: 'string' }),
+    ApiResponse({
+      status: 204,
+      description: 'No Content',
+    }),
+    ApiUnauthorizedResponse({
+      description: 'Incorrect code',
     }),
   );
 }

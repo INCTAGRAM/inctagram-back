@@ -19,6 +19,7 @@ import { ConfirmationCodeDto } from '../dto/confirmation-code.dto';
 import { EmailDto } from '../dto/email.dto';
 import { NewPasswordDto } from '../dto/new-password.dto';
 import {
+  AuthGithubDecorator,
   AuthGoogleDecorator,
   AuthLoginSwaggerDecorator,
   AuthLogoutSwaggerDecorator,
@@ -28,6 +29,7 @@ import {
   AuthRegistrationConfirmationSwaggerDecorator,
   AuthRegistrationEmailResendingSwaggerDecorator,
   AuthRegistrationSwaggerDecorator,
+  MergeAccountsDecorator,
 } from '../../common/decorators/swagger/auth.decorator';
 import { CommandBus } from '@nestjs/cqrs';
 import { RegisterUserCommand } from '../use-cases/register-user-use-case';
@@ -48,13 +50,12 @@ import { RecaptchaGuard } from 'src/common/guards/recaptcha.guard';
 import { CookieAuthGuard } from '../../common/guards/cookie-auth.guard';
 import { githubOauthConfig } from 'src/config/github-oauth.config';
 import { ConfigType } from '@nestjs/config';
-import { SignUpWithGithubCommand } from '../use-cases/sign-up-user-with-github.use-case';
 import { GithubCodeDto } from '../dto/github-code.dto';
 import { TokensPair } from '../types';
 import { MergeAccountCommand } from '../use-cases/merge-account.use-case';
-import { SignInWithGithubCommand } from '../use-cases/sign-in-user-with-github.use-case';
 import { GoogleCodeDto } from '../dto/google-code.dto';
 import { SignInWithGoogleCommand } from '../use-cases/oauth20-login-user-use-case';
+import { SignUpWithGithubCommand } from '../use-cases/sign-up-user-with-github.use-case';
 
 @ApiTags('Auth')
 @Controller('/api/auth')
@@ -137,6 +138,7 @@ export class AuthController {
       new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }),
     );
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
+    return { accessToken };
   }
 
   @UseGuards(JwtRtGuard)
@@ -192,30 +194,10 @@ export class AuthController {
   }
 
   @Post('github/sign-in')
+  @AuthGithubDecorator()
   @UseGuards(CookieAuthGuard)
-  async githubSignIn(
-    @Ip() ip: string,
-    @Body() githubCodeDto: GithubCodeDto,
-    @Headers('user-agent') userAgent: string,
-    @Res({ passthrough: true }) response: Response,
-    @ActiveUser('deviceId') deviceId: string | null,
-  ) {
-    const { code } = githubCodeDto;
-
-    const result = await this.commandBus.execute<
-      SignInWithGithubCommand,
-      TokensPair
-    >(new SignInWithGithubCommand({ code, deviceId, ip, userAgent }));
-
-    const { accessToken, refreshToken } = result;
-
-    response.cookie('refreshToken', refreshToken, this.cookieOptions);
-    response.status(HttpStatus.OK).json({ accessToken });
-  }
-
-  @Post('github/sign-up')
-  @UseGuards(CookieAuthGuard)
-  async githubSignUp(
+  @HttpCode(HttpStatus.OK)
+  async gihtubSignIn(
     @Ip() ip: string,
     @Body() githubCodeDto: GithubCodeDto,
     @Headers('user-agent') userAgent: string,
@@ -233,15 +215,14 @@ export class AuthController {
       response.sendStatus(HttpStatus.ACCEPTED);
       return;
     }
-
     const { accessToken, refreshToken } = result;
-
     response.cookie('refreshToken', refreshToken, this.cookieOptions);
     response.status(HttpStatus.OK).json({ accessToken });
   }
 
   @Post('merge-account')
-  @HttpCode(HttpStatus.OK)
+  @MergeAccountsDecorator()
+  @HttpCode(HttpStatus.NO_CONTENT)
   async mergeAccounts(@Query('code') code: string) {
     return this.commandBus.execute(new MergeAccountCommand(code));
   }

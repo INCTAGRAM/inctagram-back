@@ -121,6 +121,7 @@ export class SignInUserWithGoogleUseCase
 
       return tokens;
     } catch (error) {
+      console.log(error);
       throw new UnauthorizedException();
     }
   }

@@ -35,14 +35,11 @@ import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { UploadAvatarCommand } from '../use-cases/upload-avatar.use-case';
 import { ImageValidationPipe } from 'src/common/pipes/image-validation.pipe';
 import {
-  // CreateProfileApiDecorator,
   GetProfileApiDecorator,
   UpdateProfileApiDecorator,
   UploadUserAvatarApiDecorator,
 } from 'src/common/decorators/swagger/users.decorator';
 import { JwtAtGuard } from '../../common/guards/jwt-auth.guard';
-// import { CreateUserProfileDto } from '../dto/create.user.profile.dto';
-// import { CreateProfileCommand } from '../use-cases/create-profile.use-case';
 import { ProfileMapper } from '../utils/profile-mapper';
 
 import { UpdateProfileCommand } from '../use-cases/update-profile.use-case';
@@ -65,6 +62,7 @@ import { CreatePostDto } from '../dto/create-post.dto';
 import { PostsQueryDto } from '../dto/posts-query.dto';
 import { PostsQueryRepositoryAdatapter } from '../repositories/adapters/post/posts.query-adapter';
 import { PostsMapper } from '../utils/posts.mapper';
+import { UserRepository } from '../repositories/user.repository';
 
 @ApiTags('Users')
 @UseGuards(JwtAtGuard, UserEmailConfirmationGuard)
@@ -74,6 +72,7 @@ export class UsersController {
     private readonly commandBus: CommandBus,
     private readonly profileQueryRepository: ProfileQueryRepositoryAdapter,
     private readonly postsQueryRepository: PostsQueryRepositoryAdatapter,
+    private readonly userRepository: UserRepository,
   ) {}
 
   @Post('self/images/avatar')
@@ -102,24 +101,12 @@ export class UsersController {
   @GetProfileApiDecorator()
   public async getProfile(@ActiveUser('userId') id: string) {
     const profile =
-      await this.profileQueryRepository.findProfileAndAvatarByUserId(id);
+      await this.profileQueryRepository.findProfileAndAvatarByQuery({ id });
 
     if (!profile) throw new NotFoundException();
 
     return ProfileMapper.toViewModel(profile);
   }
-
-  // @Post('self/profile')
-  // @HttpCode(HttpStatus.NO_CONTENT)
-  // @CreateProfileApiDecorator()
-  // async createProfile(
-  //   @Body() createUserProfileDto: CreateUserProfileDto,
-  //   @ActiveUser('userId') id: string,
-  // ) {
-  //   return this.commandBus.execute(
-  //     new CreateProfileCommand(id, createUserProfileDto),
-  //   );
-  // }
 
   @Put('self/profile')
   @HttpCode(HttpStatus.NO_CONTENT)
@@ -181,7 +168,7 @@ export class UsersController {
   }
 
   @Get('self/posts')
-  @GetPostsApiDecorator()
+  @GetPostsApiDecorator('self')
   async getPosts(
     @ActiveUser('userId') userId: string,
     @Query() postsQuery: PostsQueryDto,
@@ -201,6 +188,49 @@ export class UsersController {
     @Param('postId', ParseUUIDPipe) postId: string,
   ) {
     const post = await this.postsQueryRepository.getPostById(userId, postId);
+
+    if (!post) throw new NotFoundException();
+
+    return post;
+  }
+
+  @Get(':username/profile')
+  @GetProfileApiDecorator()
+  async getAnotherUserProfile(@Param('username') username: string) {
+    return this.profileQueryRepository.findProfileAndAvatarByQuery({
+      username,
+    });
+  }
+
+  @Get(':username/posts')
+  @GetPostsApiDecorator()
+  async getUserPosts(
+    @Param('username') username: string,
+    @Query() postsQuery: PostsQueryDto,
+  ) {
+    const user = await this.userRepository.findUserByUserName(username);
+
+    if (!user) throw new NotFoundException();
+
+    const result = await this.postsQueryRepository.getPostsByQuery(
+      user.id,
+      postsQuery,
+    );
+
+    return PostsMapper.toViewModel(result);
+  }
+
+  @Get(':username/posts/:postId')
+  @GetPostApiDecorator()
+  async getUserPost(
+    @Param('username') username: string,
+    @Param('postId', ParseUUIDPipe) postId: string,
+  ) {
+    const user = await this.userRepository.findUserByUserName(username);
+
+    if (!user) throw new NotFoundException();
+
+    const post = await this.postsQueryRepository.getPostById(user.id, postId);
 
     if (!post) throw new NotFoundException();
 

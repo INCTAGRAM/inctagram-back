@@ -6,6 +6,7 @@ import {
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiNoContentResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiProperty,
@@ -88,7 +89,7 @@ export function UpdatePostApiDecorator() {
   );
 }
 
-export function GetPostsApiDecorator() {
+export function GetPostsApiDecorator(type?: 'self') {
   return applyDecorators(
     ApiOperation({
       summary: 'Get user posts',
@@ -97,6 +98,7 @@ export function GetPostsApiDecorator() {
       type: PostsResponse,
       isArray: true,
     }),
+    !type ? ApiNotFoundResponse({ description: 'User not found' }) : () => {},
     ApiInternalServerErrorResponse({
       description: 'An error occurs when attempting to get posts from database',
     }),
@@ -111,6 +113,9 @@ export function GetPostApiDecorator() {
     }),
     ApiOkResponse({
       type: GetUserPostResponse,
+    }),
+    ApiNotFoundResponse({
+      description: 'Post or user not found',
     }),
     ApiInternalServerErrorResponse({
       description: 'An error occurs when attempting to get post from database',
