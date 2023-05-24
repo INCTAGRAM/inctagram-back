@@ -220,4 +220,21 @@ export class UsersController {
 
     return PostsMapper.toViewModel(result);
   }
+
+  @Get(':username/posts/:postId')
+  @GetPostApiDecorator()
+  async getUserPost(
+    @Param('username') username: string,
+    @Param('postId', ParseUUIDPipe) postId: string,
+  ) {
+    const user = await this.userRepository.findUserByUserName(username);
+
+    if (!user) throw new NotFoundException();
+
+    const post = await this.postsQueryRepository.getPostById(user.id, postId);
+
+    if (!post) throw new NotFoundException();
+
+    return post;
+  }
 }
