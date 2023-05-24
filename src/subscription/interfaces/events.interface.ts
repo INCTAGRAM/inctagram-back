@@ -18,11 +18,61 @@ export interface StripeEvent<T> {
 export interface StripeCheckoutSessionObject {
   id: string;
   object: 'checkout.session';
-  metadata: { paymentId: string };
+  metadata: { paymentId: string; userId: string };
   mode: 'payment' | 'subscription';
   payment_status: 'paid';
+  payment_intent: string;
   status: 'complete';
   subscription: string | null;
+}
+
+export interface StripeChargeObject {
+  id: string;
+  object: string;
+  amount: number;
+  amount_captured: number;
+  amount_refunded: number;
+  application: null | string;
+  application_fee: null | string;
+  application_fee_amount: null | string;
+  balance_transaction: string;
+  billing_details: object; // You can replace 'object' with a specific type representing billing details
+  calculated_statement_descriptor: string;
+  captured: boolean;
+  created: number;
+  currency: string;
+  customer: null | string;
+  description: null | string;
+  destination: null | string;
+  dispute: null | string;
+  disputed: boolean;
+  failure_balance_transaction: null | string;
+  failure_code: null | string;
+  failure_message: null | string;
+  fraud_details: object; // You can replace 'object' with a specific type representing fraud details
+  invoice: null | string;
+  livemode: boolean;
+  metadata: object; // You can replace 'object' with a specific type representing metadata
+  on_behalf_of: null | string;
+  order: null | string;
+  outcome: object; // You can replace 'object' with a specific type representing outcome
+  paid: boolean;
+  payment_intent: string;
+  payment_method: string;
+  payment_method_details: object; // You can replace 'object' with a specific type representing payment method details
+  receipt_email: null | string;
+  receipt_number: null | string;
+  receipt_url: string;
+  refunded: boolean;
+  review: null | string;
+  shipping: null | string;
+  source: null | string;
+  source_transfer: null | string;
+  statement_descriptor: null | string;
+  statement_descriptor_suffix: null | string;
+  status: string;
+  transfer_data: null | string;
+  transfer_group: null | string;
 }
 
 export interface StripeInvoiceObject {

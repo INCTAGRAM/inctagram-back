@@ -50,6 +50,7 @@ export class SubscriptionController {
   @UseGuards(StripeWebhookGuard)
   @HttpCode(HttpStatus.OK)
   async webhook(@Body() event: StripeEvent<any>) {
+    console.log(event);
     this.commandBus.execute(new ProcessPaymentCommand(event));
   }
 }

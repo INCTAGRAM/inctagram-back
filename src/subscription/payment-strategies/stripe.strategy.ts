@@ -74,13 +74,11 @@ export class StripePaymentStrategy extends PaymentStrategy {
         });
 
         billingTimestamp = getUnixTimestamp(
-          (currentSubscription?.startDate || new Date()) > new Date()
+          (currentSubscription?.endDate || new Date()) > new Date()
             ? currentSubscription!.endDate
             : new Date(),
         );
       }
-
-      console.log(this.subscriptionsConf.successUrl);
 
       return this.prisma.$transaction(async (tx) => {
         const payment = await tx.payment.create({
@@ -108,6 +106,7 @@ export class StripePaymentStrategy extends PaymentStrategy {
           ],
           metadata: {
             paymentId: payment.id,
+            userId: userId,
           },
           client_reference_id: payment.id,
           expires_at: Math.floor((Date.now() + 1_800_000) / 1000),
@@ -117,9 +116,11 @@ export class StripePaymentStrategy extends PaymentStrategy {
         };
 
         if (renew) {
-          checkoutSession.subscription_data = {
-            trial_end: billingTimestamp,
-          };
+          if (billingTimestamp - Date.now() / 1000 >= 2 * 86400) {
+            checkoutSession.subscription_data = {
+              trial_end: billingTimestamp,
+            };
+          }
         }
 
         const session = await this.stripe.checkout.sessions.create(

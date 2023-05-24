@@ -197,7 +197,7 @@ model Payment {
 
 model SubscriptionPayment {
   id                     String                  @id @default(uuid())
-  info                   String?
+  info                   Json?
   providerSubscriptionId String?
   payment                Payment                 @relation(references: [id], fields: [paymentId], onDelete: Cascade)
   paymentId              String                  @unique
@@ -230,15 +230,15 @@ model SubscriptionPrice {
 }
 
 model Subscription {
-  id        String              @id @default(uuid())
-  endDate   DateTime            @db.Timestamptz(3)
-  startDate DateTime            @db.Timestamptz(3)
-  status    SubscriptionStatus
-  type      SubscriptionType
-  user      User                @relation(references: [id], fields: [userId], onDelete: Cascade)
-  userId    String
-  payment   SubscriptionPayment @relation(references: [id], fields: [paymentId], onDelete: Cascade)
-  paymentId String              @unique
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  id                    String              @id @default(uuid())
+  endDate               DateTime            @db.Timestamptz(3)
+  startDate             DateTime            @default(now()) @db.Timestamptz(3)
+  status                SubscriptionStatus
+  type                  SubscriptionType
+  user                  User                @relation(references: [id], fields: [userId], onDelete: Cascade)
+  userId                String
+  subscriptionPayment   SubscriptionPayment @relation(references: [id], fields: [subscriptionPaymentId], onDelete: Cascade)
+  subscriptionPaymentId String              @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
 }

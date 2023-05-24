@@ -9,7 +9,10 @@ import { ProcessPaymentHandler } from './use-cases/process-payment.user-case';
 import { PaymentSystemModule } from 'src/payment-system/payment-system.module';
 import { PaymentStrategiesProvider } from './providers/payment-strategies.provider';
 import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
-import { WebhookEventHandlersProvider } from './providers/webhook-event-handlers.provider';
+import {
+  webhookEventHandlers,
+  WebhookEventHandlersProvider,
+} from './providers/webhook-event-handlers.provider';
 
 const commandHandlers = [CreatePaymentHandler, ProcessPaymentHandler];
 
@@ -34,6 +37,7 @@ const commandHandlers = [CreatePaymentHandler, ProcessPaymentHandler];
   controllers: [SubscriptionController],
   providers: [
     ...commandHandlers,
+    ...webhookEventHandlers,
     StripePaymentStrategy,
     PaymentStrategiesProvider,
     WebhookEventHandlersProvider,
