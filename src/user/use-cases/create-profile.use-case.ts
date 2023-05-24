@@ -30,7 +30,9 @@ export class CreateProfileUseCase
       throw new NotFoundException();
 
     const profile =
-      await this.profileQueryRepository.findProfileAndAvatarByUserId(userId);
+      await this.profileQueryRepository.findProfileAndAvatarByQuery({
+        id: userId,
+      });
 
     if (profile) throw new ForbiddenException();
 
