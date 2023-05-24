@@ -28,7 +28,8 @@ export class GoogleAuthAdaptor {
     const googleUserData = await this.getUserData(tokens.access_token);
     const { name, given_name, family_name, email, id } = googleUserData;
 
-    if (!name || !email || !id) throw new UnauthorizedException();
+    if (!name || !email || !id)
+      throw new UnauthorizedException('name, email or id are absent');
 
     return { name, given_name, family_name, email, id };
   }
