@@ -53,7 +53,6 @@ export class MailService {
       },
     });
   }
-
   public async sendOauthAccountCreationConfirmation(
     user: Pick<User, 'email' | 'username'>,
   ) {
