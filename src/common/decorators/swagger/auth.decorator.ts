@@ -214,16 +214,22 @@ export function AuthGoogleDecorator() {
   );
 }
 
-export function AuthGithubDecorator() {
+export function AuthWithGithubDecorator() {
   return applyDecorators(
     ApiOperation({
-      summary: 'Sign in via Github account',
+      summary: 'Sign in/sign up via Github account',
     }),
     ApiBody({ type: GithubCodeDto }),
     ApiResponse({
       status: 200,
-      description: 'Success',
+      description:
+        'Success. An email regarding successful registration has been sent to the user',
       type: LogginSuccessViewModel,
+    }),
+    ApiResponse({
+      status: 202,
+      description:
+        'An email has been sent to the user for account merging confirmation.',
     }),
     ApiUnauthorizedResponse({
       description: 'Incorrect code',
