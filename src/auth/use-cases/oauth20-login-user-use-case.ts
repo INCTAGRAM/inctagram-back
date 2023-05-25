@@ -77,7 +77,7 @@ export class SignInUserWithGoogleUseCase
         user = await this.userRepository.createUserWithOauthAccount(
           createUserData,
         );
-        await this.emailService.sendSuccessfulRegistration(user);
+        await this.emailService.sendOauthAccountCreationConfirmation(user);
       } else {
         // if user exists already
         const existingOauthAccount =
