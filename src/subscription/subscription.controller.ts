@@ -92,4 +92,8 @@ export class SubscriptionController {
   public async cancelSubscription(@ActiveUser('userId') userId: string) {
     await this.commandBus.execute(new CancelSubscriptionCommand(userId));
   }
+
+  @Get('current')
+  @UseGuards(JwtAtGuard)
+  public async getCurrentSubscription(@ActiveUser('userId') userId: string) {}
 }
