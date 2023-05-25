@@ -16,6 +16,7 @@ import { OauthProvider } from '../../common/constants';
 import { MailService } from '../../mail/mail.service';
 import { User } from '@prisma/client';
 import { DevicesSessionsService } from '../services/devices.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 export class SignInWithGoogleCommand {
   public constructor(public readonly data: OauthCommandData) {
@@ -42,6 +43,7 @@ export class SignInUserWithGoogleUseCase
     private readonly googleAuthAdaptor: GoogleAuthAdaptor,
     private readonly emailService: MailService,
     private readonly devicesSessionsService: DevicesSessionsService,
+    private prisma: PrismaService,
   ) {}
 
   private readonly type = OauthProvider.GOOGLE;
@@ -78,6 +80,7 @@ export class SignInUserWithGoogleUseCase
         user = await this.userRepository.createUserWithOauthAccount(
           createUserData,
         );
+        await this.emailService.sendSuccessfulRegistration(user);
       } else {
         // if user exists already
         const existingOauthAccount =
@@ -97,7 +100,8 @@ export class SignInUserWithGoogleUseCase
             mergeCodeExpDate: add(new Date(), { minutes: 10 }),
           });
 
-          return this.emailService.sendAccountsMerge(user, code);
+          await this.emailService.sendAccountsMerge(user, code);
+          return '202';
         }
       }
       // create tokens and session

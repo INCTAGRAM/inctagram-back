@@ -27,7 +27,7 @@ export class GoogleAuthAdaptor {
       throw new UnauthorizedException('code provided is not valid');
 
     const googleUserData = await this.getUserData(tokens.access_token);
-    console.log(googleUserData);
+
     const { name, given_name, family_name, email, id } = googleUserData;
 
     if (!name || !email || !id)

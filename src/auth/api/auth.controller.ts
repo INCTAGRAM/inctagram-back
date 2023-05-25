@@ -124,6 +124,7 @@ export class AuthController {
 
   @UseGuards(CookieAuthGuard)
   @AuthGoogleDecorator()
+  @HttpCode(HttpStatus.OK)
   @Post('google/sign-in')
   async googleSignIn(
     @Ip() ip: string,
@@ -136,9 +137,14 @@ export class AuthController {
   ) {
     const { code } = googleCodeDto;
 
-    const { accessToken, refreshToken } = await this.commandBus.execute(
+    const result = await this.commandBus.execute(
       new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }),
     );
+
+    if (result === '202') res.sendStatus(HttpStatus.ACCEPTED);
+
+    const { accessToken, refreshToken } = result;
+
     res.cookie('refreshToken', refreshToken, this.cookieOptions);
     return { accessToken };
   }

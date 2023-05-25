@@ -53,4 +53,18 @@ export class MailService {
       },
     });
   }
+  public async sendSuccessfulRegistration(
+    user: Pick<User, 'email' | 'username'>,
+  ) {
+    const { email, username } = user;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Welcome to INCTAGRAM!',
+      template: 'registration',
+      context: {
+        name: username,
+      },
+    });
+  }
 }
