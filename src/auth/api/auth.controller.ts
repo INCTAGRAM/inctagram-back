@@ -19,7 +19,7 @@ import { ConfirmationCodeDto } from '../dto/confirmation-code.dto';
 import { EmailDto } from '../dto/email.dto';
 import { NewPasswordDto } from '../dto/new-password.dto';
 import {
-  AuthGithubDecorator,
+  AuthWithGithubDecorator,
   AuthGoogleDecorator,
   AuthLoginSwaggerDecorator,
   AuthLogoutSwaggerDecorator,
@@ -194,7 +194,7 @@ export class AuthController {
   }
 
   @Post('github/sign-in')
-  @AuthGithubDecorator()
+  @AuthWithGithubDecorator()
   @UseGuards(CookieAuthGuard)
   @HttpCode(HttpStatus.OK)
   async gihtubSignIn(
