@@ -131,4 +131,28 @@ export class SubscriptionsQueryRepository {
       throw new InternalServerErrorException(DATABASE_ERROR);
     }
   }
+
+  public async getUsersCurrentSubscription(userId: string) {
+    try {
+      return this.prismaService.subscription.findFirst({
+        where: {
+          userId,
+          status: 'ACTIVE',
+          endDate: {
+            gte: new Date(),
+          },
+        },
+        select: {
+          id: true,
+          endDate: true,
+          startDate: true,
+          type: true,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw new InternalServerErrorException(DATABASE_ERROR);
+    }
+  }
 }
