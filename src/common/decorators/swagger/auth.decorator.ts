@@ -206,7 +206,12 @@ export function AuthGoogleDecorator() {
     ApiResponse({
       status: 200,
       description:
-        'If google credentials are correct, returns JWT accessToken (expires after 1 hour) in body and JWT refreshToken in cookie (http-only, secure) (expires after 2 hours). If user is already registered, returns an email with suggestion to merge accounts',
+        'If google credentials are correct, returns JWT accessToken (expires after 1 hour) in body and JWT refreshToken in cookie (http-only, secure) (expires after 2 hours).',
+    }),
+    ApiResponse({
+      status: 202,
+      description:
+        'If user is already registered, returns an email with suggestion to merge accounts',
     }),
     ApiUnauthorizedResponse({
       description: 'If the code provided is incorrect',
