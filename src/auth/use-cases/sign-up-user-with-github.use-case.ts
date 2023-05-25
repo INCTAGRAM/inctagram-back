@@ -101,6 +101,8 @@ export class SignUpUserWithGithubUseCase
         user = await this.userRepository.createUserWithOauthAccount(
           createUserData,
         );
+
+        await this.emailService.sendOauthAccountCreationConfirmation(user);
       } else {
         const existingOauthAccount =
           await this.userRepository.findOauthAccountByQuery({

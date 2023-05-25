@@ -53,4 +53,19 @@ export class MailService {
       },
     });
   }
+
+  public async sendOauthAccountCreationConfirmation(
+    user: Pick<User, 'email' | 'username'>,
+  ) {
+    const { email, username } = user;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'You have been successfully signed up to INCTAGRAM!',
+      template: 'oauth-sign-up',
+      context: {
+        name: username,
+      },
+    });
+  }
 }
