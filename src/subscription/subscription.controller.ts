@@ -28,6 +28,7 @@ import { StripeWebhookGuard } from 'src/common/guards/stripe-webhook.guard';
 import { ProcessPaymentCommand } from './use-cases/process-payment.user-case';
 import { CancelSubscriptionCommand } from './use-cases/cancel-subscription.use-case';
 import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
+import { SubscriptionsMapper } from './utils/subscriptions-mapper';
 
 @ApiTags('Subscriptions')
 @Controller('api/subscriptions')
@@ -95,5 +96,14 @@ export class SubscriptionController {
 
   @Get('current')
   @UseGuards(JwtAtGuard)
-  public async getCurrentSubscription(@ActiveUser('userId') userId: string) {}
+  public async getCurrentSubscription(@ActiveUser('userId') userId: string) {
+    const currentSubscription =
+      await this.subscriptionsQueryRepository.getUsersCurrentSubscription(
+        userId,
+      );
+
+    if (!currentSubscription) return null;
+
+    return SubscriptionsMapper.toViewModel(currentSubscription);
+  }
 }
