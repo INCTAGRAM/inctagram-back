@@ -49,3 +49,5 @@ export const enum OauthProvider {
   GITHUB = 'GITHUB',
   GOOGLE = 'GOOGLE',
 }
+
+export const STRIPE_PAYMENT_SERVICE = 'STRIPE_PAYMENT_SERVICE';

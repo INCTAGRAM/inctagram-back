@@ -13,7 +13,11 @@ import {
   webhookEventHandlers,
   WebhookEventHandlersProvider,
 } from './providers/webhook-event-handlers.provider';
+import { STRIPE_PAYMENT_SERVICE } from 'src/common/constants';
+import { UserRepository } from 'src/user/repositories/user.repository';
 import { CancelSubscriptionHandler } from './use-cases/cancel-subscription.use-case';
+import { SubscriptionsTransactionService } from './services/subscriptions-transaction.service';
+import { StripePaymentProviderService } from './services/stripe-payment-provider.service';
 
 const commandHandlers = [
   CreatePaymentHandler,
@@ -43,10 +47,16 @@ const commandHandlers = [
   providers: [
     ...commandHandlers,
     ...webhookEventHandlers,
+    UserRepository,
     StripePaymentStrategy,
     PaymentStrategiesProvider,
     WebhookEventHandlersProvider,
     SubscriptionsQueryRepository,
+    SubscriptionsTransactionService,
+    {
+      provide: STRIPE_PAYMENT_SERVICE,
+      useClass: StripePaymentProviderService,
+    },
   ],
 })
 export class SubscriptionModule {}

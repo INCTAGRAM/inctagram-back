@@ -1,4 +1,4 @@
-import { Currency, PaymentProvider } from '@prisma/client';
+import { Currency, PaymentProvider, PeriodType } from '@prisma/client';
 import { applyDecorators } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -116,8 +116,14 @@ class PaymentsResponseType implements Payment {
   @ApiProperty()
   public paymentDate: string;
 
-  @ApiProperty({ description: 'Subscription type' })
+  @ApiProperty({ description: 'Subscription period' })
   public period: number;
+
+  @ApiProperty({
+    enum: Object.keys(PeriodType),
+    description: 'Subscription period type',
+  })
+  public periodType: PeriodType;
 }
 
 class GetPriceListResponse {

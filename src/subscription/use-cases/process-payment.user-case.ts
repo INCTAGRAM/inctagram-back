@@ -3,7 +3,6 @@ import { Inject } from '@nestjs/common';
 
 import { WEBHOOK_EVENT_HANDLERS } from '../constants';
 import { Handler } from '../webhook-event-handlers/abstract.handler';
-import { SubscriptionsQueryRepository } from '../repositories/subscriptions.query-repository';
 
 export class ProcessPaymentCommand {
   public constructor(public readonly event: any) {}
@@ -16,7 +15,6 @@ export class ProcessPaymentHandler
   public constructor(
     @Inject(WEBHOOK_EVENT_HANDLERS)
     private readonly eventHandlers: Handler[],
-    private readonly subscriptionsQueryRepository: SubscriptionsQueryRepository,
   ) {}
 
   public async execute(command: ProcessPaymentCommand) {

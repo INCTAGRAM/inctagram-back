@@ -1,4 +1,4 @@
-import { EmailConfirmation, OauthAccount } from '@prisma/client';
+import { AccountPlan, EmailConfirmation, OauthAccount } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { add } from 'date-fns';
@@ -10,6 +10,7 @@ import {
   UserWithEmailConfirmation,
 } from '../types';
 import { UpdateOrCreateOauthAccountPaylod } from 'src/auth/types';
+import { PrismaTransactionType } from 'src/common/types';
 
 @Injectable()
 export class UserRepository {
@@ -324,5 +325,20 @@ export class UserRepository {
 
       return null;
     }
+  }
+
+  public updateAccountPlan(
+    prisma: PrismaTransactionType | PrismaService,
+    id: string,
+    accountPlan: AccountPlan,
+  ) {
+    return prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        accountPlan,
+      },
+    });
   }
 }

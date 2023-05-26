@@ -178,7 +178,14 @@ enum SubscriptionType {
 
 enum SubscriptionStatus {
   ACTIVE
+  PENDING
   CANCELLED
+}
+
+enum PeriodType {
+  DAY
+  MONTH
+  YEAR
 }
 
 model Payment {
@@ -196,43 +203,45 @@ model Payment {
 }
 
 model SubscriptionPayment {
-  id                     String                  @id @default(uuid())
-  info                   Json?
-  providerSubscriptionId String?
-  payment                Payment                 @relation(references: [id], fields: [paymentId], onDelete: Cascade)
-  paymentId              String                  @unique
-  period                 Int
-  pricingPlan            SubscriptionPricingPlan @relation(references: [id], fields: [pricingPlanId], onDelete: Cascade)
-  pricingPlanId          String
-  createdAt              DateTime                @default(now())
-  updatedAt              DateTime                @updatedAt
-  subscription           Subscription?
+  id            String                  @id @default(uuid())
+  info          Json?
+  payment       Payment                 @relation(references: [id], fields: [paymentId], onDelete: Cascade)
+  paymentId     String                  @unique
+  pricingPlan   SubscriptionPricingPlan @relation(references: [id], fields: [pricingPlanId], onDelete: Cascade)
+  pricingPlanId String
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  subscription  Subscription?
 }
 
 model SubscriptionPricingPlan {
   id                  String                @id @default(uuid())
   providerPriceId     String
-  priceId             String
   provider            PaymentProvider
   subscriptionType    SubscriptionType
+  priceId             String
+  price               SubscriptionPrice     @relation(references: [id], fields: [priceId], onDelete: Cascade)
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   subscriptionPayment SubscriptionPayment[]
 }
 
 model SubscriptionPrice {
-  id        String   @id @default(uuid())
-  currency  Currency
-  value     Float
-  period    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                      String                    @id @default(uuid())
+  currency                Currency
+  value                   Float
+  period                  Int
+  periodType              PeriodType                @default(MONTH)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  SubscriptionPricingPlan SubscriptionPricingPlan[]
 }
 
 model Subscription {
   id                    String              @id @default(uuid())
-  endDate               DateTime            @db.Timestamptz(3)
+  endDate               DateTime?           @db.Timestamptz(3)
   startDate             DateTime            @default(now()) @db.Timestamptz(3)
+  relatedSubscription   String?
   status                SubscriptionStatus
   type                  SubscriptionType
   user                  User                @relation(references: [id], fields: [userId], onDelete: Cascade)
