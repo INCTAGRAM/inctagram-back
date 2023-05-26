@@ -14,10 +14,10 @@ import {
   PaymentStrategy,
 } from '../payment-strategies/abstract.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { getUnixTimestamp } from 'src/user/utils/unix-timestamp';
 import { subscriptionsConfig } from 'src/config/subscriptions.config';
-import { InjectStripe } from 'src/common/decorators/inject-stripe.decorator';
 import { PaymentException } from 'src/common/exceptions/subscriptions.exception';
+import { InjectStripeClient } from 'src/common/decorators/inject-stripe-client.decorator';
+import { SubscriptionsTransactionService } from '../services/subscriptions-transaction.service';
 
 export interface CheckoutMetadata extends Stripe.MetadataParam {
   userId: string;
@@ -27,10 +27,11 @@ export interface CheckoutMetadata extends Stripe.MetadataParam {
 @Injectable()
 export class StripePaymentStrategy extends PaymentStrategy {
   public constructor(
-    @InjectStripe() private readonly stripe: Stripe,
+    @InjectStripeClient() private readonly stripe: Stripe,
     private readonly prisma: PrismaService,
     @Inject(subscriptionsConfig.KEY)
     private subscriptionsConf: ConfigType<typeof subscriptionsConfig>,
+    private readonly subscriptionsTransactionService: SubscriptionsTransactionService,
   ) {
     super();
   }
@@ -39,17 +40,17 @@ export class StripePaymentStrategy extends PaymentStrategy {
 
   public async execute(command: PaymentCommand) {
     try {
-      const { userId, priceId, renew } = command;
+      const { userId, priceId } = command;
 
       const pricingPlan = await this.prisma.subscriptionPricingPlan.findFirst({
         where: {
           priceId,
           provider: this.name,
-          subscriptionType: renew ? 'RECCURING' : 'ONETIME',
+          subscriptionType: SubscriptionType.RECCURING,
         },
       });
 
-      const { currency, value, period } = <SubscriptionPrice>(
+      const { currency, value: price } = <SubscriptionPrice>(
         await this.prisma.subscriptionPrice.findFirst({
           where: {
             id: priceId,
@@ -60,41 +61,24 @@ export class StripePaymentStrategy extends PaymentStrategy {
       if (!pricingPlan)
         throw new NotFoundException('Pricing plan for subscription not found');
 
-      const { id: planId, providerPriceId } = pricingPlan;
-
-      let billingTimestamp: number;
-
-      if (renew) {
-        const currentSubscription = await this.prisma.subscription.findFirst({
-          where: {
-            userId,
-            status: SubscriptionStatus.ACTIVE,
-            type: SubscriptionType.RECCURING,
-          },
-        });
-
-        billingTimestamp = getUnixTimestamp(
-          (currentSubscription?.endDate || new Date()) > new Date()
-            ? currentSubscription!.endDate
-            : new Date(),
-        );
-      }
+      const { id: pricingPlanId, providerPriceId } = pricingPlan;
 
       return this.prisma.$transaction(async (tx) => {
-        const payment = await tx.payment.create({
-          data: {
+        const payment =
+          await this.subscriptionsTransactionService.createPayments(tx, {
             userId,
             currency,
-            price: value,
+            price,
+            pricingPlanId,
             provider: this.name,
             status: PaymentStatus.PENDING,
-            subscriptionPayment: {
-              create: {
-                period,
-                pricingPlanId: planId,
-              },
-            },
-          },
+          });
+
+        await this.subscriptionsTransactionService.createSubscription(tx, {
+          subscriptionPaymentId: <string>payment.subscriptionPayment?.id,
+          userId: userId,
+          type: SubscriptionType.ONETIME,
+          status: SubscriptionStatus.PENDING,
         });
 
         const checkoutSession: Stripe.Checkout.SessionCreateParams = {
@@ -110,18 +94,10 @@ export class StripePaymentStrategy extends PaymentStrategy {
           },
           client_reference_id: payment.id,
           expires_at: Math.floor((Date.now() + 1_800_000) / 1000),
-          mode: renew ? 'subscription' : 'payment',
+          mode: 'subscription',
           success_url: this.subscriptionsConf.successUrl,
           cancel_url: this.subscriptionsConf.cancelUrl,
         };
-
-        if (renew) {
-          if (billingTimestamp - Date.now() / 1000 >= 2 * 86400) {
-            checkoutSession.subscription_data = {
-              trial_end: billingTimestamp,
-            };
-          }
-        }
 
         const session = await this.stripe.checkout.sessions.create(
           checkoutSession,

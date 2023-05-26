@@ -1,15 +1,26 @@
-import type { PaymentProvider } from '@prisma/client';
+import type {
+  PaymentProvider,
+  PeriodType,
+  SubscriptionPricingPlan,
+} from '@prisma/client';
 
 export interface Payments {
   id: string;
   price: number;
   provider: PaymentProvider;
   subscriptionPayment: {
-    period: number;
     subscription: {
       startDate: Date;
-      endDate: Date;
+      endDate: Date | null;
     } | null;
+    pricingPlan:
+      | (SubscriptionPricingPlan & {
+          price: {
+            period: number;
+            periodType: PeriodType;
+          };
+        })
+      | null;
   } | null;
 }
 
@@ -23,6 +34,7 @@ export interface Payment {
   price: number;
   provider: PaymentProvider;
   period: number;
+  periodType: PeriodType;
   paymentDate: string;
-  endDate: string;
+  endDate: string | null;
 }

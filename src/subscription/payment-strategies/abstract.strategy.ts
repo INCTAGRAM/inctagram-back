@@ -4,7 +4,6 @@ export class PaymentCommand {
   public constructor(
     public readonly userId: string,
     public readonly priceId: string,
-    public readonly renew: boolean,
   ) {}
 }
 

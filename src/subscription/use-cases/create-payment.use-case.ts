@@ -14,7 +14,6 @@ export class CreatePaymentCommand {
     public readonly paymentProvider: PaymentProvider,
     public readonly priceId: string,
     public readonly userId: string,
-    public readonly renew: boolean,
   ) {}
 }
 
@@ -39,7 +38,7 @@ export class CreatePaymentHandler
   }
 
   public async execute(command: CreatePaymentCommand): Promise<string | null> {
-    const { priceId, userId, paymentProvider, renew } = command;
+    const { priceId, userId, paymentProvider } = command;
 
     const price =
       await this.subscriptionsQueryRepository.getSubscriptionPriceById(priceId);
@@ -53,7 +52,7 @@ export class CreatePaymentHandler
 
     const result =
       (await this.paymentServices[paymentProvider]?.execute(
-        new PaymentCommand(userId, price.id, renew),
+        new PaymentCommand(userId, price.id),
       )) || null;
 
     return result;

@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import Stripe from 'stripe';
 import {
-  Prisma,
-  Subscription,
   PaymentStatus,
   SubscriptionType,
   SubscriptionStatus,
   AccountPlan,
+  PeriodType,
 } from '@prisma/client';
 
 import { Handler } from '../abstract.handler';
@@ -16,14 +14,22 @@ import {
 } from '../../interfaces/events.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CHECKOUT_SESSION_COMPLETED } from '../../constants';
-import { InjectStripe } from 'src/common/decorators/inject-stripe.decorator';
+import { UserRepository } from 'src/user/repositories/user.repository';
 import { calculateSubscriptionEndDate } from 'src/subscription/utils/calculate-subscription-end-date';
+import { SubscriptionsTransactionService } from 'src/subscription/services/subscriptions-transaction.service';
+import { InjectStripeService } from 'src/common/decorators/inject-stripe-service.decorator';
+import { PaymentProviderService } from 'src/subscription/services/payment-provider.service';
+import { SubscriptionsQueryRepository } from 'src/subscription/repositories/subscriptions.query-repository';
 
 @Injectable()
 export class CheckoutSessinCompletedEventHandler extends Handler {
   public constructor(
     private readonly prismaService: PrismaService,
-    @InjectStripe() private readonly stripe: Stripe,
+    private readonly userRepository: UserRepository,
+    private readonly subscriptionsTransactionService: SubscriptionsTransactionService,
+    @InjectStripeService()
+    private readonly paymentProviderService: PaymentProviderService,
+    private readonly subscriptionsQueryRepository: SubscriptionsQueryRepository,
   ) {
     super();
   }
@@ -31,150 +37,96 @@ export class CheckoutSessinCompletedEventHandler extends Handler {
   protected async doHandle(
     event: StripeEvent<StripeCheckoutSessionObject>,
   ): Promise<boolean> {
-    if (
-      event.type === CHECKOUT_SESSION_COMPLETED &&
-      event.data.object.payment_status === 'paid'
-    ) {
-      const { paymentId, userId } = event.data.object.metadata;
-      const status = PaymentStatus.CONFIRMED;
+    if (event.type === CHECKOUT_SESSION_COMPLETED) {
+      const {
+        mode,
+        payment_status: paymentStatus,
+        invoice,
+      } = event.data.object;
 
-      await this.prismaService.$transaction(async (tx) => {
-        const updatedPayments = await tx.payment.update({
-          where: { id: paymentId },
-          data: {
-            status,
-            subscriptionPayment: {
-              update:
-                event.data.object.mode === 'subscription'
-                  ? {
-                      info: <Prisma.JsonObject>{
-                        payment_intent: event.data.object.payment_intent,
-                      },
-                      providerSubscriptionId: event.data.object.subscription,
-                    }
-                  : {
-                      info: <Prisma.JsonObject>{
-                        payment_intent: event.data.object.payment_intent,
-                      },
-                    },
-            },
-          },
-          include: {
-            subscriptionPayment: {
-              select: {
-                id: true,
-                period: true,
+      if (mode === 'subscription' && paymentStatus === 'paid') {
+        const { paymentId, userId } = event.data.object.metadata;
+        const { subscription: providerSubscriptionId } = event.data.object;
+
+        const status = PaymentStatus.CONFIRMED;
+
+        await this.prismaService.$transaction(async (tx) => {
+          const updatedPayments =
+            await this.subscriptionsTransactionService.updatePayments(
+              tx,
+              paymentId,
+              {
+                status,
+                invoice,
               },
-            },
-          },
-        });
+            );
 
-        const currentSubscription = await tx.subscription.findFirst({
-          where: {
-            userId,
-            status: SubscriptionStatus.ACTIVE,
-          },
-        });
-
-        if (currentSubscription) {
-          await this.cancelCurrentSubscription(tx, currentSubscription);
-        }
-
-        const subscriptionEndDate = calculateSubscriptionEndDate(
-          currentSubscription?.endDate &&
-            currentSubscription?.endDate > new Date()
-            ? currentSubscription?.endDate
-            : new Date(),
-          <number>updatedPayments.subscriptionPayment?.period,
-        );
-
-        await Promise.all([
-          this.createNewSubscription(tx, {
-            userId,
-            subscriptionPaymentId: <string>(
-              updatedPayments.subscriptionPayment?.id
-            ),
-            type:
-              event.data.object.mode === 'subscription'
-                ? SubscriptionType.RECCURING
-                : SubscriptionType.ONETIME,
-            endDate: subscriptionEndDate,
-          }),
-          tx.user.update({
+          const lastActiveSubscription = await tx.subscription.findFirst({
             where: {
-              id: userId,
+              userId,
+              status: SubscriptionStatus.ACTIVE,
             },
-            data: {
-              accountPlan: AccountPlan.BUSINESS,
-            },
-          }),
-        ]);
-      });
+          });
 
-      return false;
+          const period =
+            updatedPayments.subscriptionPayment?.pricingPlan.price.period || 0;
+          const periodType =
+            updatedPayments.subscriptionPayment?.pricingPlan.price.periodType ||
+            PeriodType.MONTH;
+
+          if (lastActiveSubscription) {
+            await this.subscriptionsTransactionService.cancelSubscription(
+              tx,
+              lastActiveSubscription.id,
+            );
+          }
+
+          const currentActiveSubscriptionEndDate =
+            lastActiveSubscription?.endDate;
+
+          const currentDate = new Date();
+
+          const newEndDate =
+            currentActiveSubscriptionEndDate &&
+            currentActiveSubscriptionEndDate > currentDate
+              ? calculateSubscriptionEndDate(
+                  currentActiveSubscriptionEndDate,
+                  period,
+                  periodType,
+                )
+              : calculateSubscriptionEndDate(currentDate, period, periodType);
+
+          const currentPendingSubscription =
+            await this.subscriptionsQueryRepository.getSubscriptionByQuery({
+              subscriptionPaymentId: updatedPayments.subscriptionPayment?.id,
+              status: SubscriptionStatus.PENDING,
+            });
+
+          await Promise.all([
+            this.subscriptionsTransactionService.updateSubscription(
+              tx,
+              <string>currentPendingSubscription?.id,
+              {
+                endDate: newEndDate,
+                status: SubscriptionStatus.ACTIVE,
+              },
+            ),
+            this.paymentProviderService.updateSubscriptionType(
+              <string>providerSubscriptionId,
+              SubscriptionType.ONETIME,
+            ),
+            this.userRepository.updateAccountPlan(
+              tx,
+              userId,
+              AccountPlan.BUSINESS,
+            ),
+          ]);
+        });
+
+        return false;
+      }
     }
 
     return true;
-  }
-
-  private async cancelCurrentSubscription(
-    tx: Omit<
-      PrismaService,
-      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
-    >,
-    currentSubscription: Subscription,
-  ) {
-    const providerSubscriptionId = (
-      await tx.subscriptionPayment.findUnique({
-        where: {
-          id: currentSubscription.subscriptionPaymentId,
-        },
-      })
-    )?.providerSubscriptionId;
-
-    if (providerSubscriptionId) {
-      console.log(providerSubscriptionId, 'sub id');
-      await this.stripe.subscriptions
-        .del(providerSubscriptionId, {
-          cancellation_details: {
-            comment: 'Cancel subscription',
-          },
-        })
-        .then(console.log, console.log);
-    }
-
-    await tx.subscription.update({
-      where: {
-        id: currentSubscription.id,
-      },
-      data: {
-        status: SubscriptionStatus.CANCELLED,
-      },
-    });
-  }
-
-  private async createNewSubscription(
-    tx: Omit<
-      PrismaService,
-      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
-    >,
-    payload: {
-      userId: string;
-      subscriptionPaymentId: string;
-      type: SubscriptionType;
-      endDate: Date;
-    },
-  ) {
-    const { userId, subscriptionPaymentId, type, endDate } = payload;
-
-    await tx.subscription.create({
-      data: {
-        userId,
-        subscriptionPaymentId,
-        status: SubscriptionStatus.ACTIVE,
-        type,
-        endDate,
-      },
-    });
   }
 }

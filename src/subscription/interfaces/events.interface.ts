@@ -20,6 +20,7 @@ export interface StripeCheckoutSessionObject {
   object: 'checkout.session';
   metadata: { paymentId: string; userId: string };
   mode: 'payment' | 'subscription';
+  invoice: string;
   payment_status: 'paid';
   payment_intent: string;
   status: 'complete';
@@ -139,4 +140,8 @@ export interface PaypalSubscriptionResource {
   plan_id: string;
   status: string;
   status_update_time: string;
+}
+
+export interface StripeSubscriptionObject {
+  id: string;
 }

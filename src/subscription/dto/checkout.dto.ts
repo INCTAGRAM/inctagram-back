@@ -1,10 +1,4 @@
-import {
-  IsBoolean,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { PaymentProvider } from '@prisma/client';
 
 export class CheckoutDto {
@@ -15,8 +9,4 @@ export class CheckoutDto {
   @IsString()
   @IsNotEmpty()
   public priceId: string;
-
-  @IsBoolean()
-  @IsOptional()
-  public renew?: boolean;
 }

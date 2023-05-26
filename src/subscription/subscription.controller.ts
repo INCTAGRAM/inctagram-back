@@ -26,8 +26,8 @@ import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { CreatePaymentCommand } from './use-cases/create-payment.use-case';
 import { StripeWebhookGuard } from 'src/common/guards/stripe-webhook.guard';
 import { ProcessPaymentCommand } from './use-cases/process-payment.user-case';
-import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
 import { CancelSubscriptionCommand } from './use-cases/cancel-subscription.use-case';
+import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
 
 @ApiTags('Subscriptions')
 @Controller('api/subscriptions')
@@ -51,12 +51,12 @@ export class SubscriptionController {
     @ActiveUser('userId') userId: string,
     @Body() checkoutDto: CheckoutDto,
   ) {
-    const { priceId, paymentSystem, renew = false } = checkoutDto;
+    const { priceId, paymentSystem } = checkoutDto;
 
     const url = await this.commandBus.execute<
       CreatePaymentCommand,
       string | null
-    >(new CreatePaymentCommand(paymentSystem, priceId, userId, renew));
+    >(new CreatePaymentCommand(paymentSystem, priceId, userId));
 
     return url;
   }
