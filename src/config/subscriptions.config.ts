@@ -1,13 +1,13 @@
 import { registerAs } from '@nestjs/config';
 
 export const subscriptionsConfig = registerAs('subscriptions', () => {
-  // const frontendDomain =
-  //   process.env.MODE === 'production'
-  //     ? process.env.FRONTEND_DOMAIN
-  //     :
-
+  const frontendDomain =
+    process.env.MODE === 'production'
+      ? process.env.FRONTEND_LOCAL_DOMAIN
+      : process.env.FRONTEND_LOCAL_DOMAIN;
+  // ? process.env.FRONTEND_DOMAIN
   return {
-    successUrl: `${process.env.FRONTEND_LOCAL_DOMAIN}/?success=true`,
-    cancelUrl: `${process.env.FRONTEND_LOCAL_DOMAIN}/?cancel=true`,
+    successUrl: `${frontendDomain}/payments/?success=true`,
+    cancelUrl: `${frontendDomain}/payments/?cancel=true`,
   };
 });

@@ -7,7 +7,7 @@ export class MailService {
   public constructor(private readonly mailerService: MailerService) {}
 
   async sendUserConfirmation(user: Partial<User>, token: string) {
-    const url = `https://inctagram-m9ju.vercel.app/registration/confirmation?code=${token}&email=${user.email}`;
+    const url = `${process.env.FRONTEND_DOMAIN}/registration/confirmation?code=${token}&email=${user.email}`;
 
     await this.mailerService.sendMail({
       to: user.email,
@@ -21,7 +21,7 @@ export class MailService {
   }
 
   async sendPasswordRecovery(user: User, token: string) {
-    const url = `https://inctagram-m9ju.vercel.app/recovery/new-password?code=${token}&email=${user.email}`;
+    const url = `${process.env.FRONTEND_DOMAIN}/recovery/new-password?code=${token}&email=${user.email}`;
 
     await this.mailerService.sendMail({
       to: user.email,
@@ -39,8 +39,8 @@ export class MailService {
     token: string,
   ) {
     const { email, username } = user;
-    const mergeUrl = `https://inctagram.herokuapp.com/api/auth/merge-account?code=${token}`;
-    const loginUrl = `https://inctagram-m9ju.vercel.app/login`;
+    const mergeUrl = `${process.env.FRONTEND_DOMAIN}/login/merge-account?code=${token}`;
+    const loginUrl = `${process.env.FRONTEND_DOMAIN}/inctagram-m9ju.vercel.app/login`;
 
     await this.mailerService.sendMail({
       to: email,
