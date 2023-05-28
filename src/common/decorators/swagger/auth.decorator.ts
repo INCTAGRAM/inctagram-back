@@ -233,8 +233,11 @@ export function AuthWithGithubDecorator() {
     }),
     ApiResponse({
       status: 202,
-      description:
-        'An email has been sent to the user for account merging confirmation.',
+      schema: {
+        type: 'string',
+        format: 'email',
+      },
+      description: 'Email to which prompt for account merging has been sent.',
     }),
     ApiUnauthorizedResponse({
       description: 'Incorrect code',
