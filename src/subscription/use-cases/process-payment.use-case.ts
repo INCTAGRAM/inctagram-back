@@ -9,7 +9,7 @@ export class ProcessPaymentCommand {
 }
 
 @CommandHandler(ProcessPaymentCommand)
-export class ProcessPaymentHandler
+export class ProcessPaymentCommandHanlder
   implements ICommandHandler<ProcessPaymentCommand>
 {
   public constructor(

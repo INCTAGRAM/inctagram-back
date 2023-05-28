@@ -3,6 +3,8 @@ import {
   Payment,
   PaymentStatus,
   Subscription,
+  SubscriptionPayment,
+  SubscriptionPricingPlan,
   SubscriptionStatus,
 } from '@prisma/client';
 
@@ -14,6 +16,20 @@ import { DatabaseException } from 'src/common/exceptions/database.exception';
 @Injectable()
 export class SubscriptionsQueryRepository {
   public constructor(private readonly prismaService: PrismaService) {}
+
+  public async getSubscriptionPricingPlanByQuery(
+    query: Partial<SubscriptionPricingPlan>,
+  ) {
+    try {
+      return this.prismaService.subscriptionPricingPlan.findFirstOrThrow({
+        where: query,
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw new DatabaseException();
+    }
+  }
 
   public async getSubscriptionPriceById(id: string) {
     try {
@@ -33,9 +49,21 @@ export class SubscriptionsQueryRepository {
     query: Partial<Pick<Payment, 'id' | 'userId' | 'status'>>,
   ) {
     try {
-      return this.prismaService.payment.findFirst({
+      return this.prismaService.payment.findFirstOrThrow({
+        where: query,
+      });
+    } catch (error) {
+      console.log(error);
+
+      new DatabaseException();
+    }
+  }
+
+  public async getPriceById(id: string) {
+    try {
+      return this.prismaService.subscriptionPrice.findUniqueOrThrow({
         where: {
-          ...query,
+          id,
         },
       });
     } catch (error) {
@@ -122,32 +150,12 @@ export class SubscriptionsQueryRepository {
     }
   }
 
-  public async getProvidersSubscriptionId(
-    query: Partial<Pick<Subscription, 'userId' | 'id'>>,
-  ) {
-    try {
-      const { id, userId } = query;
-
-      const subscription = await this.prismaService.subscription.findFirst({
-        where: {
-          OR: [{ id }, { userId, status: SubscriptionStatus.ACTIVE }],
-        },
-      });
-
-      return subscription?.relatedSubscription || null;
-    } catch (error) {
-      console.log(error);
-
-      throw new DatabaseException();
-    }
-  }
-
   public async getUsersCurrentSubscription(userId: string) {
     try {
       return this.prismaService.subscription.findFirst({
         where: {
           userId,
-          status: 'ACTIVE',
+          status: SubscriptionStatus.ACTIVE,
           endDate: {
             gt: new Date(),
           },
@@ -174,20 +182,37 @@ export class SubscriptionsQueryRepository {
     }
   }
 
-  public async getSubscriptionByQuery(
-    query: Partial<
-      Pick<
-        Subscription,
-        | 'id'
-        | 'subscriptionPaymentId'
-        | 'userId'
-        | 'status'
-        | 'relatedSubscription'
-      >
-    >,
+  public async getSubscriptionByQuery(query: Partial<Subscription>) {
+    try {
+      return this.prismaService.subscription.findFirst({
+        where: query,
+        include: {
+          subscriptionPayment: {
+            select: {
+              id: true,
+              paymentId: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw new DatabaseException();
+    }
+  }
+
+  public async getSubscriptionPaymentByQuery(
+    query: Partial<Pick<SubscriptionPayment, 'id' | 'paymentId'>>,
   ) {
-    return this.prismaService.subscription.findFirst({
-      where: query,
-    });
+    try {
+      return this.prismaService.subscriptionPayment.findFirstOrThrow({
+        where: query,
+      });
+    } catch (error) {
+      console.log(error);
+
+      throw new DatabaseException();
+    }
   }
 }

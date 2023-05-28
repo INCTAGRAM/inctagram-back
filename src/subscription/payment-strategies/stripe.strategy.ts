@@ -1,9 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
+import { CommandBus } from '@nestjs/cqrs';
 import {
   PaymentProvider,
   PaymentStatus,
-  SubscriptionPrice,
   SubscriptionStatus,
   SubscriptionType,
 } from '@prisma/client';
@@ -18,6 +18,12 @@ import { subscriptionsConfig } from 'src/config/subscriptions.config';
 import { PaymentException } from 'src/common/exceptions/subscriptions.exception';
 import { InjectStripeClient } from 'src/common/decorators/inject-stripe-client.decorator';
 import { SubscriptionsTransactionService } from '../services/subscriptions-transaction.service';
+import { InjectStripeService } from 'src/common/decorators/inject-stripe-service.decorator';
+import { CreateCustomerIfNotExistsCommand } from '../use-cases/create-customer-if-not-exists.use-case';
+import {
+  PaymentData,
+  CreatePaymentsCommand,
+} from '../use-cases/create-payments.use-case';
 
 export interface CheckoutMetadata extends Stripe.MetadataParam {
   userId: string;
@@ -28,58 +34,45 @@ export interface CheckoutMetadata extends Stripe.MetadataParam {
 export class StripePaymentStrategy extends PaymentStrategy {
   public constructor(
     @InjectStripeClient() private readonly stripe: Stripe,
-    private readonly prisma: PrismaService,
     @Inject(subscriptionsConfig.KEY)
     private subscriptionsConf: ConfigType<typeof subscriptionsConfig>,
+    private readonly prisma: PrismaService,
     private readonly subscriptionsTransactionService: SubscriptionsTransactionService,
+    private readonly commandBus: CommandBus,
   ) {
     super();
   }
 
-  public name = PaymentProvider.STRIPE;
+  public provider = PaymentProvider.STRIPE;
 
   public async execute(command: PaymentCommand) {
     try {
       const { userId, priceId } = command;
 
-      const pricingPlan = await this.prisma.subscriptionPricingPlan.findFirst({
-        where: {
-          priceId,
-          provider: this.name,
-          subscriptionType: SubscriptionType.RECCURING,
-        },
-      });
-
-      const { currency, value: price } = <SubscriptionPrice>(
-        await this.prisma.subscriptionPrice.findFirst({
-          where: {
-            id: priceId,
-          },
-        })
-      );
-
-      if (!pricingPlan)
-        throw new NotFoundException('Pricing plan for subscription not found');
-
-      const { id: pricingPlanId, providerPriceId } = pricingPlan;
+      const customer = await this.commandBus.execute<
+        CreateCustomerIfNotExistsCommand,
+        Stripe.Customer
+      >(new CreateCustomerIfNotExistsCommand(userId, this.provider));
 
       return this.prisma.$transaction(async (tx) => {
-        const payment =
-          await this.subscriptionsTransactionService.createPayments(tx, {
-            userId,
-            currency,
-            price,
-            pricingPlanId,
-            provider: this.name,
-            status: PaymentStatus.PENDING,
-          });
+        const { paymentId, subscriptionPaymentId, providerPriceId } =
+          await this.commandBus.execute<CreatePaymentsCommand, PaymentData>(
+            new CreatePaymentsCommand({
+              tx,
+              priceId,
+              userId,
+              provider: this.provider,
+              subscriptionType: SubscriptionType.ONETIME,
+            }),
+          );
 
-        await this.subscriptionsTransactionService.createSubscription(tx, {
-          subscriptionPaymentId: <string>payment.subscriptionPayment?.id,
-          userId: userId,
-          type: SubscriptionType.ONETIME,
-          status: SubscriptionStatus.PENDING,
-        });
+        const subscription =
+          await this.subscriptionsTransactionService.createSubscription(tx, {
+            userId,
+            type: SubscriptionType.ONETIME,
+            status: SubscriptionStatus.PENDING,
+            subscriptionPaymentId,
+          });
 
         const checkoutSession: Stripe.Checkout.SessionCreateParams = {
           line_items: [
@@ -89,12 +82,16 @@ export class StripePaymentStrategy extends PaymentStrategy {
             },
           ],
           metadata: {
-            paymentId: payment.id,
-            userId: userId,
+            subscriptionId: subscription.id,
+            paymentId,
           },
-          client_reference_id: payment.id,
+          payment_intent_data: {
+            setup_future_usage: 'off_session',
+          },
+          payment_method_types: ['card'],
+          customer: customer.id,
           expires_at: Math.floor((Date.now() + 1_800_000) / 1000),
-          mode: 'subscription',
+          mode: 'payment',
           success_url: this.subscriptionsConf.successUrl,
           cancel_url: this.subscriptionsConf.cancelUrl,
         };
@@ -102,6 +99,24 @@ export class StripePaymentStrategy extends PaymentStrategy {
         const session = await this.stripe.checkout.sessions.create(
           checkoutSession,
         );
+
+        // const paymentMethods = await this.stripe.paymentMethods.list({
+        //   customer: customer.id,
+        //   type: 'card',
+        // });
+
+        // const subscription = await this.stripe.subscriptions.create({
+        //   customer: customer.id,
+        //   items: [
+        //     {
+        //       price: providerPriceId,
+        //       quantity: 1,
+        //     },
+        //   ],
+        //   default_payment_method: paymentMethods.data[0].id,
+        // });
+
+        // console.log(paymentMethods, 'payment methods');
 
         return session.url;
       });
