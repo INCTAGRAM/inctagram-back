@@ -229,7 +229,7 @@ export class AuthController {
   @Post('merge-account')
   @MergeAccountsDecorator()
   @UseGuards(CookieAuthGuard)
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async mergeAccounts(
     @Query('code') mergeCode: string,
     @Ip() ip: string,
