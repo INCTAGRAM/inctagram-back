@@ -233,8 +233,11 @@ export function AuthWithGithubDecorator() {
     }),
     ApiResponse({
       status: 202,
-      description:
-        'An email has been sent to the user for account merging confirmation.',
+      schema: {
+        type: 'string',
+        format: 'email',
+      },
+      description: 'Email to which prompt for account merging has been sent.',
     }),
     ApiUnauthorizedResponse({
       description: 'Incorrect code',
@@ -249,11 +252,14 @@ export function MergeAccountsDecorator() {
     }),
     ApiQuery({ name: 'code', type: 'string' }),
     ApiResponse({
-      status: 204,
-      description: 'No Content',
+      status: 200,
+      description:
+        'Returns JWT accessToken (expires after 1 hour) in body and JWT refreshToken in cookie (http-only, secure) (expires after 2 hours).',
+      type: LogginSuccessViewModel,
     }),
     ApiUnauthorizedResponse({
       description: 'Incorrect code',
     }),
+    ApiCookieAuth(),
   );
 }

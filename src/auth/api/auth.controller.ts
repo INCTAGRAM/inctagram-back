@@ -214,11 +214,11 @@ export class AuthController {
 
     const result = await this.commandBus.execute<
       SignUpWithGithubCommand,
-      TokensPair
+      TokensPair | string
     >(new SignUpWithGithubCommand({ code, deviceId, ip, userAgent }));
 
-    if (!result) {
-      response.sendStatus(HttpStatus.ACCEPTED);
+    if (typeof result === 'string') {
+      response.status(HttpStatus.ACCEPTED).send(result);
       return;
     }
     const { accessToken, refreshToken } = result;
@@ -228,8 +228,16 @@ export class AuthController {
 
   @Post('merge-account')
   @MergeAccountsDecorator()
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async mergeAccounts(@Query('code') code: string) {
-    return this.commandBus.execute(new MergeAccountCommand(code));
+  @UseGuards(CookieAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async mergeAccounts(
+    @Query('code') mergeCode: string,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
+    @ActiveUser('deviceId') deviceId: string | null,
+  ) {
+    return this.commandBus.execute(
+      new MergeAccountCommand({ mergeCode, ip, userAgent, deviceId }),
+    );
   }
 }
