@@ -30,6 +30,7 @@ import { CancelSubscriptionCommand } from './use-cases/cancel-subscription.use-c
 import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
 import { SubscriptionMapper } from './utils/subscription-mapper';
 
+
 @ApiTags('Subscriptions')
 @Controller('api/subscriptions')
 export class SubscriptionController {

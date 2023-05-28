@@ -6,12 +6,14 @@ import {
   SubscriptionPayment,
   SubscriptionPricingPlan,
   SubscriptionStatus,
+  SubscriptionType,
 } from '@prisma/client';
 
 import { Payments } from '../interfaces';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PaymentsQueryDto } from '../dto/payments-query.dto';
 import { DatabaseException } from 'src/common/exceptions/database.exception';
+import { sub } from 'date-fns';
 
 @Injectable()
 export class SubscriptionsQueryRepository {
@@ -165,7 +167,7 @@ export class SubscriptionsQueryRepository {
           endDate: true,
           startDate: true,
           subscriptionPayment: {
-            include: {
+            select: {
               pricingPlan: {
                 select: {
                   subscriptionType: true,
