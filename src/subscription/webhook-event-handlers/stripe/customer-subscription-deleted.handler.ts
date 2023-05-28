@@ -36,6 +36,7 @@ export class CustomerSubscriptionDeletedEventHandler extends Handler {
         });
 
       if (subscription) {
+        // todo REDO
         await this.subscriptionsTransactionService.cancelSubscription(
           this.prismaService,
           subscription.id,

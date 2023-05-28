@@ -90,6 +90,30 @@ async function seed() {
         subscriptionType: 'RECCURING',
         providerPriceId: 'price_1NBkGFCiLuvOXDcQo37IZ6Vq',
       },
+      {
+        priceId: priceIds[0],
+        provider: 'STRIPE',
+        subscriptionType: 'ONETIME',
+        providerPriceId: 'price_1N5xcwCiLuvOXDcQ6fpYRGZh',
+      },
+      {
+        priceId: priceIds[1],
+        provider: 'STRIPE',
+        subscriptionType: 'ONETIME',
+        providerPriceId: 'price_1N5xcwCiLuvOXDcQdTK5VZ0T',
+      },
+      {
+        priceId: priceIds[2],
+        provider: 'STRIPE',
+        subscriptionType: 'ONETIME',
+        providerPriceId: 'price_1N5xcwCiLuvOXDcQDGd9cVNN',
+      },
+      {
+        priceId: priceIds[3],
+        provider: 'STRIPE',
+        subscriptionType: 'ONETIME',
+        providerPriceId: 'price_1NCmNGCiLuvOXDcQUVrGaHCs',
+      },
       // PAYPAL
       {
         priceId: priceIds[0],

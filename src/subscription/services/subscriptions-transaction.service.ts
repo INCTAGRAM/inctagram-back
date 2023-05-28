@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import {
   Payment,
+  PaymentReference,
   Prisma,
   Subscription,
   SubscriptionPayment,
@@ -8,18 +9,9 @@ import {
 } from '@prisma/client';
 
 import { PrismaTransactionType } from 'src/common/types';
-import { PaymentProviderService } from './payment-provider.service';
-import { SubscriptionsQueryRepository } from '../repositories/subscriptions.query-repository';
-import { InjectStripeService } from 'src/common/decorators/inject-stripe-service.decorator';
 
 @Injectable()
 export class SubscriptionsTransactionService {
-  public constructor(
-    private readonly subscriptionsQueryRepository: SubscriptionsQueryRepository,
-    @InjectStripeService()
-    private readonly paymentProviderService: PaymentProviderService,
-  ) {}
-
   public async createSubscription(
     tx: PrismaTransactionType,
     payload: Pick<Subscription, 'userId' | 'subscriptionPaymentId'> &
@@ -34,7 +26,7 @@ export class SubscriptionsTransactionService {
       status = SubscriptionStatus.ACTIVE,
     } = payload;
 
-    await tx.subscription.create({
+    return tx.subscription.create({
       data: {
         type,
         userId,
@@ -45,16 +37,7 @@ export class SubscriptionsTransactionService {
     });
   }
 
-  public async cancelSubscription(
-    tx: PrismaTransactionType,
-    id: string,
-    relatedSubscriptionId: string | null = null,
-  ) {
-    relatedSubscriptionId ||=
-      await this.subscriptionsQueryRepository.getProvidersSubscriptionId({
-        id,
-      });
-
+  public async cancelSubscription(tx: PrismaTransactionType, id: string) {
     await tx.subscription.update({
       where: {
         id,
@@ -63,12 +46,6 @@ export class SubscriptionsTransactionService {
         status: SubscriptionStatus.CANCELLED,
       },
     });
-
-    if (relatedSubscriptionId) {
-      await this.paymentProviderService.cancelSubscription(
-        relatedSubscriptionId,
-      );
-    }
   }
 
   public async updatePayments(
@@ -76,9 +53,11 @@ export class SubscriptionsTransactionService {
     id: string,
     updates: Pick<Payment, 'status'> & {
       invoice?: string;
+      invoiceUrl?: string;
     },
   ) {
-    const { status, invoice } = updates;
+    const { status, invoice, invoiceUrl } = updates;
+
     return tx.payment.update({
       where: { id },
       data: {
@@ -87,6 +66,7 @@ export class SubscriptionsTransactionService {
           update: {
             info: <Prisma.JsonObject>{
               invoice,
+              invoiceUrl,
             },
           },
         },
@@ -96,13 +76,9 @@ export class SubscriptionsTransactionService {
           select: {
             id: true,
             pricingPlan: {
-              include: {
-                price: {
-                  select: {
-                    period: true,
-                    periodType: true,
-                  },
-                },
+              select: {
+                id: true,
+                priceId: true,
               },
             },
           },
@@ -117,10 +93,18 @@ export class SubscriptionsTransactionService {
       Payment,
       'userId' | 'currency' | 'price' | 'provider' | 'status'
     > &
-      Pick<SubscriptionPayment, 'pricingPlanId'>,
+      Pick<SubscriptionPayment, 'pricingPlanId'> &
+      Partial<Pick<Payment, 'reference'>>,
   ) {
-    const { userId, currency, price, provider, status, pricingPlanId } =
-      payload;
+    const {
+      userId,
+      currency,
+      price,
+      provider,
+      status,
+      pricingPlanId,
+      reference = PaymentReference.SUBSCRIPTION,
+    } = payload;
 
     return tx.payment.create({
       data: {
@@ -129,6 +113,7 @@ export class SubscriptionsTransactionService {
         price,
         provider,
         status,
+        reference,
         subscriptionPayment: {
           create: {
             pricingPlanId,
@@ -139,6 +124,12 @@ export class SubscriptionsTransactionService {
         subscriptionPayment: {
           select: {
             id: true,
+            pricingPlan: {
+              select: {
+                id: true,
+                priceId: true,
+              },
+            },
           },
         },
       },
@@ -149,7 +140,10 @@ export class SubscriptionsTransactionService {
     tx: PrismaTransactionType,
     id: string,
     updates: Partial<
-      Pick<Subscription, 'endDate' | 'relatedSubscription' | 'status'>
+      Pick<
+        Subscription,
+        'endDate' | 'relatedSubscription' | 'status' | 'startDate' | 'createdAt'
+      >
     >,
   ) {
     return tx.subscription.update({

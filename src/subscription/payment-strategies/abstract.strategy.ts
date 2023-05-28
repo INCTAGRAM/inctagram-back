@@ -8,7 +8,7 @@ export class PaymentCommand {
 }
 
 export abstract class PaymentStrategy<T = string | null> {
-  public abstract name: PaymentProvider;
+  public abstract provider: PaymentProvider;
 
   public abstract execute(command: PaymentCommand): Promise<T>;
 }

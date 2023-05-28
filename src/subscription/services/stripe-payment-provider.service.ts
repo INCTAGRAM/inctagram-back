@@ -1,14 +1,16 @@
+import { PaymentProvider } from '@prisma/client';
 import { InternalServerErrorException } from '@nestjs/common';
-import { SubscriptionType } from '@prisma/client';
 import Stripe from 'stripe';
 
 import { PaymentProviderService } from './payment-provider.service';
 import { InjectStripeClient } from 'src/common/decorators/inject-stripe-client.decorator';
 
-export class StripePaymentProviderService extends PaymentProviderService {
+export class StripePaymentService extends PaymentProviderService {
   public constructor(@InjectStripeClient() private readonly stripe: Stripe) {
     super();
   }
+
+  public provider = PaymentProvider.STRIPE;
 
   public async cancelSubscription(id: string, reason?: string): Promise<void> {
     await this.stripe.subscriptions
@@ -21,15 +23,18 @@ export class StripePaymentProviderService extends PaymentProviderService {
       .catch((e) => new InternalServerErrorException(e));
   }
 
-  public async updateSubscriptionType(
-    id: string,
-    type: SubscriptionType,
-  ): Promise<void> {
-    await this.stripe.subscriptions
-      .update(id, {
-        cancel_at_period_end: type === SubscriptionType.ONETIME ? true : false,
-      })
-      .then(console.log)
-      .catch((e) => new InternalServerErrorException(e));
+  public async createCustomerIfNotExists(email: string, username: string) {
+    const customer =
+      (
+        await this.stripe.customers.list({
+          email,
+        })
+      ).data[0] ||
+      (await this.stripe.customers.create({
+        name: username,
+        email,
+      }));
+
+    return customer;
   }
 }
