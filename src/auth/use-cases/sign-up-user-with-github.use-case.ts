@@ -148,6 +148,8 @@ export class SignUpUserWithGithubUseCase
 
       return tokens;
     } catch (error) {
+      console.log(error);
+
       throw new UnauthorizedException();
     }
   }

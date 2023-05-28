@@ -1,6 +1,28 @@
+import { PeriodType } from '@prisma/client';
+
 export const calculateSubscriptionEndDate = (
   currentDate: Date,
-  months: number,
+  period: number,
+  periodType: PeriodType,
 ): Date => {
-  return new Date(currentDate.setMonth(currentDate.getMonth() + months));
+  const endDateforDay = new Date(
+    currentDate.setDate(currentDate.getDate() + period),
+  );
+  const endDateforMonth = new Date(
+    currentDate.setMonth(currentDate.getMonth() + period),
+  );
+  const endDateforYear = new Date(
+    currentDate.setFullYear(currentDate.getFullYear() + period),
+  );
+
+  switch (periodType) {
+    case PeriodType.DAY:
+      return endDateforDay;
+    case PeriodType.MONTH:
+      return endDateforMonth;
+    case PeriodType.YEAR:
+      return endDateforYear;
+    default:
+      return endDateforMonth;
+  }
 };

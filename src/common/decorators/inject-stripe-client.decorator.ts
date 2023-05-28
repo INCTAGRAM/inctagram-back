@@ -1,4 +1,4 @@
 import { Inject } from '@nestjs/common';
 import { STRIPE_TOKEN } from 'src/payment-system/constants';
 
-export const InjectStripe = () => Inject(STRIPE_TOKEN);
+export const InjectStripeClient = () => Inject(STRIPE_TOKEN);

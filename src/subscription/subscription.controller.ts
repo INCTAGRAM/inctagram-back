@@ -23,11 +23,13 @@ import {
 } from 'src/common/decorators/swagger/subscriptions.decorator';
 import type { StripeEvent } from './interfaces/events.interface';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
-import { CreatePaymentCommand } from './use-cases/create-payment.use-case';
+import { StartPaymentCommand } from './use-cases/start-payment.use-case';
 import { StripeWebhookGuard } from 'src/common/guards/stripe-webhook.guard';
-import { ProcessPaymentCommand } from './use-cases/process-payment.user-case';
-import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
+import { ProcessPaymentCommand } from './use-cases/process-payment.use-case';
 import { CancelSubscriptionCommand } from './use-cases/cancel-subscription.use-case';
+import { SubscriptionsQueryRepository } from './repositories/subscriptions.query-repository';
+import { SubscriptionMapper } from './utils/subscription-mapper';
+
 
 @ApiTags('Subscriptions')
 @Controller('api/subscriptions')
@@ -51,12 +53,12 @@ export class SubscriptionController {
     @ActiveUser('userId') userId: string,
     @Body() checkoutDto: CheckoutDto,
   ) {
-    const { priceId, paymentSystem, renew = false } = checkoutDto;
+    const { priceId, paymentSystem } = checkoutDto;
 
     const url = await this.commandBus.execute<
-      CreatePaymentCommand,
+      StartPaymentCommand,
       string | null
-    >(new CreatePaymentCommand(paymentSystem, priceId, userId, renew));
+    >(new StartPaymentCommand(paymentSystem, priceId, userId));
 
     return url;
   }
@@ -67,7 +69,7 @@ export class SubscriptionController {
   @HttpCode(HttpStatus.OK)
   async webhook(@Body() event: StripeEvent<any>) {
     console.log(event);
-    this.commandBus.execute(new ProcessPaymentCommand(event));
+    await this.commandBus.execute(new ProcessPaymentCommand(event));
   }
 
   @Get('payments')
@@ -95,5 +97,14 @@ export class SubscriptionController {
 
   @Get('current')
   @UseGuards(JwtAtGuard)
-  public async getCurrentSubscription(@ActiveUser('userId') userId: string) {}
+  public async getCurrentSubscription(@ActiveUser('userId') userId: string) {
+    const subscription =
+      await this.subscriptionsQueryRepository.getUsersCurrentSubscription(
+        userId,
+      );
+
+    if (!subscription) return null;
+
+    return SubscriptionMapper.toViewModel(subscription);
+  }
 }

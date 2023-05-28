@@ -18,8 +18,9 @@ export interface StripeEvent<T> {
 export interface StripeCheckoutSessionObject {
   id: string;
   object: 'checkout.session';
-  metadata: { paymentId: string; userId: string };
+  metadata: { subscriptionId: string; customerId: string; paymentId: string };
   mode: 'payment' | 'subscription';
+  invoice: string;
   payment_status: 'paid';
   payment_intent: string;
   status: 'complete';
@@ -80,6 +81,7 @@ export interface StripeInvoiceObject {
   object: 'invoice';
   status: string;
   subscription: string;
+  hosted_invoice_url: string;
 }
 
 export interface PayPalEvent<T> {
@@ -96,10 +98,8 @@ export interface PayPalEvent<T> {
 
 export interface PaypalPaymentResource {
   create_time: string;
-  purchase_units: Array<any>;
   links: Array<{ href: string; rel: string; method: string }>;
   id: string;
-  payment_source: { paypal: {} };
   intent: string;
   payer: {
     name: { [key: string]: string };
@@ -139,4 +139,8 @@ export interface PaypalSubscriptionResource {
   plan_id: string;
   status: string;
   status_update_time: string;
+}
+
+export interface StripeSubscriptionObject {
+  id: string;
 }

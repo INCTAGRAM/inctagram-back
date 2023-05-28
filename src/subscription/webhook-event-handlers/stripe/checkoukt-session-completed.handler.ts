@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import Stripe from 'stripe';
 import {
-  Prisma,
-  Subscription,
-  PaymentStatus,
   SubscriptionType,
   SubscriptionStatus,
   AccountPlan,
+  PaymentStatus,
+  SubscriptionPrice,
 } from '@prisma/client';
 
 import { Handler } from '../abstract.handler';
@@ -16,14 +14,18 @@ import {
 } from '../../interfaces/events.interface';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CHECKOUT_SESSION_COMPLETED } from '../../constants';
-import { InjectStripe } from 'src/common/decorators/inject-stripe.decorator';
+import { UserRepository } from 'src/user/repositories/user.repository';
+import { SubscriptionsQueryRepository } from 'src/subscription/repositories/subscriptions.query-repository';
+import { SubscriptionsTransactionService } from 'src/subscription/services/subscriptions-transaction.service';
 import { calculateSubscriptionEndDate } from 'src/subscription/utils/calculate-subscription-end-date';
 
 @Injectable()
 export class CheckoutSessinCompletedEventHandler extends Handler {
   public constructor(
     private readonly prismaService: PrismaService,
-    @InjectStripe() private readonly stripe: Stripe,
+    private readonly userRepository: UserRepository,
+    private readonly subscriptionsTransactionService: SubscriptionsTransactionService,
+    private readonly subscriptionsQueryRepository: SubscriptionsQueryRepository,
   ) {
     super();
   }
@@ -31,150 +33,92 @@ export class CheckoutSessinCompletedEventHandler extends Handler {
   protected async doHandle(
     event: StripeEvent<StripeCheckoutSessionObject>,
   ): Promise<boolean> {
-    if (
-      event.type === CHECKOUT_SESSION_COMPLETED &&
-      event.data.object.payment_status === 'paid'
-    ) {
-      const { paymentId, userId } = event.data.object.metadata;
-      const status = PaymentStatus.CONFIRMED;
+    if (event.type === CHECKOUT_SESSION_COMPLETED) {
+      const { mode, payment_status: paymentStatus } = event.data.object;
 
-      await this.prismaService.$transaction(async (tx) => {
-        const updatedPayments = await tx.payment.update({
-          where: { id: paymentId },
-          data: {
-            status,
-            subscriptionPayment: {
-              update:
-                event.data.object.mode === 'subscription'
-                  ? {
-                      info: <Prisma.JsonObject>{
-                        payment_intent: event.data.object.payment_intent,
-                      },
-                      providerSubscriptionId: event.data.object.subscription,
-                    }
-                  : {
-                      info: <Prisma.JsonObject>{
-                        payment_intent: event.data.object.payment_intent,
-                      },
-                    },
-            },
-          },
-          include: {
-            subscriptionPayment: {
-              select: {
-                id: true,
-                period: true,
-              },
-            },
-          },
+      if (paymentStatus === 'paid' && mode === 'payment') {
+        const { subscriptionId, paymentId } = event.data.object.metadata;
+
+        await this.prismaService.$transaction(async (tx) => {
+          const currentPendingSubscription =
+            await this.subscriptionsQueryRepository.getSubscriptionByQuery({
+              id: subscriptionId,
+              status: SubscriptionStatus.PENDING,
+            });
+
+          if (currentPendingSubscription) {
+            const { userId } = currentPendingSubscription;
+
+            const currentActiveSubscription =
+              await this.subscriptionsQueryRepository.getSubscriptionByQuery({
+                userId,
+                status: SubscriptionStatus.ACTIVE,
+              });
+
+            if (currentActiveSubscription?.type === SubscriptionType.ONETIME) {
+              await this.subscriptionsTransactionService.cancelSubscription(
+                tx,
+                currentActiveSubscription.id,
+              );
+            }
+
+            const { subscriptionPayment } =
+              await this.subscriptionsTransactionService.updatePayments(
+                tx,
+                paymentId,
+                {
+                  status: PaymentStatus.CONFIRMED,
+                },
+              );
+
+            const subscriptionPriceId = <string>(
+              subscriptionPayment?.pricingPlan.priceId
+            );
+
+            const currentDate = new Date();
+            let currentEndDate =
+              currentActiveSubscription?.endDate || currentDate;
+
+            currentEndDate =
+              currentEndDate && currentEndDate > currentDate
+                ? currentEndDate
+                : currentDate;
+
+            const { period, periodType } = <SubscriptionPrice>(
+              await this.subscriptionsQueryRepository.getPriceById(
+                subscriptionPriceId,
+              )
+            );
+
+            const newEndDate = calculateSubscriptionEndDate(
+              currentEndDate,
+              period,
+              periodType,
+            );
+
+            await Promise.all([
+              this.subscriptionsTransactionService.updateSubscription(
+                tx,
+                subscriptionId,
+                {
+                  status: SubscriptionStatus.ACTIVE,
+                  createdAt: new Date(),
+                  endDate: newEndDate,
+                },
+              ),
+              this.userRepository.updateAccountPlan(
+                tx,
+                userId,
+                AccountPlan.BUSINESS,
+              ),
+            ]);
+          }
         });
 
-        const currentSubscription = await tx.subscription.findFirst({
-          where: {
-            userId,
-            status: SubscriptionStatus.ACTIVE,
-          },
-        });
-
-        if (currentSubscription) {
-          await this.cancelCurrentSubscription(tx, currentSubscription);
-        }
-
-        const subscriptionEndDate = calculateSubscriptionEndDate(
-          currentSubscription?.endDate &&
-            currentSubscription?.endDate > new Date()
-            ? currentSubscription?.endDate
-            : new Date(),
-          <number>updatedPayments.subscriptionPayment?.period,
-        );
-
-        await Promise.all([
-          this.createNewSubscription(tx, {
-            userId,
-            subscriptionPaymentId: <string>(
-              updatedPayments.subscriptionPayment?.id
-            ),
-            type:
-              event.data.object.mode === 'subscription'
-                ? SubscriptionType.RECCURING
-                : SubscriptionType.ONETIME,
-            endDate: subscriptionEndDate,
-          }),
-          tx.user.update({
-            where: {
-              id: userId,
-            },
-            data: {
-              accountPlan: AccountPlan.BUSINESS,
-            },
-          }),
-        ]);
-      });
-
-      return false;
+        return false;
+      }
     }
 
     return true;
-  }
-
-  private async cancelCurrentSubscription(
-    tx: Omit<
-      PrismaService,
-      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
-    >,
-    currentSubscription: Subscription,
-  ) {
-    const providerSubscriptionId = (
-      await tx.subscriptionPayment.findUnique({
-        where: {
-          id: currentSubscription.subscriptionPaymentId,
-        },
-      })
-    )?.providerSubscriptionId;
-
-    if (providerSubscriptionId) {
-      console.log(providerSubscriptionId, 'sub id');
-      await this.stripe.subscriptions
-        .del(providerSubscriptionId, {
-          cancellation_details: {
-            comment: 'Cancel subscription',
-          },
-        })
-        .then(console.log, console.log);
-    }
-
-    await tx.subscription.update({
-      where: {
-        id: currentSubscription.id,
-      },
-      data: {
-        status: SubscriptionStatus.CANCELLED,
-      },
-    });
-  }
-
-  private async createNewSubscription(
-    tx: Omit<
-      PrismaService,
-      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use'
-    >,
-    payload: {
-      userId: string;
-      subscriptionPaymentId: string;
-      type: SubscriptionType;
-      endDate: Date;
-    },
-  ) {
-    const { userId, subscriptionPaymentId, type, endDate } = payload;
-
-    await tx.subscription.create({
-      data: {
-        userId,
-        subscriptionPaymentId,
-        status: SubscriptionStatus.ACTIVE,
-        type,
-        endDate,
-      },
-    });
   }
 }
