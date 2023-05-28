@@ -252,11 +252,14 @@ export function MergeAccountsDecorator() {
     }),
     ApiQuery({ name: 'code', type: 'string' }),
     ApiResponse({
-      status: 204,
-      description: 'No Content',
+      status: 200,
+      description:
+        'Returns JWT accessToken (expires after 1 hour) in body and JWT refreshToken in cookie (http-only, secure) (expires after 2 hours).',
+      type: LogginSuccessViewModel,
     }),
     ApiUnauthorizedResponse({
       description: 'Incorrect code',
     }),
+    ApiCookieAuth(),
   );
 }
