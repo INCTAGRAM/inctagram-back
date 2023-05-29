@@ -5,6 +5,7 @@ import {
   ApiForbiddenResponse,
   ApiGoneResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -207,11 +208,18 @@ export function AuthGoogleDecorator() {
       status: 200,
       description:
         'If google credentials are correct, returns JWT accessToken (expires after 1 hour) in body and JWT refreshToken in cookie (http-only, secure) (expires after 2 hours).',
+      type: LogginSuccessViewModel,
     }),
     ApiResponse({
       status: 202,
       description:
         'If user is already registered, returns an email with suggestion to merge accounts',
+      schema: {
+        type: 'object',
+        example: {
+          email: 'Jamesbond@yandex.ru',
+        },
+      },
     }),
     ApiUnauthorizedResponse({
       description: 'If the code provided is incorrect',
@@ -234,8 +242,10 @@ export function AuthWithGithubDecorator() {
     ApiResponse({
       status: 202,
       schema: {
-        type: 'string',
-        format: 'email',
+        type: 'object',
+        example: {
+          email: 'Jamesbond@yandex.ru',
+        },
       },
       description: 'Email to which prompt for account merging has been sent.',
     }),
