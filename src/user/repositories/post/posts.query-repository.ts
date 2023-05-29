@@ -36,7 +36,7 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
     userId: string,
     postsQuery: PostsQueryDto,
   ): Promise<[number, UserPosts[]]> {
-    const { page, pageSize, id } = postsQuery;
+    const { page = 1, pageSize, id } = postsQuery;
 
     try {
       const count = await this.prismaService.post.count({
