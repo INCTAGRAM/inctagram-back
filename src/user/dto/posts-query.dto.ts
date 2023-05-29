@@ -1,5 +1,7 @@
+import { IsNumber, IsOptional, IsUUID } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+
+import { ValidateIfOtherNotExists } from 'src/common/decorators/validate-if-other-not-exists.decorator';
 
 export class PostsQueryDto {
   @IsNumber()
@@ -8,7 +10,9 @@ export class PostsQueryDto {
 
     return parsedValue > 0 ? parsedValue : 1;
   })
-  public page: number;
+  @ValidateIfOtherNotExists('id')
+  @IsOptional()
+  public page?: number;
 
   @IsNumber()
   @Transform(({ value }) => {
@@ -17,4 +21,8 @@ export class PostsQueryDto {
     return parsedValue > 0 ? parsedValue : 9;
   })
   public pageSize: number;
+
+  @IsUUID()
+  @IsOptional()
+  public id?: string;
 }
