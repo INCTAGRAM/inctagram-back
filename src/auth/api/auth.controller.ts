@@ -135,11 +135,15 @@ export class AuthController {
   ) {
     const { code } = googleCodeDto;
 
-    const result = await this.commandBus.execute(
-      new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }),
-    );
+    const result = await this.commandBus.execute<
+      SignInWithGoogleCommand,
+      TokensPair | string
+    >(new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }));
 
-    if (result === '202') res.sendStatus(HttpStatus.ACCEPTED);
+    if (typeof result === 'string') {
+      res.status(HttpStatus.ACCEPTED).send(result);
+      return;
+    }
 
     const { accessToken, refreshToken } = result;
 
