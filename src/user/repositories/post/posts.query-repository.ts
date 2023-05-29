@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PostsQueryDto } from 'src/user/dto/posts-query.dto';
 import { UserPost, UserPosts } from 'src/user/types';
 import { PostsQueryRepositoryAdatapter } from '../adapters/post/posts.query-adapter';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
@@ -35,7 +36,7 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
     userId: string,
     postsQuery: PostsQueryDto,
   ): Promise<[number, UserPosts[]]> {
-    const { page, pageSize } = postsQuery;
+    const { page = 1, pageSize, id } = postsQuery;
 
     try {
       const count = await this.prismaService.post.count({
@@ -44,7 +45,7 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
         },
       });
 
-      const posts = await this.prismaService.post.findMany({
+      const clause = {
         where: {
           userId,
         },
@@ -52,7 +53,7 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
           createdAt: 'desc',
         },
         take: pageSize,
-        skip: (page - 1) * pageSize,
+        skip: id ? 1 : (page - 1) * pageSize,
         select: {
           id: true,
           createdAt: true,
@@ -62,7 +63,13 @@ export class PostsQueryRepository extends PostsQueryRepositoryAdatapter {
             },
           },
         },
-      });
+      } as const;
+
+      if (id) {
+        (<Prisma.PostFindManyArgs>clause).cursor = { id };
+      }
+
+      const posts = await this.prismaService.post.findMany(clause);
 
       return [count, posts];
     } catch (error) {
