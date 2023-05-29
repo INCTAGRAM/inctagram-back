@@ -141,7 +141,7 @@ export class AuthController {
     >(new SignInWithGoogleCommand({ code, deviceId, userAgent, ip }));
 
     if (typeof result === 'string') {
-      res.status(HttpStatus.ACCEPTED).send(result);
+      res.status(HttpStatus.ACCEPTED).send({ email: result });
       return;
     }
 
@@ -222,7 +222,7 @@ export class AuthController {
     >(new SignUpWithGithubCommand({ code, deviceId, ip, userAgent }));
 
     if (typeof result === 'string') {
-      response.status(HttpStatus.ACCEPTED).send(result);
+      response.status(HttpStatus.ACCEPTED).send({ email: result });
       return;
     }
     const { accessToken, refreshToken } = result;
