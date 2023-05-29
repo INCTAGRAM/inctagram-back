@@ -98,7 +98,7 @@ export class SignInUserWithGoogleUseCase
           });
 
           await this.emailService.sendAccountsMerge(user, code);
-          return '202';
+          return user.email;
         }
       }
       // create tokens and session
