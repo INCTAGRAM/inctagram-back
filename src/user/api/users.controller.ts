@@ -75,7 +75,7 @@ export class UsersController {
     private readonly userRepository: UserRepository,
   ) {}
 
-  @Post('self/images/avatar')
+  @Post('self/profile/avatar')
   @UploadUserAvatarApiDecorator()
   @UseInterceptors(FileInterceptor(FILE_FIELD))
   public async uploadAvatar(
