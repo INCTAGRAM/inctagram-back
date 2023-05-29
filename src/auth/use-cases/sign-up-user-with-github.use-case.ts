@@ -121,7 +121,7 @@ export class SignUpUserWithGithubUseCase
             mergeCodeExpDate: add(new Date(), { minutes: 10 }),
           });
 
-          await this.emailService.sendAccountsMerge(user, code);
+          await this.emailService.sendAccountsMerge(user, mergeCode);
 
           return email;
         }
