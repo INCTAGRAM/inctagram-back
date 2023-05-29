@@ -12,7 +12,7 @@ export class PostsQueryDto {
   })
   @ValidateIfOtherNotExists('id')
   @IsOptional()
-  public page: number;
+  public page?: number;
 
   @IsNumber()
   @Transform(({ value }) => {
@@ -24,5 +24,5 @@ export class PostsQueryDto {
 
   @IsUUID()
   @IsOptional()
-  public id: string;
+  public id?: string;
 }
