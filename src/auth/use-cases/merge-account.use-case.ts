@@ -1,11 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { UnauthorizedException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import {
-  ForbiddenException,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from '@nestjs/common';
 
 import { JwtAdaptor } from 'src/adaptors/jwt/jwt.adaptor';
 import { DevicesSessionsService } from '../services/devices.service';
@@ -22,7 +18,7 @@ export class MergeAccountCommand {
   ) {}
 }
 @CommandHandler(MergeAccountCommand)
-export class RegisterUserUseCase
+export class MergeAccountsUseCase
   implements ICommandHandler<MergeAccountCommand>
 {
   constructor(
@@ -38,9 +34,12 @@ export class RegisterUserUseCase
         mergeCode,
       });
 
-      if (!oauthAccount) throw new ForbiddenException();
+      if (!oauthAccount) throw new UnauthorizedException();
 
-      if (oauthAccount.mergeCode !== mergeCode)
+      if (
+        oauthAccount.mergeCodeExpDate &&
+        oauthAccount.mergeCodeExpDate < new Date()
+      )
         throw new UnauthorizedException();
 
       const { clientId, userId, type } = oauthAccount;
@@ -79,7 +78,7 @@ export class RegisterUserUseCase
     } catch (error) {
       console.log(error);
 
-      throw new InternalServerErrorException();
+      throw new UnauthorizedException();
     }
   }
 }
