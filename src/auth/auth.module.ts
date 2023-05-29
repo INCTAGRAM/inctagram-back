@@ -22,6 +22,7 @@ import { ConfirmRegistrationUseCase } from './use-cases/confirm-registration-use
 import { SignInUserWithGithubUseCase } from './use-cases/sign-in-user-with-github.use-case';
 import { SignUpUserWithGithubUseCase } from './use-cases/sign-up-user-with-github.use-case';
 import { RegistrationEmailResendingUseCase } from './use-cases/registration-email-resending-use-case';
+import { MergeAccountsUseCase } from './use-cases/merge-account.use-case';
 
 const useCases = [
   RegistrationEmailResendingUseCase,
@@ -30,6 +31,7 @@ const useCases = [
   SignUpUserWithGithubUseCase,
   SignInUserWithGithubUseCase,
   RegisterUserUseCase,
+  MergeAccountsUseCase,
   NewPasswordUseCase,
   LoginUserUseCase,
   LogoutUserUseCase,
