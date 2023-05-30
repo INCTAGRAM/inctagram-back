@@ -289,7 +289,7 @@ export class UserRepository {
             type,
           },
         },
-        update: { ...payload, mergeCode: null, mergeCodeExpDate: null },
+        update: { ...payload },
         create: payload,
       });
     } catch (error) {
