@@ -48,6 +48,8 @@ export class MergeAccountsUseCase
         clientId,
         userId,
         type,
+        mergeCode: null,
+        mergeCodeExpDate: null,
         linked: true,
       });
 
